@@ -23,6 +23,8 @@ namespace Moqui.Core.Simulation
         private const float DegreesToRadians = MathF.PI / 180f;
 
         private readonly Dictionary<string, CollisionShape> _shapes = new Dictionary<string, CollisionShape>();
+        private readonly Dictionary<CollisionShape, BodyPartDefinition> _parts = new Dictionary<CollisionShape, BodyPartDefinition>();
+        private readonly Dictionary<CollisionShape, SkinSiteState> _sites = new Dictionary<CollisionShape, SkinSiteState>();
 
         public Human(HumanDefinition definition, CollisionWorld world)
         {
@@ -34,6 +36,11 @@ namespace Moqui.Core.Simulation
                 var shape = CollisionShape.Capsule(ShapeId(part.Id), ToWorld(part.LocalA), ToWorld(part.LocalB), part.Radius, flags);
                 world.Add(shape);
                 _shapes.Add(part.Id, shape);
+                _parts.Add(shape, part);
+                if (part.SiteType.HasValue)
+                {
+                    _sites.Add(shape, new SkinSiteState(part.Id, part.SiteType.Value, shape));
+                }
             }
 
             HeadShape = _shapes[definition.HeadPartId];
@@ -48,6 +55,26 @@ namespace Moqui.Core.Simulation
         public CollisionShape HeadShape { get; }
 
         public IReadOnlyDictionary<string, CollisionShape> Shapes => _shapes;
+
+        public IReadOnlyCollection<SkinSiteState> SkinSites => _sites.Values;
+
+        /// <summary>인간의 물린 자국 수 n (spec/04 §4).</summary>
+        public int BiteMarkCount { get; set; }
+
+        public bool Owns(CollisionShape shape)
+        {
+            return _parts.ContainsKey(shape);
+        }
+
+        public bool TryGetSite(CollisionShape shape, out SkinSiteState site)
+        {
+            return _sites.TryGetValue(shape, out site);
+        }
+
+        public bool TryGetPart(CollisionShape shape, out BodyPartDefinition part)
+        {
+            return _parts.TryGetValue(shape, out part);
+        }
 
         public float HeadYaw { get; set; }
 
@@ -104,6 +131,41 @@ namespace Moqui.Core.Simulation
         public int NextBlindSwatTick { get; set; }
 
         public HumanAttack Attack { get; } = new HumanAttack();
+
+        // ---- 무작위 동작 (spec/02 §6) ----
+
+        /// <summary>진행 중인 동작. 없으면 null.</summary>
+        public HumanActionDefinition CurrentAction { get; set; }
+
+        public int ActionStartTick { get; set; }
+
+        public int NextActionTick { get; set; }
+
+        /// <summary>
+        /// 몸 캡슐을 정의 자세 + 현재 동작의 이동량 × 곡선으로 다시 놓는다. 절차적 포즈 (tech/architecture.md §4.6).
+        /// </summary>
+        public void ApplyPose(HumanActionDefinition action, float elapsedSeconds)
+        {
+            float profile = action?.Profile(elapsedSeconds) ?? 0f;
+            foreach (var part in Definition.Parts)
+            {
+                Vector3 a = part.LocalA;
+                Vector3 b = part.LocalB;
+                if (action != null)
+                {
+                    foreach (var motion in action.Motions)
+                    {
+                        if (motion.PartId == part.Id)
+                        {
+                            a += motion.OffsetA * profile;
+                            b += motion.OffsetB * profile;
+                        }
+                    }
+                }
+
+                _shapes[part.Id].SetSegment(ToWorld(a), ToWorld(b));
+            }
+        }
 
         public float DistanceToNearestEar(Vector3 point)
         {

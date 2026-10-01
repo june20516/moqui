@@ -19,17 +19,27 @@ namespace Moqui.Core.Simulation
         Foot,
     }
 
+    /// <summary>흡혈 가능한 피부 부위 유형 (spec/04 §1). tuning 키 site.<유형>.* 의 이름과 같다.</summary>
+    public enum SkinSiteType
+    {
+        Forearm,
+        Calf,
+        FootTop,
+        Neck,
+        Cheek,
+    }
+
     /// <summary>판정용 몸 캡슐 하나 (tech/architecture.md §4.6). 좌표는 인간 루트(위치, 정면 yaw) 기준 로컬이다.</summary>
     public sealed class BodyPartDefinition
     {
-        public BodyPartDefinition(string id, BodyPartKind kind, Vector3 localA, Vector3 localB, float radius, bool isSkin)
+        public BodyPartDefinition(string id, BodyPartKind kind, Vector3 localA, Vector3 localB, float radius, SkinSiteType? siteType)
         {
             Id = id ?? throw new ArgumentNullException(nameof(id));
             Kind = kind;
             LocalA = localA;
             LocalB = localB;
             Radius = radius;
-            IsSkin = isSkin;
+            SiteType = siteType;
         }
 
         public string Id { get; }
@@ -42,8 +52,10 @@ namespace Moqui.Core.Simulation
 
         public float Radius { get; }
 
-        /// <summary>노출된 피부라 흡혈할 수 있는 부위인가 (SkinSite).</summary>
-        public bool IsSkin { get; }
+        /// <summary>흡혈할 수 있는 노출 피부(SkinSite)이면 그 유형, 아니면 null.</summary>
+        public SkinSiteType? SiteType { get; }
+
+        public bool IsSkin => SiteType.HasValue;
     }
 
     /// <summary>
@@ -59,7 +71,8 @@ namespace Moqui.Core.Simulation
             IReadOnlyList<BodyPartDefinition> parts,
             string headPartId,
             IReadOnlyList<Vector3> shoulderLocals,
-            IReadOnlyList<float> idleLookYaws)
+            IReadOnlyList<float> idleLookYaws,
+            IReadOnlyList<HumanActionDefinition> actions = null)
         {
             Id = id ?? throw new ArgumentNullException(nameof(id));
             Position = position;
@@ -68,6 +81,7 @@ namespace Moqui.Core.Simulation
             HeadPartId = headPartId;
             ShoulderLocals = shoulderLocals ?? throw new ArgumentNullException(nameof(shoulderLocals));
             IdleLookYaws = idleLookYaws != null && idleLookYaws.Count > 0 ? idleLookYaws : new[] { 0f };
+            Actions = actions ?? Array.Empty<HumanActionDefinition>();
 
             var head = parts.FirstOrDefault(part => part.Id == headPartId);
             if (head == null || head.Kind != BodyPartKind.Head)
@@ -78,6 +92,17 @@ namespace Moqui.Core.Simulation
             if (shoulderLocals.Count == 0)
             {
                 throw new ArgumentException($"Human '{id}' needs at least one shoulder.", nameof(shoulderLocals));
+            }
+
+            foreach (var action in Actions)
+            {
+                foreach (var motion in action.Motions)
+                {
+                    if (!parts.Any(part => part.Id == motion.PartId))
+                    {
+                        throw new ArgumentException($"Human '{id}': action '{action.Name}' moves unknown part '{motion.PartId}'.", nameof(actions));
+                    }
+                }
             }
         }
 
@@ -94,5 +119,8 @@ namespace Moqui.Core.Simulation
         public IReadOnlyList<Vector3> ShoulderLocals { get; }
 
         public IReadOnlyList<float> IdleLookYaws { get; }
+
+        /// <summary>무작위 동작 목록 (spec/02 §6). 없으면 움직이지 않는다.</summary>
+        public IReadOnlyList<HumanActionDefinition> Actions { get; }
     }
 }

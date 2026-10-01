@@ -16,6 +16,7 @@ namespace Moqui.Core.Simulation
         private readonly FlightSystem _flight;
         private readonly StaminaSystem _stamina;
         private readonly DashSystem _dash;
+        private readonly AttachSystem _attach;
         private readonly SphereMover _mover;
         private readonly FallingBodySystem _fallingBodies;
         private readonly HumanSystem _humanSystem;
@@ -30,22 +31,27 @@ namespace Moqui.Core.Simulation
         public GameSimulation(GameSettings settings, SimulationSetup setup)
         {
             Settings = settings;
-            World = setup.World;
+            Setup = setup;
+            World = setup.CreateWorld();
             Seed = setup.Seed;
             Player = new Player(setup.PlayerSpawn, settings.Player.CollisionRadius, settings.Stamina.Max);
             _mover = new SphereMover(World);
             _flight = new FlightSystem(settings.Flight);
             _stamina = new StaminaSystem(settings.Stamina, settings.Hiding);
             _dash = new DashSystem(settings.Dash, settings.Flight, _stamina, _mover);
+            _attach = new AttachSystem(settings.Attach, settings.HumanMotion, settings.Flight, World, _mover);
             _fallingBodies = new FallingBodySystem(settings.World);
             if (setup.Human != null)
             {
                 Human = new Human(setup.Human, World);
                 _humanSystem = new HumanSystem(settings, World, setup.Seed);
+                _humanSystem.Motion.Initialize(Human);
             }
         }
 
         public GameSettings Settings { get; }
+
+        public SimulationSetup Setup { get; }
 
         public CollisionWorld World { get; }
 
@@ -79,6 +85,11 @@ namespace Moqui.Core.Simulation
         public void Step(PlayerCommand command)
         {
             _events.Clear();
+            if (Human != null)
+            {
+                _humanSystem.StepMotion(Human, Tick);
+            }
+
             if (Player.State != PlayerState.Dead)
             {
                 StepPlayer(command);
@@ -98,6 +109,12 @@ namespace Moqui.Core.Simulation
             Tick++;
         }
 
+        /// <summary>재시도: 같은 구성으로 처음부터 시작하는 새 시뮬레이션 (spec/04 §7).</summary>
+        public GameSimulation Retry()
+        {
+            return new GameSimulation(Settings, Setup);
+        }
+
         public SimulationSnapshot CaptureSnapshot()
         {
             return new SimulationSnapshot(Tick, new PlayerSnapshot(Player), Human != null ? new HumanSnapshot(Human) : null);
@@ -108,6 +125,33 @@ namespace Moqui.Core.Simulation
             Player.Yaw = command.LookYaw;
             Player.PrecisionHeld = command.PrecisionHeld;
             Player.SpeedMultiplier = _stamina.SpeedMultiplier(Player);
+
+            switch (Player.State)
+            {
+                case PlayerState.Attached:
+                    _attach.StepAttached(Player, command, Tick, DeltaTime, _events);
+                    if (Player.State == PlayerState.Attached)
+                    {
+                        _attach.TryDislodge(Player, Tick, _events);
+                    }
+
+                    return;
+                case PlayerState.Dislodged:
+                    // 경직 동안 입력을 무시하고 밀린 속도로 감속만 한다 (spec/02 §6).
+                    if (Tick < Player.StunEndTick)
+                    {
+                        Fly(new PlayerCommand { LookYaw = command.LookYaw });
+                        return;
+                    }
+
+                    Player.State = PlayerState.Flying;
+                    break;
+            }
+
+            if (_attach.TryAttach(Player, command, Tick, _events))
+            {
+                return;
+            }
 
             _dash.TryStart(Player, command, Tick, DiagonalDashUnlocked, _events);
             if (Player.State == PlayerState.Dashing)

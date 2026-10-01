@@ -80,11 +80,51 @@ namespace Moqui.Core.Simulation
         public int TelegraphTicks { get; }
     }
 
+    public sealed class PlayerAttached : SimulationEvent
+    {
+        public PlayerAttached(int tick, string shapeId, bool isSkinSite)
+            : base(tick)
+        {
+            ShapeId = shapeId;
+            IsSkinSite = isSkinSite;
+        }
+
+        public string ShapeId { get; }
+
+        public bool IsSkinSite { get; }
+    }
+
+    public sealed class PlayerDetached : SimulationEvent
+    {
+        public PlayerDetached(int tick, string shapeId)
+            : base(tick)
+        {
+            ShapeId = shapeId;
+        }
+
+        public string ShapeId { get; }
+    }
+
+    /// <summary>부위가 빠르게 움직여 튕겨 나감 (spec/02 §6). 사망이 아니다.</summary>
+    public sealed class PlayerDislodged : SimulationEvent
+    {
+        public PlayerDislodged(int tick, string shapeId, Vector3 direction)
+            : base(tick)
+        {
+            ShapeId = shapeId;
+            Direction = direction;
+        }
+
+        public string ShapeId { get; }
+
+        public Vector3 Direction { get; }
+    }
+
     public enum DeathCause
     {
         Attack,
         Web,
-        WaterDrop,
+        WaterImpact,
         Spray,
     }
 

@@ -1,4 +1,5 @@
 using System.Numerics;
+using Moqui.Core.Collision;
 
 namespace Moqui.Core.Simulation
 {
@@ -63,6 +64,22 @@ namespace Moqui.Core.Simulation
         public int LastStaminaSpendTick { get; set; } = NeverTick;
 
         public int LastDashStartTick { get; set; } = NeverTick;
+
+        // ---- 부착 (spec/03) ----
+
+        /// <summary>부착 중인 표면 점. 부착하지 않았으면 null.</summary>
+        public SurfaceAnchor Anchor { get; set; }
+
+        /// <summary>캐릭터 up 벡터. 부착 중에는 표면 법선, 비행 중에는 월드 위.</summary>
+        public Vector3 Up { get; set; } = Vector3.UnitY;
+
+        public int AttachedTick { get; set; } = NeverTick;
+
+        /// <summary>부착점이 이번 틱에 움직인 속도 (부위 움직임 → 튕겨남 판정).</summary>
+        public Vector3 AnchorVelocity { get; set; }
+
+        /// <summary>튕겨남 경직이 끝나는 틱 (spec/02 §6).</summary>
+        public int StunEndTick { get; set; } = NeverTick;
 
         public Vector3 DashDirection { get; set; }
 

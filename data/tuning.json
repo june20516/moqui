@@ -118,6 +118,7 @@
     "suck.itchDecay": 5,
     "suck.itchThreshold": 100,
     "suck.attachRange": 2,
+    "attach.detachOffset": 2,
 
     "site.forearm.sensitivity": 1.0,
     "site.forearm.bloodAmount": 1.0,

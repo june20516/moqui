@@ -15,7 +15,7 @@ namespace Moqui.Unity.Presentation.Sandbox
             var tuning = SimulationRunner.LoadTuning();
             var setup = SandboxHumanWorld.CreateSetup();
             var simulation = new GameSimulation(GameSettings.FromTuning(tuning), setup);
-            WorldView.Build(setup.World, transform);
+            WorldView.Build(simulation.World, transform);
             _runner.Begin(tuning, simulation);
             Cursor.lockState = CursorLockMode.Locked;
         }

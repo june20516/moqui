@@ -138,9 +138,11 @@ namespace Moqui.Core.Collision
                     float discriminant = (qb * qb) - (4f * qa * qc);
                     if (discriminant >= 0f)
                     {
-                        float tc = Math.Max(0f, (-qb - MathF.Sqrt(discriminant)) / (2f * qa));
+                        // 작은 근이 음수면 원점이 무한 원기둥 안이거나(끝 반구 쪽에서 출발) 원기둥에서 멀어지는 중이다.
+                        // 어느 쪽이든 원기둥 옆면으로 "들어가는" 교차가 아니므로 무시한다. 끝 반구는 위의 구 검사가 맡는다.
+                        float tc = (-qb - MathF.Sqrt(discriminant)) / (2f * qa);
                         float along = Vector3.Dot(origin + (direction * tc) - a, axisUnit);
-                        if (tc <= maxDistance && along >= 0f && along <= axisLength && tc < distance)
+                        if (tc >= 0f && tc <= maxDistance && along >= 0f && along <= axisLength && tc < distance)
                         {
                             distance = tc;
                             found = true;

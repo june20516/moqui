@@ -61,7 +61,7 @@ namespace Moqui.Unity.Editor
             Tuning tuning = TuningLoader.Load(new UnityDataSource());
             var setup = SandboxHumanWorld.CreateSetup();
             var simulation = new GameSimulation(GameSettings.FromTuning(tuning), setup);
-            WorldView.Build(setup.World, null);
+            WorldView.Build(simulation.World, null);
             var humanView = UnityEngine.Object.FindAnyObjectByType<HumanView>();
             humanView.Build(simulation.Human);
             var player = GameObject.Find("Player");
