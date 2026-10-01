@@ -1,7 +1,7 @@
 # 개발 규약
 
 ## 1. 엔진과 패키지
-- Unity 6 LTS. M0에서 그 시점 최신 LTS 패치를 골라 `ProjectSettings/ProjectVersion.txt`에 고정하고 `plan/decisions.md`에 기록한다. 이후 업그레이드는 금지한다.
+- Unity 6 (D-019: 6000.6.3f1, LTS 예외를 사람이 승인). M0에서 `ProjectSettings/ProjectVersion.txt`에 고정하고 `plan/decisions.md`에 기록한다. 이후 업그레이드는 금지한다.
 - 필수 패키지: Universal RP, Input System(Active Input Handling = Input System Package), Cinemachine 3.x, Unity Test Framework, TextMeshPro(uGUI 포함), ProBuilder(화이트박스용, 선택).
 - 유료/로그인 필요 패키지는 쓰지 않는다.
 
@@ -18,7 +18,7 @@ Assets/_Project/
   Input/                   Input Actions 에셋
   Tests/EditMode/  Tests/PlayMode/   Unity 어댑터·표현 테스트
   CREDITS.md               에셋 출처·라이선스 (tech/asset-pipeline.md)
-Tools/                     빌드/테스트 실행 스크립트 (sh, ps1)
+Tools/                     빌드/테스트 실행 스크립트 (ps1 정본, sh는 Git Bash 래퍼 — D-022)
 Captures/                  캡처 결과 (git 제외)
 Builds/                    빌드 결과 (git 제외)
 ```
