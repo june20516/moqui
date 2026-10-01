@@ -10,6 +10,7 @@
 ## 1. 흐린 시야
 - 카메라로부터 `senses.clearRange`까지는 선명하고, `senses.fogFullRange`에서 최대로 흐려진다 (깊이 기반 안개 + 블러, 툰 셰이딩과 어울리는 색 안개).
 - 최대 흐림에서도 큰 가구의 실루엣은 보여야 한다 (길을 잃지 않게).
+- 흐림 강도 (M12 플레이테스트 반영, 미구현): 시작 위치에서 인간의 위치가 흐림만으로는 잘 드러나지 않고 CO₂ 흐름·체온 표시가 찾는 단서가 될 만큼 흐리게 한다. 제안값: clearRange 80→50, fogFullRange 250→160, fogMaxDensity 0.75→0.88, fogBlurPixels 3→6 (캡처로 실루엣 조건과 함께 확인한 뒤 `spec/tuning.md`에 확정).
 - 스킬 "겹눈 각성"이 선명 범위를 늘리고, 증기 속에서는 `humid.steamClearRangeMul`배로 줄어든다 (spec/05).
 - 1인칭과 3인칭 모두 같은 거리 기준을 쓴다 (3인칭은 카메라가 아니라 캐릭터 기준 거리).
 
@@ -21,7 +22,7 @@
 
 ## 3. 체온 감지
 - 노출 피부(SkinSite)는 `senses.heatRange` 안에서 따뜻한 빛으로 보인다. 가까울수록 진하다.
-- 물린 자국이 있는 부위는 붉은 점으로 표시한다.
+- 물린 자국은 실제로 문 자리(spec/04 §4 부착 지점)에 붉은 점으로 표시한다 (M12 플레이테스트 반영, 미구현).
 - 부위의 위험도(민감도)는 직접 표시하지 않는다. 플레이어가 경험으로 익히게 한다.
 
 ## 4. 은신처 표시
@@ -39,6 +40,8 @@
 - [x] 체온 표시가 heatRange 안에서만 나타나고, 자국 부위에 표시가 붙는다 (Unity). — 증거: EditMode `SensesViewTests.Heat_OnlyInsideHeatRange_StrongerWhenCloser`, `BiteMark_DotOnlyOnMarkedSite_InsideHeatRange`, 캡처 `Stage_stage01_human_close.png`
 - [x] 은신처 표시 강도가 어그로 상태에 따라 3단계로 바뀐다 (Unity). — 증거: EditMode `SensesViewTests.ShadowCue_IntensityStepsWithAwarenessState_HiddenBeyondCueRange`
 - [x] 겹눈 각성 레벨에 따라 선명 범위가 늘어난다 (Unity). — 증거: EditMode `SensesFogTests.CompoundEyes_ExtendsClearRangePerLevel` (Stage는 스킬 반영 Tuning으로 SensesSettings를 만든다, D-043)
+- [ ] 다섯 스테이지 시작 위치 캡처에서 인간은 흐림 속에 묻히고 CO₂ 흐름은 보이며, 큰 가구 실루엣은 남는다 (캡처 검토). (M12 플레이테스트 반영, 미구현)
+- [ ] 자국 점이 문 자리에 붙고 부위를 따라 움직인다 (Unity). (M12 플레이테스트 반영, 미구현)
 
 ## 범위 외
 - 냄새(젖산 등) 별도 시각화, 색상 선호도 기반 타겟팅

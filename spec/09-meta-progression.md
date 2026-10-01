@@ -29,7 +29,7 @@
 |---|---|---|---|---|
 | silentWings | 고요한 날개 | 모든 소음 반경 −12% | 3 | B |
 | swiftWings | 순풍 | 비행 속도 +8% | 3 | A |
-| vortexControl | 와류 제어 (방향 전환) | 가속·감속 시간 −20% (관성 감소, 더 날카로운 방향 전환). 3레벨에서 대각선 포함 8방향 대시 | 3 | B |
+| vortexControl | 와류 제어 (방향 전환) | 가속·감속 시간 −20% (관성 감소, 더 날카로운 방향 전환). 3레벨: 대시 쿨타임 −30% (M12: 대시가 진행 방향 전체를 쓰게 되어 "대각선 대시" 효과를 대체, D-051) | 3 | B |
 | stamina | 지구력 | 최대 스태미나 +15(합), 회복 +10% | 3 | A |
 | featherLanding | 깃털 착지 (조심히 앉기) | 착지 반응 확률 −30% | 3 | A |
 | numbingSaliva | 마취 타액 (조심히 빨기) | 흡혈 중 가려움 증가 −15% | 3 | B |
@@ -63,7 +63,7 @@
 - [x] 보상 계산: 기본/광분 0회/신중한 흡혈/기준시간 조합 8가지가 맞다 (Core). — 증거: `MetaTests.Reward_AllEightCombinations`(8케이스)
 - [x] 포인트가 부족하면 구매할 수 없고, 최대 레벨 이후 구매할 수 없다 (Core). — 증거: `MetaTests.Purchase_NeedsEnoughPoints_AndStopsAtMaxLevel`, `Costs_FollowTierTables`, `Equip_OnlyOwnedActiveSkills`
 - [x] 모든 패시브 스킬 효과가 레벨별로 정확히 적용된다 (스킬당 1개 테스트) (Core). — 증거: `SkillTests.ResistSpray_*`, `ResistWet_*`, `ResistSatiety_*`, `SilentWings_*`, `SwiftWings_*`, `Stamina_*`, `FeatherLanding_*`, `NumbingSaliva_*`, `ShadowBlend_*`, `MagicWand_*`, `CompoundEyes_*`, `VortexControl_*` (D-043). 해독 체질의 중독·모기향 적용은 M9에서 기믹과 함께 검증
-- [x] 와류 제어가 레벨당 가감속 시간을 0.8배로 줄이고, 3레벨에서만 대각선 대시가 가능하다 (Core). — 증거: `SkillTests.VortexControl_AccelTimesScaledPerLevel_DiagonalDashOnlyAtLevel3`
+- [ ] 와류 제어가 레벨당 가감속 시간을 0.8배로 줄이고, 3레벨에서 대시 쿨타임이 0.7배가 된다 (Core). (M12 플레이테스트 반영, 미구현)
 - [x] 연속 와류: 창 안의 추가 대시가 쿨타임을 무시하고 체인당 1회만 허용되며, 2레벨에서 스태미나가 줄지 않는다 (Core). — 증거: `SkillTests.ChainVortex_ExtraDashInsideWindowIgnoresCooldown_OncePerChain`, `ChainVortex_Level1CostsStamina_Level2Free`
 - [x] 미끼가 지정 지점에서 지속시간 동안 NoiseEvent를 발생시키고, 인간의 마지막 자극 위치가 미끼로 바뀐다 (Core). — 증거: `SkillTests.Decoy_EmitsNoiseAtAimPointForDuration_LastStimulusMovesToDecoy`, `Decoy_NotEquipped_DoesNothing`
 - [x] 저장 → 로드 왕복 후 모든 필드가 같다 (Core). — 증거: `MetaTests.SaveLoad_RoundTrip_AllFieldsEqual`

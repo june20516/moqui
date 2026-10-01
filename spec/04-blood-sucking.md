@@ -31,6 +31,7 @@
 - SkinSite에 부착하는 순간 착지 반응을 판정한다 (spec/02 §5). 스킬 "깃털 착지"가 확률을 낮춘다.
 
 ## 4. 물린 자국
+- 자국은 그 세션에서 주둥이를 꽂은 **부착 지점**(부위 로컬 좌표)에 생기고, 부위가 움직이면 함께 움직인다. 같은 부위를 여러 번 물면 자국도 여러 개다 (M12 플레이테스트 반영, 미구현).
 - 세션이 끝날 때 그 세션에서 빤 양이 `biteMark.minAmount` 이상이면 그 부위에 자국이 생기고 인간의 **자국 수 n**이 1 늘어난다. 같은 부위를 다시 물어도 새 세션이면 n이 늘어난다.
 - 세션이 끝나는 순간 경계가 `biteMark.awarenessBump`만큼 오른다 (가려움을 알아챔).
 - 자국 수에 따른 보정 (spec/02):
@@ -69,6 +70,7 @@
 - [x] 각 사망 원인이 올바른 DeathCause로 기록된다 (Core, 원인별 1개 테스트). — 증거: Attack `ReactionTests.ReactSlap_PlayerStays_DiesWithAttackCause`, WaterImpact `WaterTests.TrappedUntilFloor_DiesWithWaterImpact`, Web `GimmickTests.Web_Contact_DiesWithWebCauseAfter15Seconds_CannotMove`, Spray `GimmickTests.Toxin_100_DiesWithSprayCause` (DeathCause 4종 전부)
 - [x] 재시도 시 흡혈 게이지, 가려움, 자국, 인간 경계, 플레이어 위치, 중독 게이지가 모두 초기화된다 (Core). — 증거: `RetryTests.Retry_AfterPlaying_EveryStateMatchesFreshStart`(스냅샷 전체 비교: 위치·스태미나·경계·광분·공격·가려움·자국), `Retry_SameCommands_ReplaysIdentically`. 흡혈·중독 게이지는 생기는 즉시 스냅샷에 넣어 같은 테스트로 검증 (D-031)
 - [x] 설계 검증: 같은 스테이지에서 "긴 세션 2회" 시나리오가 "짧은 세션 6회" 시나리오보다 평균 경계가 낮고 클리어 시간이 짧다 (Core 시나리오 비교, 시드 20개 평균). — 증거: `DesignValidationTests.LongSessions_VersusShortSessions_LowerAwarenessAndFasterClear` — 시드 20: 긴 세션 12/20 클리어·평균 경계 28.2·평균 280.6초, 짧은 세션 0/20·38.8·600초 (D-035)
+- [ ] 자국이 세션의 부착 지점(부위 로컬 좌표)에 기록되고 스냅샷에 위치로 나온다 (Core). (M12 플레이테스트 반영, 미구현)
 
 ## 범위 외
 - 흡혈 후 탈출(퇴장) 단계

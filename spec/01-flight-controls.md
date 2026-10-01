@@ -7,10 +7,10 @@
 | 액션 | 키보드/마우스 | 게임패드 |
 |---|---|---|
 | Move (전후좌우) | WASD | 왼쪽 스틱 |
-| Ascend / Descend | Space / Left Ctrl | RT / LT |
+| Ascend / Descend | Space / Left Alt | RT / LT |
 | Look | 마우스 | 오른쪽 스틱 |
-| Dash | Left Shift | A (South) |
-| Precision (홀드) | Left Alt | LB |
+| Dash | 마우스 오른쪽 | A (South) |
+| Precision (홀드) | Left Ctrl | LB |
 | Attach / Detach | F | B (East) |
 | Suck (홀드) | 마우스 왼쪽 | X (West) |
 | ToggleView (시점 전환) | V | 오른쪽 스틱 누르기 (R3) |
@@ -31,7 +31,8 @@
 - 장애물과는 sweep으로 충돌 처리하고 표면을 따라 미끄러진다.
 
 ### 볼텍스 대시
-- 방향: 입력 중 좌/우/상/하 성분 가운데 절댓값이 가장 큰 축의 방향 (카메라 로컬 좌우, 월드 상하). 좌우·상하 입력이 없으면 **위쪽**으로 대시한다. 전후 입력은 대시 방향에 영향을 주지 않는다. 스킬 와류 제어 3레벨이면 좌우와 상하를 조합한 대각선 4방향도 허용한다 (spec/09).
+- 방향 (M12 플레이테스트 반영, 미구현): **진행 방향**(이동 입력 = 카메라 yaw 기준 전후좌우 + 월드 상하를 합친 벡터의 방향)으로 대시한다. 이동 입력이 없으면 Core 난수(시드 고정)로 고른 **무작위 방향**으로 대시한다 (D-051). 부착 중 대시는 붙은 표면의 **법선 방향**으로 떨어져 나가며 대시한다.
+- (이전 규칙: 좌/우/상/하 중 가장 큰 축, 입력 없으면 위쪽 — 2026-10-01 플레이테스트에서 "무조건 위로만 간다"는 피드백으로 폐기)
 - `dash.duration` 동안 `dash.distance × 포만 대시 배율`(spec/04 §5)을 등속으로 이동한다. 장애물에 닿으면 그 지점에서 멈춘다.
 - 대시가 끝나면 대시 방향으로 `flight.speed`의 속도를 남기고, 이후 일반 가감속 규칙을 따른다 (살짝 미끄러지며 빠져나오는 느낌).
 - 실행 조건: 쿨타임(`dash.cooldown`)이 끝났고, 스태미나가 `dash.staminaCost` 이상이며, 탈진 상태가 아니어야 한다.
@@ -53,6 +54,7 @@
 ## 상태
 ```
 Flying ──(F, 부착 가능 표면 근처)──▶ Attached ──(F 또는 이동 입력)──▶ Flying
+Attached ──(Dash)──▶ Dashing (표면 법선 방향, M12)
 Flying ──(Dash)──▶ Dashing ──(duration 종료)──▶ Flying
 Flying ──(물방울 피격)──▶ Trapped (spec/05)
 Attached ──(부위 급격한 움직임)──▶ Dislodged ──(경직 종료)──▶ Flying (spec/02 §6)
@@ -67,14 +69,15 @@ Attached ──(부위 급격한 움직임)──▶ Dislodged ──(경직 종
 - [x] 바람 외력은 입력과 무관하게 즉시 더해진다 (Core). — 증거: `ExternalForceTests.Wind_NoInput_AddedImmediatelyWithoutInertia`, `Wind_WithInput_AddsToInputMovement`
 - [x] 대각선 입력 속도가 단일 방향 속도와 같다 (Core). — 증거: `FlightTests.DiagonalInput_TopSpeed_EqualsSingleDirectionSpeed`
 - [x] 대시가 0.12초 동안 60u를 이동한다 (Core, ±1u). — 증거: `DashTests.Dash_FromRest_Moves60uIn012Seconds` (7틱, D-026)
-- [x] 좌우·상하 입력이 없을 때 대시는 위쪽이다 (Core: DashDirectionResolver). — 증거: `DashTests.DashDirection_NoLateralOrVerticalInput_IsUp`, `DashDirection_LargestAxisWins`, `DashDirection_TieBetweenLateralAndVertical_PrefersLateral`
+- [ ] 대시가 진행 방향(전후좌우+상하 합성)으로 나가고, 이동 입력이 없으면 같은 시드에서 같은 무작위 방향으로 나간다 (Core). (M12 플레이테스트 반영, 미구현)
+- [ ] 부착 중 대시 입력이면 표면 법선 방향으로 대시하며 부착이 풀린다 (Core). (M12 플레이테스트 반영, 미구현)
 - [x] 스태미나 < 25이면 대시가 실행되지 않는다 (Core). — 증거: `DashTests.Dash_StaminaBelowCost_DoesNotExecute`
 - [x] 쿨타임 안의 재입력은 무시된다 (Core). — 증거: `DashTests.Dash_PressedDuringCooldown_IsIgnored`
 - [x] 대시 시 NoiseEvent가 정확히 1회, 반경 150u로 발생한다 (Core). — 증거: `DashTests.Dash_Executed_EmitsSingleNoiseEventWith150uRadius`
 - [x] 스태미나가 마지막 소모 1초 후부터 20/s로 회복한다 (Core). — 증거: `StaminaTests.Stamina_AfterDash_RegeneratesFrom1SecondAt20PerSecond`
 - [x] 스태미나 0이면 2초간 속도 50%, 대시 불가 (Core). — 증거: `StaminaTests.Stamina_ReachesZero_Exhausted2SecondsWithHalfSpeedAndNoDash`, `Exhaustion_WhileHidden_RecoversTwiceAsFast`
 - [x] 대시가 벽을 관통하지 않는다 (Core). — 증거: `DashTests.Dash_IntoWall_StopsWithoutPenetrating`
-- [x] 위 입력 매핑이 Input Actions 에셋에 존재하고, 게임패드로도 동일하게 동작한다 (Unity: 가상 Gamepad 디바이스로 입력 주입). — 증거: `Assets/_Project/Input/MoquiControls.inputactions`(Gameplay 맵), `CommandCollectorTests.Asset_GameplayAction_HasKeyboardAndGamepadBindings`(11개 액션), `Gamepad_AllGameplayInputs_ProduceCommand`, `KeyboardMouse_AllGameplayInputs_ProduceCommand`, `ToggleViewAndPause_Gamepad_AreConsumedSeparately`, `GamepadStick_FullRightOneSecond_RotatesYawByLookSpeed`
+- [ ] 위 입력 매핑이 Input Actions 에셋에 존재하고, 게임패드로도 동일하게 동작한다 (Unity: 가상 Gamepad 디바이스로 입력 주입). (M12 플레이테스트 반영, 미구현) — 이전 매핑 증거는 m1 보관 체크리스트
 
 ## 범위 외
 - 롤, 대시 방향 8방향화, 공중 관성 옵션

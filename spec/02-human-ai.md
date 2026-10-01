@@ -81,6 +81,7 @@
 - 판정 구에 플레이어 충돌 구가 겹치면 즉사한다 (스프레이 제외).
 - **예고 피드백** (Unity): 손 동작, 판정 위치의 붉은 표시, 경고음 `sfx_telegraph`, 화면 밖 공격이면 화면 가장자리에 방향 표시 (spec/08).
 - 공격 후 `recovery` 동안 다음 공격을 하지 않는다.
+- 공격 동작 (M12 플레이테스트 반영, 미구현): 목표에 가까운 어깨 쪽의 **실제 팔**(upperArm·forearm 캡슐)이 예고 동안 뒤로 치켜들고, 판정 동안 목표 지점으로 뻗고, 회복 동안 제자리로 돌아온다. 팔 캡슐은 Core가 움직이므로 그 팔에 붙어 있던 모기는 팔을 따라가거나 튕겨 나간다. 판정은 기존대로 예고 시작 시점에 고정한 목표 구다. 따로 튀어나오는 표현용 팔은 쓰지 않는다 (D-051).
 
 ## 수용 기준
 - [x] 상태 전이와 히스테리시스(40 진입 / 20 이탈)가 동작한다 (Core). — 증거: `HumanAwarenessTests.StateTransitions_Hysteresis_Enter40Exit20`
@@ -103,6 +104,8 @@
 - [x] 같은 시드와 같은 입력이면 인간의 움직임과 반응이 똑같이 재현된다 (Core). — 증거: `FrenzyTests.SameSeedAndCommands_HumanBehaviourReplaysExactly` (다른 시드는 다른 결과)
 - [x] 머리가 yawLimit를 넘어 회전하지 않는다 (Core). — 증거: `HumanAwarenessTests.Head_StimulusBehind_NeverExceedsYawLimit`
 - [x] 공격 중에는 새 공격이나 반응이 시작되지 않는다 (Core). — 증거: `ReactionTests.AttackInProgress_NoNewAttackOrReactionUntilRecoveryEnds`
+- [ ] 공격 중 가까운 쪽 팔 캡슐이 예고(치켜듦) → 판정(목표로 뻗음) → 회복(제자리) 순서로 움직이고, 판정 시점에 손 끝이 목표 구 안에 있다 (Core). (M12 플레이테스트 반영, 미구현)
+- [ ] 공격 표현에 별도 팔 오브젝트가 없고, 인간 팔 그림이 Core 팔 캡슐을 따른다 (Unity). (M12 플레이테스트 반영, 미구현)
 
 ## 범위 외
 - 인간의 보행과 자리 이동, 파리채·전기 모기채 등 도구 공격 (스프레이 제외), 다수의 인간
