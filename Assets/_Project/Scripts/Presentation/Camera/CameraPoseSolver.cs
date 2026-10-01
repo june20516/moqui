@@ -38,6 +38,24 @@ namespace Moqui.Unity.Presentation
             return new CameraPose(eye, LookRotation(yaw, pitch), _settings.FirstPersonFov, _settings.FirstPersonNearClip);
         }
 
+        /// <summary>
+        /// 1인칭 부착 상태: 카메라 up을 표면 법선 쪽으로 맞추고, 눈 위치 오프셋도 표면 기준(법선 = 위)으로 둔다 (spec/00).
+        /// 시선이 법선과 거의 평행하면 up을 정할 수 없으므로 몸 정면(yaw)을 up으로 쓴다.
+        /// </summary>
+        public CameraPose FirstPersonAttached(Vector3 playerPosition, float yaw, float pitch, Vector3 surfaceNormal)
+        {
+            const float ParallelThresholdDegrees = 1f;
+            Vector3 direction = LookConstraint.Direction(yaw, pitch);
+            Vector3 normal = surfaceNormal.normalized;
+            Vector3 tangent = Vector3.ProjectOnPlane(direction, normal);
+            bool nearlyParallel = Vector3.Angle(direction, normal) < ParallelThresholdDegrees || tangent.sqrMagnitude < 1e-6f;
+            Vector3 up = nearlyParallel ? Quaternion.Euler(0f, yaw, 0f) * Vector3.forward : normal;
+            Vector3 forwardOnSurface = nearlyParallel ? Vector3.ProjectOnPlane(up, normal).normalized : tangent.normalized;
+            Vector3 offset = _settings.FirstPersonEyeOffset;
+            Vector3 eye = playerPosition + (normal * offset.y) + (forwardOnSurface * offset.z);
+            return new CameraPose(eye, Quaternion.LookRotation(direction, up), _settings.FirstPersonFov, _settings.FirstPersonNearClip);
+        }
+
         private Vector3 SweepTo(Vector3 origin, Vector3 direction, float distance)
         {
             bool hit = _world.SphereSweep(

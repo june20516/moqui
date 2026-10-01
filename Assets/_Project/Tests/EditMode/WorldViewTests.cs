@@ -19,8 +19,10 @@ namespace Moqui.Unity.Tests
             {
                 Transform root = WorldView.Build(world, parent.transform);
 
-                Assert.That(root.childCount, Is.EqualTo(world.Shapes.Count));
-                foreach (var shape in world.Shapes)
+                var obstacles = System.Linq.Enumerable.ToList(System.Linq.Enumerable.Where(world.Shapes, shape => shape.Matches(ShapeFlags.Obstacle)));
+                Assert.That(root.childCount, Is.EqualTo(obstacles.Count));
+                Assert.That(root.Find("table_shadow"), Is.Null, "shadow volumes are not drawn");
+                foreach (var shape in obstacles)
                 {
                     Transform visual = root.Find(shape.Id);
                     Assert.That(visual, Is.Not.Null, shape.Id);

@@ -1,3 +1,4 @@
+using Moqui.Unity.Input;
 using Moqui.Unity.Settings;
 using UnityEngine;
 
@@ -41,8 +42,25 @@ namespace Moqui.Unity.Presentation
             _preferences.SetString(ViewPreferenceKey, View.ToString());
         }
 
+        /// <summary>
+        /// 1인칭 부착 상태면 시선을 표면 법선 기준 attachedLookLimit 원뿔 안으로 당긴다 (spec/00).
+        /// 제한한 값을 시점 상태에 다시 써서 입력이 원뿔 밖으로 누적되지 않게 한다.
+        /// </summary>
+        public void ConstrainLook(LookState look, Vector3? surfaceNormal)
+        {
+            if (!IsFirstPerson || !surfaceNormal.HasValue)
+            {
+                return;
+            }
+
+            float yaw = look.Yaw;
+            float pitch = look.Pitch;
+            LookConstraint.ClampToCone(ref yaw, ref pitch, surfaceNormal.Value, _settings.FirstPersonAttachedLookLimit);
+            look.Set(yaw, pitch);
+        }
+
         /// <summary>이번 프레임의 카메라 포즈. 시점 전환은 위치와 FOV만 바꾸고 yaw/pitch는 그대로 쓴다.</summary>
-        public CameraPose Update(float deltaTime, Vector3 playerPosition, float yaw, float pitch)
+        public CameraPose Update(float deltaTime, Vector3 playerPosition, float yaw, float pitch, Vector3? surfaceNormal = null)
         {
             if (_settings.SwitchTime > 0f)
             {
@@ -54,7 +72,9 @@ namespace Moqui.Unity.Presentation
             }
 
             CameraPose thirdPerson = _solver.ThirdPerson(playerPosition, yaw, pitch);
-            CameraPose firstPerson = _solver.FirstPerson(playerPosition, yaw, pitch);
+            CameraPose firstPerson = surfaceNormal.HasValue
+                ? _solver.FirstPersonAttached(playerPosition, yaw, pitch, surfaceNormal.Value)
+                : _solver.FirstPerson(playerPosition, yaw, pitch);
             CameraPose from = IsFirstPerson ? thirdPerson : firstPerson;
             CameraPose to = IsFirstPerson ? firstPerson : thirdPerson;
             return CameraPose.Lerp(from, to, Mathf.SmoothStep(0f, 1f, _transition));

@@ -6,7 +6,8 @@
         "Moqui.Unity.Runtime",
         "Moqui.Unity.Presentation",
         "Moqui.Unity.UI",
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "Unity.RenderPipelines.Core.Runtime"
     ],
     "includePlatforms": [
         "Editor"
