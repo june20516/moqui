@@ -4,7 +4,7 @@
 
 ## 현재
 - 마일스톤: **M9 Stage 3 · 4 · 5와 기믹** (진행 중)
-- 다음 할 일: 인간 자세 확장(누운 자세·고개 숙임), 레벨 포맷 기믹 배열, Stage 3~5 데이터·검사·봇
+- 다음 할 일: Stage 4(화장실)·Stage 5(베란다) 데이터·검사·봇, 그다음 Unity 기믹 표현
 - 브랜치: `milestone/m9-gimmicks`
 
 ## 현재 마일스톤 체크리스트 (M9)
@@ -74,7 +74,8 @@
 ## 사람 요청
 | ID | 요청 | 필요 사양 | 대체물 적용 여부 | 상태 |
 |---|---|---|---|---|
-| 2026-10-01 | M9 | 기믹 Core: FanSystem(바람·회전·소음 마스킹), 거미줄(Webbed→Web 사망), ToxinSystem(연무·자동 분사기·모기향 하한·디버프·Spray 사망), 인간 분사, 취한 타겟(흡혈·가려움·시각 배율, 무작위 휘두르기), 해독 체질 적용, 스냅샷 기믹 상태, D-046 | Core 319/319 통과 | (이 커밋) |
+| 2026-10-01 | M9 | 인간 자세(facingPitch·restPitch), 레벨 기믹 배열 파서·스키마, 침실 방·Stage 3(누운 인간, 선풍기, canSpray), stage03_clear 5/5·stage03_detect 5/5, 시나리오 hideRoutes, ScenarioDiagnostics, D-047 | Core 통과(시나리오 포함) | (이 커밋) |
+| 2026-10-01 | M9 | 기믹 Core: FanSystem(바람·회전·소음 마스킹), 거미줄(Webbed→Web 사망), ToxinSystem(연무·자동 분사기·모기향 하한·디버프·Spray 사망), 인간 분사, 취한 타겟(흡혈·가려움·시각 배율, 무작위 휘두르기), 해독 체질 적용, 스냅샷 기믹 상태, D-046 | Core 319/319 통과 | f238329 |
 | 2026-10-01 | M8 | (사람 요청) CO₂·증기 기체형: SoftGas·VolumeFog 셰이더, GasNoise, 쿼드 빌보드 CO₂, 기체 캡처, D-045. M8 종료 | Core 300 + EditMode 82 + PlayMode 9 통과, 빌드 경고 0, 캡처 검토 | 3a66aef |
 | 2026-10-01 | M8 | HUD 액티브 스킬 칸 테스트, 겹눈 선명 범위 테스트, 미끼 월드 표시 | Core 300 + EditMode 80 + PlayMode 9 통과 | 18ced4e |
 | 2026-10-01 | M8 | 화면 흐름: GameSession·ScreenFlow·SceneNavigator, Title·StageSelect·Skills·Settings·Confirm·Stage(Pause/Result)·Ending·Boot, FileSaveStorage, UserSettings, Pause(틱·입력 정지), HUD 액티브 스킬 칸, 메뉴 캡처, D-044. **결함 수정**: 씬 생성기 메서드 손실 복구, 메뉴 글자 누락, 행 레이아웃 | Core 300 + EditMode 77 + PlayMode 9 통과, 빌드 경고 0, 캡처 검토 | 42912f0 |

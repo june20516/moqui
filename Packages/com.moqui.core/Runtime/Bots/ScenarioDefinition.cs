@@ -80,6 +80,12 @@ namespace Moqui.Core.Bots
 
         public IReadOnlyList<Vector3> HideSpots { get; private set; }
 
+        /// <summary>
+        /// 숨는 경로: 경유점을 차례로 지나 마지막 점에서 숨는다. hideSpots의 각 점은 한 점짜리 경로다.
+        /// 도망칠 때는 첫 점이 가장 가까운 경로를 고른다 (가구에 막히는 직선 비행을 피하려고, D-047).
+        /// </summary>
+        public IReadOnlyList<IReadOnlyList<Vector3>> HideRoutes { get; private set; }
+
         public IReadOnlyList<ScenarioStep> Start { get; private set; }
 
         public IReadOnlyList<ScenarioStep> Steps { get; private set; }
@@ -109,6 +115,28 @@ namespace Moqui.Core.Bots
             foreach (var item in root.OptionalItems("hideSpots"))
             {
                 hideSpots.Add(item.Vector3());
+            }
+
+            var hideRoutes = new List<IReadOnlyList<Vector3>>();
+            foreach (var spot in hideSpots)
+            {
+                hideRoutes.Add(new[] { spot });
+            }
+
+            foreach (var route in root.OptionalItems("hideRoutes"))
+            {
+                var points = new List<Vector3>();
+                foreach (var point in route.Items())
+                {
+                    points.Add(point.Vector3());
+                }
+
+                if (points.Count == 0)
+                {
+                    throw route.Error("must have at least one point");
+                }
+
+                hideRoutes.Add(points);
             }
 
             var start = new List<ScenarioStep>();
@@ -142,6 +170,7 @@ namespace Moqui.Core.Bots
                 Loop = root.Has("loop") && root.Get("loop").Bool(),
                 Flee = root.Has("flee") && root.Get("flee").Bool(),
                 HideSpots = hideSpots,
+                HideRoutes = hideRoutes,
                 Start = start,
                 Steps = steps,
                 Expect = expect,

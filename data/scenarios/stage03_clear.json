@@ -1,0 +1,135 @@
+{
+  "formatVersion": 1,
+  "id": "stage03_clear",
+  "level": "stage03",
+  "seeds": [
+    1,
+    2,
+    3,
+    4,
+    5
+  ],
+  "minSuccesses": 4,
+  "loop": true,
+  "flee": true,
+  "hideSpots": [
+    [
+      -195,
+      100,
+      -40
+    ]
+  ],
+  "start": [
+    {
+      "do": "flyTo",
+      "point": [
+        120,
+        120,
+        -150
+      ]
+    },
+    {
+      "do": "flyTo",
+      "point": [
+        60,
+        15,
+        -20
+      ]
+    },
+    {
+      "do": "flyTo",
+      "point": [
+        0,
+        15,
+        30
+      ]
+    }
+  ],
+  "steps": [
+    {
+      "do": "flyTo",
+      "point": [
+        0,
+        15,
+        30
+      ]
+    },
+    {
+      "do": "flyTo",
+      "point": [
+        -10,
+        15,
+        -6
+      ]
+    },
+    {
+      "do": "flyTo",
+      "point": [
+        -10,
+        72,
+        -6
+      ]
+    },
+    {
+      "do": "attachSite",
+      "part": "footR"
+    },
+    {
+      "do": "suck",
+      "session": 34
+    },
+    {
+      "do": "detach"
+    },
+    {
+      "do": "flyTo",
+      "point": [
+        -10,
+        72,
+        -6
+      ]
+    },
+    {
+      "do": "flyTo",
+      "point": [
+        -10,
+        15,
+        -6
+      ]
+    },
+    {
+      "do": "flyTo",
+      "point": [
+        0,
+        15,
+        30
+      ]
+    },
+    {
+      "do": "hide"
+    }
+  ],
+  "expect": {
+    "outcome": "Cleared",
+    "maxTicks": 36000
+  },
+  "hideRoutes": [
+    [
+      [
+        -10,
+        72,
+        -10
+      ],
+      [
+        0,
+        15,
+        -10
+      ],
+      [
+        0,
+        15,
+        30
+      ]
+    ]
+  ]
+}

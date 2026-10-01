@@ -72,7 +72,9 @@ namespace Moqui.Core.Data.Levels
                     shoulders,
                     lookYaws,
                     actions,
-                    traits);
+                    traits,
+                    json.Has("facingPitch") ? json.Get("facingPitch").Float() : 0f,
+                    json.Has("restPitch") ? json.Get("restPitch").Float() : 0f);
             }
             catch (System.ArgumentException exception)
             {

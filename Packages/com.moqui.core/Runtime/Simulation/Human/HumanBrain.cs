@@ -88,7 +88,7 @@ namespace Moqui.Core.Simulation
                     }
 
                     float idleYaw = human.Definition.IdleLookYaws[human.IdleLookIndex % human.Definition.IdleLookYaws.Count];
-                    if (_headController.TurnToward(human, idleYaw, 0f, _head.IdleTurnSpeed, deltaTime))
+                    if (_headController.TurnToward(human, idleYaw, human.Definition.RestPitch, _head.IdleTurnSpeed, deltaTime))
                     {
                         human.IdleLookIndex = (human.IdleLookIndex + 1) % human.Definition.IdleLookYaws.Count;
                     }
@@ -126,7 +126,7 @@ namespace Moqui.Core.Simulation
                     }
                     else
                     {
-                        _headController.TurnToward(human, 0f, 0f, _head.FrenzyTurnSpeed, deltaTime);
+                        _headController.TurnToward(human, 0f, human.Definition.RestPitch, _head.FrenzyTurnSpeed, deltaTime);
                     }
 
                     break;
@@ -172,7 +172,7 @@ namespace Moqui.Core.Simulation
                 return false;
             }
 
-            _headController.TurnToward(human, human.GlanceYaw, 0f, _head.IdleTurnSpeed, deltaTime);
+            _headController.TurnToward(human, human.GlanceYaw, human.Definition.RestPitch, _head.IdleTurnSpeed, deltaTime);
             return true;
         }
 

@@ -73,8 +73,12 @@ namespace Moqui.Core.Simulation
             IReadOnlyList<Vector3> shoulderLocals,
             IReadOnlyList<float> idleLookYaws,
             IReadOnlyList<HumanActionDefinition> actions = null,
-            HumanTraits traits = null)
+            HumanTraits traits = null,
+            float facingPitch = 0f,
+            float restPitch = 0f)
         {
+            FacingPitch = facingPitch;
+            RestPitch = restPitch;
             Id = id ?? throw new ArgumentNullException(nameof(id));
             Position = position;
             FacingYaw = facingYaw;
@@ -113,6 +117,12 @@ namespace Moqui.Core.Simulation
         public Vector3 Position { get; }
 
         public float FacingYaw { get; }
+
+        /// <summary>몸 전체의 앞뒤 기울기(도). 90이면 선 자세로 작성한 몸이 등을 대고 누워 정면이 위(+Y)를 본다 (Stage 3, D-047).</summary>
+        public float FacingPitch { get; }
+
+        /// <summary>평소(경계하지 않을 때) 머리 피치(도, − 아래). 고개를 숙이고 휴대폰을 보는 자세 (Stage 4, D-047).</summary>
+        public float RestPitch { get; }
 
         public IReadOnlyList<BodyPartDefinition> Parts { get; }
 

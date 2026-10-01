@@ -67,7 +67,7 @@ namespace Moqui.Core.Data.Levels
             foreach (float yaw in GazeYaws(human))
             {
                 human.HeadYaw = yaw;
-                human.HeadPitch = 0f;
+                human.HeadPitch = human.Definition.RestPitch;
                 Vector3 toSpawn = spawn - human.HeadCenter;
                 float angle = AngleDegrees(human.HeadForward, toSpawn);
                 if (toSpawn.Length() <= settings.Vision.YellowRange && angle <= settings.Vision.YellowHalfAngle)

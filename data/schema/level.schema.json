@@ -4,100 +4,410 @@
   "title": "Level",
   "description": "레벨 데이터 (data/levels/stageNN.json): 방 참조 + 인간 + 기믹 + 시작 위치 + 시드 + 튜토리얼 (tech/architecture.md §5, spec/07).",
   "type": "object",
-  "required": ["formatVersion", "id", "room", "seed", "playerSpawn", "human"],
+  "required": [
+    "formatVersion",
+    "id",
+    "room",
+    "seed",
+    "playerSpawn",
+    "human"
+  ],
   "additionalProperties": false,
   "properties": {
-    "formatVersion": { "const": 1 },
-    "id": { "type": "string", "pattern": "^stage[0-9]{2}$" },
-    "room": { "type": "string", "minLength": 1 },
-    "seed": { "type": "integer", "minimum": 0 },
-    "playerSpawn": { "$ref": "#/$defs/vector3" },
-    "human": { "$ref": "#/$defs/human" },
-    "dripSources": { "type": "array", "items": { "type": "object", "required": ["position"], "additionalProperties": false, "properties": { "position": { "$ref": "#/$defs/vector3" } } } },
+    "formatVersion": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^stage[0-9]{2}$"
+    },
+    "room": {
+      "type": "string",
+      "minLength": 1
+    },
+    "seed": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "playerSpawn": {
+      "$ref": "#/$defs/vector3"
+    },
+    "human": {
+      "$ref": "#/$defs/human"
+    },
+    "dripSources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "position"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "position": {
+            "$ref": "#/$defs/vector3"
+          }
+        }
+      }
+    },
     "humidZones": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["id", "center", "size", "strength"],
+        "required": [
+          "id",
+          "center",
+          "size",
+          "strength"
+        ],
         "additionalProperties": false,
         "properties": {
-          "id": { "type": "string" },
-          "center": { "$ref": "#/$defs/vector3" },
-          "size": { "$ref": "#/$defs/vector3" },
-          "strength": { "enum": ["strong", "weak"] }
+          "id": {
+            "type": "string"
+          },
+          "center": {
+            "$ref": "#/$defs/vector3"
+          },
+          "size": {
+            "$ref": "#/$defs/vector3"
+          },
+          "strength": {
+            "enum": [
+              "strong",
+              "weak"
+            ]
+          }
         }
       }
     },
-    "fans": { "type": "array" },
-    "webs": { "type": "array" },
-    "coils": { "type": "array" },
-    "sprayDispensers": { "type": "array" },
-    "tutorial": { "type": "array", "items": { "type": "string" } }
+    "fans": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "position",
+          "yaw",
+          "bodySize"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "position": {
+            "$ref": "#/$defs/vector3"
+          },
+          "yaw": {
+            "type": "number"
+          },
+          "pitch": {
+            "type": "number"
+          },
+          "bodySize": {
+            "$ref": "#/$defs/vector3"
+          }
+        }
+      }
+    },
+    "webs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "center",
+          "size"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "center": {
+            "$ref": "#/$defs/vector3"
+          },
+          "size": {
+            "$ref": "#/$defs/vector3"
+          },
+          "rotation": {
+            "$ref": "#/$defs/vector3"
+          }
+        }
+      }
+    },
+    "coils": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "position"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "position": {
+            "$ref": "#/$defs/vector3"
+          }
+        }
+      }
+    },
+    "sprayDispensers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "position"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "position": {
+            "$ref": "#/$defs/vector3"
+          }
+        }
+      }
+    },
+    "tutorial": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
   },
   "$defs": {
-    "vector3": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
-    "range": { "type": "object", "required": ["min", "max"], "additionalProperties": false, "properties": { "min": { "type": "number" }, "max": { "type": "number" } } },
-    "part": {
+    "vector3": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "range": {
       "type": "object",
-      "required": ["id", "kind", "a", "b", "radius"],
+      "required": [
+        "min",
+        "max"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string" },
-        "kind": { "enum": ["head", "neck", "torso", "pelvis", "upperArm", "forearm", "hand", "thigh", "calf", "foot"] },
-        "a": { "$ref": "#/$defs/vector3" },
-        "b": { "$ref": "#/$defs/vector3" },
-        "radius": { "type": "number", "exclusiveMinimum": 0 },
-        "site": { "enum": ["forearm", "calf", "footTop", "neck", "cheek"] }
+        "min": {
+          "type": "number"
+        },
+        "max": {
+          "type": "number"
+        }
+      }
+    },
+    "part": {
+      "type": "object",
+      "required": [
+        "id",
+        "kind",
+        "a",
+        "b",
+        "radius"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "head",
+            "neck",
+            "torso",
+            "pelvis",
+            "upperArm",
+            "forearm",
+            "hand",
+            "thigh",
+            "calf",
+            "foot"
+          ]
+        },
+        "a": {
+          "$ref": "#/$defs/vector3"
+        },
+        "b": {
+          "$ref": "#/$defs/vector3"
+        },
+        "radius": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "site": {
+          "enum": [
+            "forearm",
+            "calf",
+            "footTop",
+            "neck",
+            "cheek"
+          ]
+        }
       }
     },
     "action": {
       "type": "object",
-      "required": ["name", "weight", "duration", "motions"],
+      "required": [
+        "name",
+        "weight",
+        "duration",
+        "motions"
+      ],
       "additionalProperties": false,
       "properties": {
-        "name": { "type": "string" },
-        "weight": { "type": "number", "exclusiveMinimum": 0 },
-        "duration": { "type": "number", "exclusiveMinimum": 0 },
+        "name": {
+          "type": "string"
+        },
+        "weight": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "duration": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
         "motions": {
           "type": "array",
           "minItems": 1,
           "items": {
             "type": "object",
-            "required": ["part", "offsetA", "offsetB"],
+            "required": [
+              "part",
+              "offsetA",
+              "offsetB"
+            ],
             "additionalProperties": false,
-            "properties": { "part": { "type": "string" }, "offsetA": { "$ref": "#/$defs/vector3" }, "offsetB": { "$ref": "#/$defs/vector3" } }
+            "properties": {
+              "part": {
+                "type": "string"
+              },
+              "offsetA": {
+                "$ref": "#/$defs/vector3"
+              },
+              "offsetB": {
+                "$ref": "#/$defs/vector3"
+              }
+            }
           }
         }
       }
     },
     "human": {
       "type": "object",
-      "required": ["id", "position", "facingYaw", "head", "shoulders", "parts", "idle", "actions", "canSpray", "modifiers"],
+      "required": [
+        "id",
+        "position",
+        "facingYaw",
+        "head",
+        "shoulders",
+        "parts",
+        "idle",
+        "actions",
+        "canSpray",
+        "modifiers"
+      ],
       "additionalProperties": false,
       "properties": {
-        "id": { "type": "string" },
-        "position": { "$ref": "#/$defs/vector3" },
-        "facingYaw": { "type": "number" },
-        "head": { "type": "string" },
-        "shoulders": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/vector3" } },
-        "parts": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/part" } },
+        "id": {
+          "type": "string"
+        },
+        "position": {
+          "$ref": "#/$defs/vector3"
+        },
+        "facingYaw": {
+          "type": "number"
+        },
+        "head": {
+          "type": "string"
+        },
+        "shoulders": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/vector3"
+          }
+        },
+        "parts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/part"
+          }
+        },
         "idle": {
           "type": "object",
-          "required": ["lookYaws"],
+          "required": [
+            "lookYaws"
+          ],
           "additionalProperties": false,
           "properties": {
-            "lookYaws": { "type": "array", "minItems": 1, "items": { "type": "number" } },
+            "lookYaws": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "number"
+              }
+            },
             "glance": {
               "type": "object",
-              "required": ["interval", "angle", "duration"],
+              "required": [
+                "interval",
+                "angle",
+                "duration"
+              ],
               "additionalProperties": false,
-              "properties": { "interval": { "$ref": "#/$defs/range" }, "angle": { "type": "number" }, "duration": { "type": "number", "exclusiveMinimum": 0 } }
+              "properties": {
+                "interval": {
+                  "$ref": "#/$defs/range"
+                },
+                "angle": {
+                  "type": "number"
+                },
+                "duration": {
+                  "type": "number",
+                  "exclusiveMinimum": 0
+                }
+              }
             }
           }
         },
-        "actions": { "type": "array", "items": { "$ref": "#/$defs/action" } },
-        "canSpray": { "type": "boolean" },
-        "modifiers": { "type": "array", "items": { "enum": ["doze", "drunk"] }, "uniqueItems": true }
+        "actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/action"
+          }
+        },
+        "canSpray": {
+          "type": "boolean"
+        },
+        "modifiers": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "doze",
+              "drunk"
+            ]
+          },
+          "uniqueItems": true
+        },
+        "facingPitch": {
+          "type": "number",
+          "description": "몸 전체 앞뒤 기울기(도). 90 = 누워서 위를 봄"
+        },
+        "restPitch": {
+          "type": "number",
+          "description": "평소 머리 피치(도, − 아래)"
+        }
       }
     }
   }

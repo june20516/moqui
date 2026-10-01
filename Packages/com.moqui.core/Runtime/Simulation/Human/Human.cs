@@ -29,7 +29,11 @@ namespace Moqui.Core.Simulation
         public Human(HumanDefinition definition, CollisionWorld world)
         {
             Definition = definition;
-            BodyRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, definition.FacingYaw * DegreesToRadians);
+            // 먼저 몸 로컬 X축으로 기울이고(정면 +Z가 위로 들림), 그다음 yaw로 돌린다.
+            var pitch = Quaternion.CreateFromAxisAngle(Vector3.UnitX, -definition.FacingPitch * DegreesToRadians);
+            var yaw = Quaternion.CreateFromAxisAngle(Vector3.UnitY, definition.FacingYaw * DegreesToRadians);
+            BodyRotation = Quaternion.Concatenate(pitch, yaw);
+            HeadPitch = definition.RestPitch;
             foreach (var part in definition.Parts)
             {
                 ShapeFlags flags = part.IsSkin ? BodyFlags | ShapeFlags.SkinSite : BodyFlags;

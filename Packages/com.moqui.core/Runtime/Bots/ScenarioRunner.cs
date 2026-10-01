@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using Moqui.Core.Collision;
@@ -201,15 +202,22 @@ namespace Moqui.Core.Bots
         private bool Hide(GameSimulation simulation, ScenarioDefinition scenario, RunState state, out PlayerCommand command)
         {
             var player = simulation.Player;
-            if (state.HideTarget == null)
+            if (state.HideRoute == null)
             {
-                state.HideTarget = scenario.HideSpots.OrderBy(spot => Vector3.Distance(spot, player.Position)).First();
+                state.HideRoute = scenario.HideRoutes.OrderBy(route => Vector3.Distance(route[0], player.Position)).First();
+                state.HideIndex = 0;
             }
 
-            Vector3 target = state.HideTarget.Value;
+            Vector3 target = state.HideRoute[state.HideIndex];
             command = BotPilot.FlyTo(player, target);
             if (!BotPilot.Arrived(player, target))
             {
+                return false;
+            }
+
+            if (state.HideIndex < state.HideRoute.Count - 1)
+            {
+                state.HideIndex++;
                 return false;
             }
 
@@ -224,7 +232,7 @@ namespace Moqui.Core.Bots
             bool done = calm && !human.Attack.IsBusy;
             if (done)
             {
-                state.HideTarget = null;
+                state.HideRoute = null;
             }
 
             return done;
@@ -276,7 +284,9 @@ namespace Moqui.Core.Bots
 
             public int Flees { get; private set; }
 
-            public Vector3? HideTarget { get; set; }
+            public IReadOnlyList<Vector3> HideRoute { get; set; }
+
+            public int HideIndex { get; set; }
 
             public Vector3? ApproachSide { get; set; }
 
@@ -298,7 +308,7 @@ namespace Moqui.Core.Bots
             {
                 if (Fleeing)
                 {
-                    return $"flee->{HideTarget}";
+                    return $"flee->{(HideRoute != null ? HideRoute[HideIndex].ToString() : "?")}";
                 }
 
                 var steps = InStart ? scenario.Start : scenario.Steps;
@@ -314,14 +324,14 @@ namespace Moqui.Core.Bots
 
             public void StartFlee()
             {
-                if (_scenario.HideSpots.Count == 0)
+                if (_scenario.HideRoutes.Count == 0)
                 {
                     return;
                 }
 
                 Fleeing = true;
                 Flees++;
-                HideTarget = null;
+                HideRoute = null;
             }
 
             public void EndFlee()
