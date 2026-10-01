@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Moqui.Core.Collision;
+using Moqui.Core.Meta;
 
 namespace Moqui.Core.Simulation
 {
@@ -46,6 +47,9 @@ namespace Moqui.Core.Simulation
             Suck = new SuckSystem(settings.Suck, settings.Sites, settings.BiteMark);
             Water = new WaterSystem(settings.Water, World, _fallingBodies, _dash, setup.DripSources);
             Humidity = new HumiditySystem(settings.Humid, settings.Water, settings.Hiding, World, Water);
+            DiagonalDashUnlocked = SkillEffects.DiagonalDash(setup.Skills);
+            _dash.ChainLevel = setup.Skills.Level(SkillCatalog.ChainVortex);
+            Decoy = new DecoySystem(settings.Decoy, World, setup.Skills.ActiveLevel(SkillCatalog.DecoyCharm));
             foreach (var shape in World.Shapes)
             {
                 if (shape.Matches(ShapeFlags.ShadowZone))
@@ -77,6 +81,9 @@ namespace Moqui.Core.Simulation
         public HumanSystem HumanSystem => _humanSystem;
 
         public SuckSystem Suck { get; }
+
+        /// <summary>액티브 스킬 미끼 마법. 장착하지 않았으면 IsAvailable = false.</summary>
+        public DecoySystem Decoy { get; }
 
         /// <summary>현재 대시 스태미나 비용 (HUD 스태미나 눈금, spec/08).</summary>
         public float DashCost => _dash.Cost(Player);
@@ -133,6 +140,7 @@ namespace Moqui.Core.Simulation
                 StepPlayer(command);
             }
 
+            Decoy.Step(Player, command, Tick, _events);
             UpdateHidden();
             Water.Step(Player, Tick, DeltaTime, _events);
             Humidity.Step(Player, DeltaTime);
@@ -168,7 +176,8 @@ namespace Moqui.Core.Simulation
             }
 
             var human = Human != null ? new HumanSnapshot(Human) : null;
-            return new SimulationSnapshot(Tick, Outcome, new PlayerSnapshot(Player), human, drops, Water.TrappedHeightRemaining(Player), _shadowZones, Array.Empty<ZoneSnapshot>());
+            var decoy = Decoy.IsAvailable ? new DecoySnapshot(Decoy.IsActive(Tick), Decoy.Position, Decoy.CooldownRemaining(Tick)) : null;
+            return new SimulationSnapshot(Tick, Outcome, new PlayerSnapshot(Player), human, drops, Water.TrappedHeightRemaining(Player), _shadowZones, Array.Empty<ZoneSnapshot>(), decoy);
         }
 
         private void StepPlayer(in PlayerCommand command)

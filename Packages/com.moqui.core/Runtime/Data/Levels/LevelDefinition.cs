@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Moqui.Core.Collision;
+using Moqui.Core.Meta;
 using Moqui.Core.Simulation;
 
 namespace Moqui.Core.Data.Levels
@@ -68,9 +69,9 @@ namespace Moqui.Core.Data.Levels
             return world;
         }
 
-        public SimulationSetup CreateSetup()
+        public SimulationSetup CreateSetup(SkillLoadout skills = null)
         {
-            return new SimulationSetup(CreateWorld, PlayerSpawn, Human, Seed, DripSources);
+            return new SimulationSetup(CreateWorld, PlayerSpawn, Human, Seed, DripSources, skills);
         }
 
         public static LevelDefinition Parse(string text, string file, Func<string, RoomDefinition> loadRoom)

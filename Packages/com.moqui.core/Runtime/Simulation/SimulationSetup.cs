@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Moqui.Core.Collision;
+using Moqui.Core.Meta;
 
 namespace Moqui.Core.Simulation
 {
@@ -14,8 +15,9 @@ namespace Moqui.Core.Simulation
     {
         private readonly Func<CollisionWorld> _worldFactory;
 
-        public SimulationSetup(Func<CollisionWorld> worldFactory, Vector3 playerSpawn, HumanDefinition human = null, ulong seed = 0, IReadOnlyList<Vector3> dripSources = null)
+        public SimulationSetup(Func<CollisionWorld> worldFactory, Vector3 playerSpawn, HumanDefinition human = null, ulong seed = 0, IReadOnlyList<Vector3> dripSources = null, SkillLoadout skills = null)
         {
+            Skills = skills ?? SkillLoadout.None;
             _worldFactory = worldFactory ?? throw new ArgumentNullException(nameof(worldFactory));
             PlayerSpawn = playerSpawn;
             Human = human;
@@ -24,12 +26,18 @@ namespace Moqui.Core.Simulation
         }
 
         /// <summary>이미 만든 월드로 구성한다. 인간 캡슐이 월드에 등록되므로 이 구성은 한 번만 쓸 수 있다 (재시도 불가).</summary>
-        public SimulationSetup(CollisionWorld world, Vector3 playerSpawn, HumanDefinition human = null, ulong seed = 0, IReadOnlyList<Vector3> dripSources = null)
-            : this(SingleUse(world), playerSpawn, human, seed, dripSources)
+        public SimulationSetup(CollisionWorld world, Vector3 playerSpawn, HumanDefinition human = null, ulong seed = 0, IReadOnlyList<Vector3> dripSources = null, SkillLoadout skills = null)
+            : this(SingleUse(world), playerSpawn, human, seed, dripSources, skills)
         {
         }
 
         public Vector3 PlayerSpawn { get; }
+
+        /// <summary>
+        /// 스킬 레벨과 장착 액티브 (spec/09). 수치 효과는 SkillEffects.Apply로 만든 GameSettings에 이미 들어 있고,
+        /// 시뮬레이션은 수치가 아닌 효과(대각선 대시, 연속 와류, 미끼)만 여기서 읽는다.
+        /// </summary>
+        public SkillLoadout Skills { get; }
 
         public HumanDefinition Human { get; }
 

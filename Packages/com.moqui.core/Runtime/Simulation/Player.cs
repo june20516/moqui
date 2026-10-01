@@ -65,6 +65,9 @@ namespace Moqui.Core.Simulation
 
         public int LastDashStartTick { get; set; } = NeverTick;
 
+        /// <summary>직전 대시가 일반 대시라 연속 와류 추가 대시를 쓸 수 있는가 (체인당 1회, spec/09).</summary>
+        public bool ChainDashAvailable { get; set; }
+
         /// <summary>스태미나 회복 배율 (젖은 날개, 스킬). 틱 시작마다 다시 계산한다.</summary>
         public float StaminaRegenMultiplier { get; set; } = 1f;
 
