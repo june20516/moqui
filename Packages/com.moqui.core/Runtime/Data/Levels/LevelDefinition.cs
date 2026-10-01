@@ -93,10 +93,11 @@ namespace Moqui.Core.Data.Levels
             return world;
         }
 
-        public SimulationSetup CreateSetup(SkillLoadout skills = null)
+        /// <param name="seed">시드를 바꿔 같은 레벨을 다르게 돌릴 때 (봇의 고정 시드 목록). 없으면 레벨 시드.</param>
+        public SimulationSetup CreateSetup(SkillLoadout skills = null, ulong? seed = null)
         {
             var gimmicks = new GimmickSetup(Fans, Coils.Select(coil => coil.Position).ToList(), SprayDispensers.Select(dispenser => dispenser.Position).ToList());
-            return new SimulationSetup(CreateWorld, PlayerSpawn, Human, Seed, DripSources, skills, gimmicks);
+            return new SimulationSetup(CreateWorld, PlayerSpawn, Human, seed ?? Seed, DripSources, skills, gimmicks);
         }
 
         public static LevelDefinition Parse(string text, string file, Func<string, RoomDefinition> loadRoom)

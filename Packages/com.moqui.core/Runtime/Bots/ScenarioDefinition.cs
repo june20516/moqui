@@ -41,6 +41,9 @@ namespace Moqui.Core.Bots
         public float GaugeTarget { get; set; }
 
         public float Seconds { get; set; }
+
+        /// <summary>flyTo: 처음부터 정밀 비행(소음 반경 절반)으로 간다 (귀 근처 접근용).</summary>
+        public bool Precise { get; set; }
     }
 
     /// <summary>시나리오 결과 기대값 (tech/architecture.md §5 scenario JSON의 expect).</summary>
@@ -73,6 +76,11 @@ namespace Moqui.Core.Bots
         public IReadOnlyList<ulong> Seeds { get; private set; }
 
         public int MinSuccesses { get; private set; }
+
+        /// <summary>
+        /// 봇이 가지고 들어가는 스킬 (선택, 예: {"numbingSaliva": 2}). 앞 스테이지 보상으로 살 수 있는 수준만 쓴다 (D-048).
+        /// </summary>
+        public Meta.SkillLoadout Skills { get; private set; } = Meta.SkillLoadout.None;
 
         public bool Loop { get; private set; }
 
@@ -167,6 +175,7 @@ namespace Moqui.Core.Bots
                 LevelId = root.Get("level").String(),
                 Seeds = seeds,
                 MinSuccesses = root.Get("minSuccesses").Int(),
+                Skills = ParseSkills(root),
                 Loop = root.Has("loop") && root.Get("loop").Bool(),
                 Flee = root.Has("flee") && root.Get("flee").Bool(),
                 HideSpots = hideSpots,
@@ -177,6 +186,28 @@ namespace Moqui.Core.Bots
             };
         }
 
+        private static Meta.SkillLoadout ParseSkills(JsonAccess root)
+        {
+            if (!root.Has("skills"))
+            {
+                return Meta.SkillLoadout.None;
+            }
+
+            var skills = root.Get("skills");
+            var levels = new System.Collections.Generic.Dictionary<string, int>();
+            foreach (var pair in skills.Value.Members)
+            {
+                if (!Meta.SkillCatalog.Exists(pair.Key))
+                {
+                    throw skills.Error($"unknown skill '{pair.Key}'");
+                }
+
+                levels[pair.Key] = (int)pair.Value.NumberValue;
+            }
+
+            return new Meta.SkillLoadout(levels, null);
+        }
+
         private static ScenarioStep ParseStep(JsonAccess json)
         {
             var step = new ScenarioStep { Kind = json.Get("do").Enum<ScenarioStepKind>() };
@@ -184,6 +215,7 @@ namespace Moqui.Core.Bots
             {
                 case ScenarioStepKind.FlyTo:
                     step.Point = json.Get("point").Vector3();
+                    step.Precise = json.Has("precise") && json.Get("precise").Bool();
                     break;
                 case ScenarioStepKind.AttachSite:
                     step.Part = json.Get("part").String();

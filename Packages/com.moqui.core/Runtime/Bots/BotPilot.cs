@@ -18,7 +18,7 @@ namespace Moqui.Core.Bots
             return Vector3.Distance(player.Position, target) < ArriveDistance;
         }
 
-        public static PlayerCommand FlyTo(Player player, Vector3 target)
+        public static PlayerCommand FlyTo(Player player, Vector3 target, bool precise = false)
         {
             if (player.State == PlayerState.Attached)
             {
@@ -39,7 +39,7 @@ namespace Moqui.Core.Bots
                 LookYaw = MathF.Atan2(delta.X, delta.Z) * RadiansToDegrees,
                 Move = horizontal.Length() > DeadZone ? new Vector2(0f, 1f) : Vector2.Zero,
                 Vertical = MathF.Abs(delta.Y) > DeadZone ? MathF.Sign(delta.Y) : 0f,
-                PrecisionHeld = distance < PrecisionDistance,
+                PrecisionHeld = precise || distance < PrecisionDistance,
             };
         }
     }

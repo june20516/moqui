@@ -23,7 +23,7 @@ namespace Moqui.Core.Tests.Bots
             string file = ScenarioDefinition.FilePath(scenarioId);
             var scenario = ScenarioDefinition.Parse(source.ReadText(file), file);
             var level = new LevelLoader(source).Load(scenario.LevelId);
-            var result = new ScenarioRunner(TestSimulations.Settings).Run(level, scenario, seed, (simulation, step) =>
+            var result = new ScenarioRunner(TestSimulations.Tuning).Run(level, scenario, seed, (simulation, step) =>
             {
                 if (simulation.Tick % every != 0)
                 {

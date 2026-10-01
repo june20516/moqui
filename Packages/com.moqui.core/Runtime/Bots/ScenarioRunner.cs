@@ -60,24 +60,26 @@ namespace Moqui.Core.Bots
         private const float CalmMargin = 1f;
         private const float ApproachGap = 1f;
 
-        private readonly GameSettings _settings;
+        private readonly Data.Tuning _tuning;
+        private GameSettings _settings;
 
-        public ScenarioRunner(GameSettings settings)
+        /// <param name="tuning">기본 tuning. 시나리오의 스킬 구성을 반영해 실행마다 GameSettings를 만든다 (D-048).</param>
+        public ScenarioRunner(Data.Tuning tuning)
         {
-            _settings = settings;
+            _tuning = tuning;
         }
 
         /// <param name="onTick">틱마다 부르는 관찰 콜백 (진단, Unity 봇 재생). 선택.</param>
         public ScenarioResult Run(LevelDefinition level, ScenarioDefinition scenario, ulong seed, Action<GameSimulation, string> onTick = null)
         {
-            var setup = new SimulationSetup(level.CreateWorld, level.PlayerSpawn, level.Human, seed, level.DripSources);
-            var simulation = new GameSimulation(_settings, setup);
+            _settings = GameSettings.FromTuning(Meta.SkillEffects.Apply(_tuning, scenario.Skills));
+            var simulation = new GameSimulation(_settings, level.CreateSetup(scenario.Skills, seed));
             var state = new RunState(scenario);
             DeathCause? cause = null;
 
             while (simulation.Outcome == StageOutcome.InProgress && simulation.Tick < scenario.Expect.MaxTicks)
             {
-                simulation.Step(NextCommand(simulation, scenario, state));
+                simulation.Step(CompensateToxin(simulation, NextCommand(simulation, scenario, state)));
                 var died = simulation.Events.OfType<PlayerDied>().FirstOrDefault();
                 if (died != null)
                 {
@@ -93,6 +95,20 @@ namespace Moqui.Core.Bots
             }
 
             return new ScenarioResult(seed, simulation.Outcome, cause, simulation.Tick, simulation.Human?.FrenzyCount ?? 0, simulation.Human?.BiteMarkCount ?? 0, state.Flees);
+        }
+
+        /// <summary>
+        /// 중독 반전 단계(spec/06)를 아는 플레이어처럼 이동 입력을 미리 뒤집는다. 끊김·랜덤은 어쩔 수 없이 받는다.
+        /// </summary>
+        private PlayerCommand CompensateToxin(GameSimulation simulation, PlayerCommand command)
+        {
+            if (simulation.Player.Toxin >= _settings.Toxin.Tier2)
+            {
+                command.Move = -command.Move;
+                command.Vertical = -command.Vertical;
+            }
+
+            return command;
         }
 
         private static bool ShouldFlee(GameSimulation simulation)
@@ -137,7 +153,7 @@ namespace Moqui.Core.Bots
                         state.Advance();
                     }
 
-                    return BotPilot.FlyTo(player, step.Point);
+                    return BotPilot.FlyTo(player, step.Point, step.Precise);
                 case ScenarioStepKind.AttachSite:
                     if (player.State == PlayerState.Attached)
                     {
