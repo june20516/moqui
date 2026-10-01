@@ -1,0 +1,139 @@
+using Moqui.Core.Data;
+
+namespace Moqui.Core.Simulation
+{
+    /// <summary>tuning 값을 Core 시스템이 쓰는 명시적 DTO로 옮긴다. 키 이름은 spec/tuning.md와 같다.</summary>
+    public sealed class GameSettings
+    {
+        private GameSettings(Tuning tuning)
+        {
+            World = new WorldSettings(tuning);
+            Player = new PlayerSettings(tuning);
+            Flight = new FlightSettings(tuning);
+            Dash = new DashSettings(tuning);
+            Stamina = new StaminaSettings(tuning);
+            Hiding = new HidingSettings(tuning);
+        }
+
+        public WorldSettings World { get; }
+
+        public PlayerSettings Player { get; }
+
+        public FlightSettings Flight { get; }
+
+        public DashSettings Dash { get; }
+
+        public StaminaSettings Stamina { get; }
+
+        public HidingSettings Hiding { get; }
+
+        public static GameSettings FromTuning(Tuning tuning)
+        {
+            return new GameSettings(tuning);
+        }
+    }
+
+    public sealed class WorldSettings
+    {
+        public WorldSettings(Tuning tuning)
+        {
+            Gravity = tuning.GetFloat("world.gravity");
+        }
+
+        /// <summary>물체용 중력 가속도 (u/s²).</summary>
+        public float Gravity { get; }
+    }
+
+    public sealed class PlayerSettings
+    {
+        public PlayerSettings(Tuning tuning)
+        {
+            CollisionRadius = tuning.GetFloat("player.collisionRadius");
+        }
+
+        public float CollisionRadius { get; }
+    }
+
+    public sealed class FlightSettings
+    {
+        public FlightSettings(Tuning tuning)
+        {
+            Speed = tuning.GetFloat("flight.speed");
+            VerticalSpeed = tuning.GetFloat("flight.verticalSpeed");
+            PrecisionSpeedMul = tuning.GetFloat("flight.precisionSpeedMul");
+            AccelTime = tuning.GetFloat("flight.accelTime");
+            DecelTime = tuning.GetFloat("flight.decelTime");
+        }
+
+        public float Speed { get; }
+
+        public float VerticalSpeed { get; }
+
+        public float PrecisionSpeedMul { get; }
+
+        public float AccelTime { get; }
+
+        public float DecelTime { get; }
+    }
+
+    public sealed class DashSettings
+    {
+        public DashSettings(Tuning tuning)
+        {
+            Distance = tuning.GetFloat("dash.distance");
+            Duration = tuning.GetFloat("dash.duration");
+            StaminaCost = tuning.GetFloat("dash.staminaCost");
+            Cooldown = tuning.GetFloat("dash.cooldown");
+            NoiseRadius = tuning.GetFloat("dash.noiseRadius");
+            NoiseAwareness = tuning.GetFloat("dash.noiseAwareness");
+            ChainWindow = tuning.GetFloat("dash.chainWindow");
+        }
+
+        public float Distance { get; }
+
+        public float Duration { get; }
+
+        public float StaminaCost { get; }
+
+        public float Cooldown { get; }
+
+        public float NoiseRadius { get; }
+
+        public float NoiseAwareness { get; }
+
+        public float ChainWindow { get; }
+    }
+
+    public sealed class StaminaSettings
+    {
+        public StaminaSettings(Tuning tuning)
+        {
+            Max = tuning.GetFloat("stamina.max");
+            RegenRate = tuning.GetFloat("stamina.regenRate");
+            RegenDelay = tuning.GetFloat("stamina.regenDelay");
+            ExhaustedDuration = tuning.GetFloat("stamina.exhaustedDuration");
+            ExhaustedSpeedMul = tuning.GetFloat("stamina.exhaustedSpeedMul");
+        }
+
+        public float Max { get; }
+
+        public float RegenRate { get; }
+
+        public float RegenDelay { get; }
+
+        public float ExhaustedDuration { get; }
+
+        public float ExhaustedSpeedMul { get; }
+    }
+
+    public sealed class HidingSettings
+    {
+        public HidingSettings(Tuning tuning)
+        {
+            DebuffRecoveryMul = tuning.GetFloat("hiding.debuffRecoveryMul");
+        }
+
+        /// <summary>숨은 상태에서 디버프(중독·젖은 날개·습기·탈진)가 줄어드는 속도 배율 (D-018).</summary>
+        public float DebuffRecoveryMul { get; }
+    }
+}

@@ -2,6 +2,11 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using Moqui.Core.Data;
+using Moqui.Core.Simulation;
+using Moqui.Unity.Data;
+using Moqui.Unity.Presentation;
+using Moqui.Unity.Presentation.Sandbox;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -10,7 +15,7 @@ namespace Moqui.Unity.Editor
 {
     /// <summary>
     /// Tools/capture.ps1의 진입점 (tech/verification.md §4). 그래픽이 필요하므로 -nographics 없이 실행한다.
-    /// M0 단계: 빌드 설정의 각 씬을 메인 카메라로 1장씩 캡처한다. 스테이지별 포즈 캡처는 M7에서 확장한다.
+    /// 빌드 설정의 각 씬을 메인 카메라로 1장씩, Sandbox_Flight는 시점 확인용 포즈로 캡처한다. 스테이지별 포즈 캡처는 M7에서 확장한다.
     /// </summary>
     public static class CaptureTool
     {
@@ -18,6 +23,7 @@ namespace Moqui.Unity.Editor
         private const int Height = 1080;
         private const int DepthBits = 24;
         private const string CapturesFolder = "Captures";
+        private const float WallApproachSeconds = 3f;
 
         [MenuItem("Moqui/Capture All")]
         public static void CaptureAll()
@@ -36,17 +42,44 @@ namespace Moqui.Unity.Editor
             foreach (string scenePath in EditorBuildSettings.scenes.Where(scene => scene.enabled).Select(scene => scene.path))
             {
                 EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
-                Camera camera = Camera.main;
-                if (camera == null)
-                {
-                    throw new InvalidOperationException($"No main camera in scene {scenePath}.");
-                }
-
                 string fileName = Path.GetFileNameWithoutExtension(scenePath) + ".png";
-                CaptureCamera(camera, Path.Combine(outputDirectory, fileName));
+                CaptureCamera(MainCameraOrThrow(scenePath), Path.Combine(outputDirectory, fileName));
             }
 
+            CaptureSandboxFlight(outputDirectory);
             Debug.Log($"[CaptureTool] Captures written to {outputDirectory}");
+        }
+
+        /// <summary>
+        /// 3인칭 개요, 3인칭·1인칭 벽 접촉 포즈. 벽 접촉은 시뮬레이션으로 앞 벽까지 실제로 날아가서 만든다.
+        /// 씬을 저장하지 않으므로 캡처용으로 만든 오브젝트는 남지 않는다.
+        /// </summary>
+        public static void CaptureSandboxFlight(string outputDirectory)
+        {
+            EditorSceneManager.OpenScene(SandboxSceneBuilder.FlightScenePath, OpenSceneMode.Single);
+            Camera camera = MainCameraOrThrow(SandboxSceneBuilder.FlightScenePath);
+            Tuning tuning = TuningLoader.Load(new UnityDataSource());
+            var world = SandboxFlightWorld.Create();
+            WorldView.Build(world, null);
+            var cameraSettings = new CameraSettings(tuning);
+            var solver = new CameraPoseSolver(cameraSettings, world);
+            var player = GameObject.Find("Player");
+            var visibility = player.GetComponent<PlayerViewVisibility>();
+
+            var simulation = new GameSimulation(GameSettings.FromTuning(tuning), world, SandboxFlightWorld.PlayerSpawn);
+            Vector3 spawn = simulation.Player.Position.ToUnity();
+            Capture(camera, player, visibility, spawn, solver.ThirdPerson(spawn, 30f, -10f), false, outputDirectory, "Sandbox_Flight_tp_overview");
+
+            var forward = new PlayerCommand { Move = new System.Numerics.Vector2(0f, 1f) };
+            for (int i = 0; i < Mathf.RoundToInt(WallApproachSeconds * GameSimulation.TickRate); i++)
+            {
+                simulation.Step(forward);
+            }
+
+            Vector3 contact = simulation.Player.Position.ToUnity();
+            Capture(camera, player, visibility, contact, solver.FirstPerson(contact, 0f, 0f), true, outputDirectory, "Sandbox_Flight_fp_wall_contact");
+            Capture(camera, player, visibility, contact, solver.FirstPerson(contact, -50f, 20f), true, outputDirectory, "Sandbox_Flight_fp_wall_contact_angled");
+            Capture(camera, player, visibility, contact, solver.ThirdPerson(contact, 0f, 0f), false, outputDirectory, "Sandbox_Flight_tp_wall_contact");
         }
 
         public static void CaptureCamera(Camera camera, string path)
@@ -71,6 +104,25 @@ namespace Moqui.Unity.Editor
                 UnityEngine.Object.DestroyImmediate(renderTexture);
                 UnityEngine.Object.DestroyImmediate(texture);
             }
+        }
+
+        private static void Capture(Camera camera, GameObject player, PlayerViewVisibility visibility, Vector3 playerPosition, CameraPose pose, bool firstPerson, string outputDirectory, string name)
+        {
+            player.transform.position = playerPosition;
+            visibility.SetFirstPerson(firstPerson);
+            pose.ApplyTo(camera);
+            CaptureCamera(camera, Path.Combine(outputDirectory, name + ".png"));
+        }
+
+        private static Camera MainCameraOrThrow(string scenePath)
+        {
+            Camera camera = Camera.main;
+            if (camera == null)
+            {
+                throw new InvalidOperationException($"No main camera in scene {scenePath}.");
+            }
+
+            return camera;
         }
     }
 }
