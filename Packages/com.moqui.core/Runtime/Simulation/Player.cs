@@ -10,6 +10,9 @@ namespace Moqui.Core.Simulation
         Attached,
         Trapped,
         Dislodged,
+
+        /// <summary>거미줄에 걸림: 이동 입력을 막고 web.struggleTime 뒤 사망 (spec/06).</summary>
+        Webbed,
         Dead,
     }
 
@@ -56,6 +59,18 @@ namespace Moqui.Core.Simulation
         public bool PrecisionHeld { get; set; }
 
         public float Stamina { get; set; }
+
+        /// <summary>중독 게이지 0~100 (spec/06).</summary>
+        public float Toxin { get; set; }
+
+        /// <summary>현재 위치의 모기향 중독 하한 (HUD 표시).</summary>
+        public float ToxinFloor { get; set; }
+
+        /// <summary>거미줄에 걸린 틱.</summary>
+        public int WebbedTick { get; set; } = NeverTick;
+
+        /// <summary>소음 반경 배율 (선풍기 마스킹, spec/06). 틱마다 다시 계산한다.</summary>
+        public float NoiseRadiusMultiplier { get; set; } = 1f;
 
         public float ExhaustedRemaining { get; set; }
 

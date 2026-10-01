@@ -12,6 +12,7 @@ namespace Moqui.Core.Random
         public const string BlindSwat = "blindSwat";
         public const string Debuff = "debuff";
         public const string Spray = "spray";
+        public const string DrunkSwat = "drunkSwat";
         public const string Doze = "doze";
         public const string Glance = "glance";
 

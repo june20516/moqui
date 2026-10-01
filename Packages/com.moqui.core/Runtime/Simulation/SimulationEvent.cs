@@ -219,6 +219,30 @@ namespace Moqui.Core.Simulation
         public StageResult Result { get; }
     }
 
+    /// <summary>인간의 모기약 분사가 연무를 만든 순간 (spec/06).</summary>
+    public sealed class SprayReleased : SimulationEvent
+    {
+        public SprayReleased(int tick, Vector3 position)
+            : base(tick)
+        {
+            Position = position;
+        }
+
+        public Vector3 Position { get; }
+    }
+
+    /// <summary>거미줄에 걸림 (spec/06).</summary>
+    public sealed class PlayerWebbed : SimulationEvent
+    {
+        public PlayerWebbed(int tick, Vector3 position)
+            : base(tick)
+        {
+            Position = position;
+        }
+
+        public Vector3 Position { get; }
+    }
+
     public enum DeathCause
     {
         Attack,

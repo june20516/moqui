@@ -9,9 +9,10 @@ namespace Moqui.Core.Simulation
     /// </summary>
     public sealed class SimulationSnapshot
     {
-        public SimulationSnapshot(int tick, StageOutcome outcome, PlayerSnapshot player, HumanSnapshot human, IReadOnlyList<Vector3> drops, float trappedHeightRemaining, IReadOnlyList<ZoneSnapshot> shadowZones, IReadOnlyList<ZoneSnapshot> windZones, DecoySnapshot decoy = null)
+        public SimulationSnapshot(int tick, StageOutcome outcome, PlayerSnapshot player, HumanSnapshot human, IReadOnlyList<Vector3> drops, float trappedHeightRemaining, IReadOnlyList<ZoneSnapshot> shadowZones, IReadOnlyList<ZoneSnapshot> windZones, DecoySnapshot decoy = null, GimmickSnapshot gimmicks = null)
         {
             Decoy = decoy;
+            Gimmicks = gimmicks;
             ShadowZones = shadowZones;
             WindZones = windZones;
             Tick = tick;
@@ -23,6 +24,9 @@ namespace Moqui.Core.Simulation
         }
 
         public int Tick { get; }
+
+        /// <summary>선풍기·연무·모기향·디버프 상태 (spec/06).</summary>
+        public GimmickSnapshot Gimmicks { get; }
 
         /// <summary>장착한 미끼 마법 상태. 장착하지 않았으면 null.</summary>
         public DecoySnapshot Decoy { get; }
@@ -53,6 +57,8 @@ namespace Moqui.Core.Simulation
     {
         public PlayerSnapshot(Player player)
         {
+            Toxin = player.Toxin;
+            ToxinFloor = player.ToxinFloor;
             Position = player.Position;
             Velocity = player.Velocity;
             State = player.State;
@@ -78,6 +84,12 @@ namespace Moqui.Core.Simulation
         public float Yaw { get; }
 
         public float Stamina { get; }
+
+        /// <summary>중독 게이지 0~100 (spec/06).</summary>
+        public float Toxin { get; }
+
+        /// <summary>현재 위치의 모기향 중독 하한.</summary>
+        public float ToxinFloor { get; }
 
         public bool IsExhausted { get; }
 
@@ -252,5 +264,31 @@ namespace Moqui.Core.Simulation
         public Vector3 Position { get; }
 
         public float CooldownRemaining { get; }
+    }
+}
+
+namespace Moqui.Core.Simulation
+{
+    /// <summary>기믹 상태 (spec/06): 선풍기 원뿔, 연무, 모기향 위치, 중독 디버프(끊김·랜덤 진행 여부).</summary>
+    public sealed class GimmickSnapshot
+    {
+        public GimmickSnapshot(IReadOnlyList<FanSnapshot> fans, IReadOnlyList<SprayCloudSnapshot> sprayClouds, IReadOnlyList<Vector3> coils, bool stutterActive, bool randomActive)
+        {
+            Fans = fans;
+            SprayClouds = sprayClouds;
+            Coils = coils;
+            StutterActive = stutterActive;
+            RandomActive = randomActive;
+        }
+
+        public IReadOnlyList<FanSnapshot> Fans { get; }
+
+        public IReadOnlyList<SprayCloudSnapshot> SprayClouds { get; }
+
+        public IReadOnlyList<Vector3> Coils { get; }
+
+        public bool StutterActive { get; }
+
+        public bool RandomActive { get; }
     }
 }

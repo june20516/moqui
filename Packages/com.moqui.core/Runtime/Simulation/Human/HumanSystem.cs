@@ -19,13 +19,13 @@ namespace Moqui.Core.Simulation
         public HumanSystem(GameSettings settings, CollisionWorld world, ulong seed)
         {
             _biteMarks = settings.BiteMark;
-            _vision = new VisionSensor(settings.Vision, world, settings.Humid.SteamVisionMul);
+            _vision = new VisionSensor(settings.Vision, world, settings.Humid.SteamVisionMul, settings.Drunk.VisionRateMul);
             _hearing = new HearingSensor(settings.Noise, settings.Hearing);
             Awareness = new AwarenessSystem(settings.Awareness);
             _brain = new HumanBrain(settings.Awareness, settings.Frenzy, settings.Head, settings.Doze, SeedStreams.Create(seed, SeedStreams.Glance));
             Doze = new DozeSystem(settings.Doze, settings.Awareness, SeedStreams.Create(seed, SeedStreams.Doze));
             Breath = new BreathSystem(settings.Breath);
-            _attacks = new HumanAttackSystem(settings.Attack, settings.Frenzy, SeedStreams.Create(seed, SeedStreams.BlindSwat));
+            _attacks = new HumanAttackSystem(settings.Attack, settings.Frenzy, SeedStreams.Create(seed, SeedStreams.BlindSwat), settings.Toxin, settings.Drunk, SeedStreams.Create(seed, SeedStreams.DrunkSwat));
             Reactions = new ReactionSystem(settings, _attacks, SeedStreams.Create(seed, SeedStreams.Reactions));
             Motion = new HumanMotionSystem(settings.HumanMotion, SeedStreams.Create(seed, SeedStreams.HumanActions));
         }
@@ -48,6 +48,7 @@ namespace Moqui.Core.Simulation
             Motion.Initialize(human);
             Doze.Initialize(human, tick);
             _brain.Initialize(human);
+            _attacks.Initialize(human, tick);
         }
 
         public HumanPerception LastPerception { get; private set; }

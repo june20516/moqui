@@ -71,7 +71,7 @@ namespace Moqui.Core.Simulation
                 _stamina.Spend(player, Cost(player), tick);
             }
 
-            events.Add(new NoiseEmitted(tick, NoiseSource.Dash, player.Position, _settings.NoiseRadius, _settings.NoiseAwareness));
+            events.Add(new NoiseEmitted(tick, NoiseSource.Dash, player.Position, _settings.NoiseRadius * player.NoiseRadiusMultiplier, _settings.NoiseAwareness));
             return true;
         }
 

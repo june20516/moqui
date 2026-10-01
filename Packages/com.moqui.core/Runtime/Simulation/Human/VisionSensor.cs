@@ -16,13 +16,16 @@ namespace Moqui.Core.Simulation
         private readonly CollisionWorld _world;
         private readonly int _losIntervalTicks;
         private readonly float _steamVisionMul;
+        private readonly float _drunkVisionMul;
 
         /// <param name="steamVisionMul">증기 속 플레이어에 대한 시각 배율 (humid.steamVisionMul, spec/05 §2).</param>
-        public VisionSensor(VisionSettings settings, CollisionWorld world, float steamVisionMul = 1f)
+        /// <param name="drunkVisionMul">취한 타겟의 시각 증가 배율 (drunk.visionRateMul, spec/06).</param>
+        public VisionSensor(VisionSettings settings, CollisionWorld world, float steamVisionMul = 1f, float drunkVisionMul = 1f)
         {
             _settings = settings;
             _world = world;
             _steamVisionMul = steamVisionMul;
+            _drunkVisionMul = drunkVisionMul;
             _losIntervalTicks = Math.Max(1, SimulationTime.ToTicks(settings.LosCheckInterval));
         }
 
@@ -54,7 +57,8 @@ namespace Moqui.Core.Simulation
             if (perception.PlayerSeen)
             {
                 float t = Math.Clamp(distance / _settings.YellowRange, 0f, 1f);
-                perception.VisionRate += Lerp(_settings.YellowRateNear, _settings.YellowRateFar, t) * multiplier;
+                float drunk = human.IsDrunk ? _drunkVisionMul : 1f;
+                perception.VisionRate += Lerp(_settings.YellowRateNear, _settings.YellowRateFar, t) * multiplier * drunk;
                 perception.AddStimulus(player.Position);
             }
         }

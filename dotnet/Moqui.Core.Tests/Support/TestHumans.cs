@@ -35,7 +35,7 @@ namespace Moqui.Core.Tests.Support
             simulation.HumanSystem.Reactions.LandingSkillMultiplier = 0f;
         }
 
-        public static HumanDefinition Seated(float facingYaw = 0f, float[] idleLookYaws = null, HumanActionDefinition[] actions = null)
+        public static HumanDefinition Seated(float facingYaw = 0f, float[] idleLookYaws = null, HumanActionDefinition[] actions = null, HumanTraits traits = null)
         {
             var parts = new[]
             {
@@ -51,7 +51,7 @@ namespace Moqui.Core.Tests.Support
                 new BodyPartDefinition("calfR", BodyPartKind.Calf, new Vector3(10, 48, 40), new Vector3(10, 5, 45), 5f, SkinSiteType.Calf),
             };
             var shoulders = new[] { new Vector3(-ShoulderHalfWidth, ShoulderHeight, -5), new Vector3(ShoulderHalfWidth, ShoulderHeight, -5) };
-            return new HumanDefinition("human", Vector3.Zero, facingYaw, parts, "head", shoulders, idleLookYaws ?? new[] { 0f }, actions);
+            return new HumanDefinition("human", Vector3.Zero, facingYaw, parts, "head", shoulders, idleLookYaws ?? new[] { 0f }, actions, traits);
         }
 
         public static GameSimulation Simulation(Vector3 playerSpawn, CollisionWorld world = null, HumanDefinition human = null, ulong seed = DefaultSeed)

@@ -25,7 +25,8 @@ namespace Moqui.Core.Simulation
 
         public float FlightNoiseRadius(Player player)
         {
-            return player.PrecisionHeld ? _noise.FlightRadius * _noise.PrecisionRadiusMul : _noise.FlightRadius;
+            float radius = player.PrecisionHeld ? _noise.FlightRadius * _noise.PrecisionRadiusMul : _noise.FlightRadius;
+            return radius * player.NoiseRadiusMultiplier;
         }
 
         /// <summary>귀 거리 distance에서의 비행 소음 경계 증가율: flightAwarenessRate × lerp(nearMul, farMul, distance / radius).</summary>
