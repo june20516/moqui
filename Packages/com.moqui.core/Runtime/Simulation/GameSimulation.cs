@@ -41,6 +41,7 @@ namespace Moqui.Core.Simulation
             _dash = new DashSystem(settings.Dash, settings.Flight, _stamina, _mover);
             _attach = new AttachSystem(settings.Attach, settings.HumanMotion, settings.Flight, World, _mover);
             _fallingBodies = new FallingBodySystem(settings.World);
+            Suck = new SuckSystem(settings.Suck, settings.Sites, settings.BiteMark);
             if (setup.Human != null)
             {
                 Human = new Human(setup.Human, World);
@@ -64,6 +65,10 @@ namespace Moqui.Core.Simulation
 
         public HumanSystem HumanSystem => _humanSystem;
 
+        public SuckSystem Suck { get; }
+
+        public StageOutcome Outcome { get; private set; }
+
         /// <summary>다음에 실행할 틱 번호. Step이 끝날 때 1 증가한다.</summary>
         public int Tick { get; private set; }
 
@@ -85,6 +90,14 @@ namespace Moqui.Core.Simulation
         public void Step(PlayerCommand command)
         {
             _events.Clear();
+
+            // 승리하면 입력을 막고 세계를 멈춘다 (spec/04 §6). 패배는 사망 연출 동안 세계가 계속 움직인다.
+            if (Outcome == StageOutcome.Cleared)
+            {
+                Tick++;
+                return;
+            }
+
             if (Human != null)
             {
                 _humanSystem.StepMotion(Human, Tick);
@@ -108,6 +121,8 @@ namespace Moqui.Core.Simulation
                 _humanSystem.Step(Human, Player, Tick, DeltaTime, _events);
             }
 
+            Suck.Step(Player, Human, command, Tick, DeltaTime, _events);
+            UpdateOutcome();
             Tick++;
         }
 
@@ -119,14 +134,15 @@ namespace Moqui.Core.Simulation
 
         public SimulationSnapshot CaptureSnapshot()
         {
-            return new SimulationSnapshot(Tick, new PlayerSnapshot(Player), Human != null ? new HumanSnapshot(Human) : null);
+            return new SimulationSnapshot(Tick, Outcome, new PlayerSnapshot(Player), Human != null ? new HumanSnapshot(Human) : null);
         }
 
         private void StepPlayer(in PlayerCommand command)
         {
             Player.Yaw = command.LookYaw;
             Player.PrecisionHeld = command.PrecisionHeld;
-            Player.SpeedMultiplier = _stamina.SpeedMultiplier(Player);
+            Player.SpeedMultiplier = _stamina.SpeedMultiplier(Player) * Suck.SpeedMultiplier(Player.BloodGauge);
+            Player.DashDistanceMultiplier = Suck.DashMultiplier(Player.BloodGauge);
 
             switch (Player.State)
             {
@@ -163,6 +179,27 @@ namespace Moqui.Core.Simulation
             else if (Player.State == PlayerState.Flying)
             {
                 Fly(command);
+            }
+        }
+
+        /// <summary>승패 판정 (architecture §4.4 Outcome): 흡혈 게이지 100% → Cleared(1회), 사망 → Died.</summary>
+        private void UpdateOutcome()
+        {
+            if (Outcome != StageOutcome.InProgress)
+            {
+                return;
+            }
+
+            if (Player.State == PlayerState.Dead)
+            {
+                Outcome = StageOutcome.Died;
+            }
+            else if (Player.BloodGauge >= SuckSystem.GaugeMax)
+            {
+                Outcome = StageOutcome.Cleared;
+                int frenzyCount = Human?.FrenzyCount ?? 0;
+                int biteMarks = Human?.BiteMarkCount ?? 0;
+                _events.Add(new StageCleared(Tick, new StageResult(Tick + 1, frenzyCount, biteMarks)));
             }
         }
 

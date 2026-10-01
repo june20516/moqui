@@ -96,6 +96,39 @@ namespace Moqui.Core.Simulation
         public float ItchThreshold { get; }
     }
 
+    public sealed class SuckSettings
+    {
+        public SuckSettings(Tuning tuning)
+        {
+            RateStart = tuning.GetFloat("suck.rateStart");
+            RateMax = tuning.GetFloat("suck.rateMax");
+            RampTime = tuning.GetFloat("suck.rampTime");
+            ItchRate = tuning.GetFloat("suck.itchRate");
+            ItchDecay = tuning.GetFloat("suck.itchDecay");
+            ItchThreshold = tuning.GetFloat("suck.itchThreshold");
+            SatietyMinSpeedMul = tuning.GetFloat("satiety.minSpeedMul");
+            SatietyMinDashMul = tuning.GetFloat("satiety.minDashMul");
+        }
+
+        /// <summary>세션 시작 흡혈 속도 (%/s).</summary>
+        public float RateStart { get; }
+
+        public float RateMax { get; }
+
+        /// <summary>시작 → 최대 속도까지 걸리는 세션 흡혈 시간 (s).</summary>
+        public float RampTime { get; }
+
+        public float ItchRate { get; }
+
+        public float ItchDecay { get; }
+
+        public float ItchThreshold { get; }
+
+        public float SatietyMinSpeedMul { get; }
+
+        public float SatietyMinDashMul { get; }
+    }
+
     public sealed class BiteMarkSettings
     {
         public BiteMarkSettings(Tuning tuning)
@@ -127,6 +160,24 @@ namespace Moqui.Core.Simulation
         public float ReactionMultiplier(int biteCount)
         {
             return 1f + (ReactionMulPerBite * biteCount);
+        }
+
+        /// <summary>경계 증가 배율 1 + gainMulPerBite × n.</summary>
+        public float GainMultiplier(int biteCount)
+        {
+            return 1f + (GainMulPerBite * biteCount);
+        }
+
+        /// <summary>경계 감소를 나누는 값 1 + decayDivPerBite × n (감소 배율은 그 역수).</summary>
+        public float DecayDivisor(int biteCount)
+        {
+            return 1f + (DecayDivPerBite * biteCount);
+        }
+
+        /// <summary>경계 하한 min(floorPerBite × n, floorMax).</summary>
+        public float Floor(int biteCount)
+        {
+            return Math.Min(FloorPerBite * biteCount, FloorMax);
         }
     }
 }

@@ -9,14 +9,17 @@ namespace Moqui.Core.Simulation
     /// </summary>
     public sealed class SimulationSnapshot
     {
-        public SimulationSnapshot(int tick, PlayerSnapshot player, HumanSnapshot human)
+        public SimulationSnapshot(int tick, StageOutcome outcome, PlayerSnapshot player, HumanSnapshot human)
         {
             Tick = tick;
+            Outcome = outcome;
             Player = player;
             Human = human;
         }
 
         public int Tick { get; }
+
+        public StageOutcome Outcome { get; }
 
         public PlayerSnapshot Player { get; }
 
@@ -37,6 +40,9 @@ namespace Moqui.Core.Simulation
             Stamina = player.Stamina;
             IsExhausted = player.IsExhausted;
             IsHidden = player.IsHidden;
+            BloodGauge = player.BloodGauge;
+            HasSuckSession = player.SuckSession != null;
+            SessionAmount = player.SuckSession?.Amount ?? 0f;
         }
 
         public Vector3 Position { get; }
@@ -52,6 +58,13 @@ namespace Moqui.Core.Simulation
         public bool IsExhausted { get; }
 
         public bool IsHidden { get; }
+
+        /// <summary>흡혈 게이지 (0~100%).</summary>
+        public float BloodGauge { get; }
+
+        public bool HasSuckSession { get; }
+
+        public float SessionAmount { get; }
     }
 
     public sealed class HumanSnapshot
