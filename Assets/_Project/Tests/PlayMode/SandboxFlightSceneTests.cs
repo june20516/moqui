@@ -26,7 +26,7 @@ namespace Moqui.Unity.Tests
                 yield return null;
             }
 
-            var runner = Object.FindFirstObjectByType<SimulationRunner>();
+            var runner = Object.FindAnyObjectByType<SimulationRunner>();
             Assert.That(runner, Is.Not.Null);
             Assert.That(runner.IsRunning, Is.True);
             Assert.That(runner.Driver.Simulation.Tick, Is.GreaterThan(0), "simulation advanced");

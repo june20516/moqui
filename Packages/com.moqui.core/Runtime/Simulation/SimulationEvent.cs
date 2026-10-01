@@ -38,4 +38,67 @@ namespace Moqui.Core.Simulation
 
         public float Awareness { get; }
     }
+
+    public sealed class AwarenessStateChanged : SimulationEvent
+    {
+        public AwarenessStateChanged(int tick, string humanId, AwarenessState from, AwarenessState to)
+            : base(tick)
+        {
+            HumanId = humanId;
+            From = from;
+            To = to;
+        }
+
+        public string HumanId { get; }
+
+        public AwarenessState From { get; }
+
+        public AwarenessState To { get; }
+    }
+
+    /// <summary>예고 시작. Unity는 손 동작, 판정 위치 표시, 경고음을 낸다 (spec/02 §7).</summary>
+    public sealed class AttackTelegraphStarted : SimulationEvent
+    {
+        public AttackTelegraphStarted(int tick, string humanId, AttackKind kind, Vector3 target, float radius, int telegraphTicks)
+            : base(tick)
+        {
+            HumanId = humanId;
+            Kind = kind;
+            Target = target;
+            Radius = radius;
+            TelegraphTicks = telegraphTicks;
+        }
+
+        public string HumanId { get; }
+
+        public AttackKind Kind { get; }
+
+        public Vector3 Target { get; }
+
+        public float Radius { get; }
+
+        public int TelegraphTicks { get; }
+    }
+
+    public enum DeathCause
+    {
+        Attack,
+        Web,
+        WaterDrop,
+        Spray,
+    }
+
+    public sealed class PlayerDied : SimulationEvent
+    {
+        public PlayerDied(int tick, DeathCause cause, Vector3 position)
+            : base(tick)
+        {
+            Cause = cause;
+            Position = position;
+        }
+
+        public DeathCause Cause { get; }
+
+        public Vector3 Position { get; }
+    }
 }

@@ -3,61 +3,32 @@
 > 루프가 매 반복 끝에 갱신한다. 위에서부터 최신순으로 쓴다.
 
 ## 현재
-- 마일스톤: **M1 Core 충돌 월드 · 비행 · 카메라** (종료 기준 충족 → main merge, `m1-done`. 부착 시선 기준 1개는 D-028로 M4에서 검증)
-- 다음 할 일: M2 시작 — spec/02 §1~4 수용 기준을 체크리스트로 복사
-- 브랜치: `milestone/m1-flight`
+- 마일스톤: **M2 인간 감지 · 어그로 · 광분** (진행 중)
+- 다음 할 일: Sandbox_Human 씬(캡슐 인간 뷰, 머리 방향·경계 표시) + 캡처 / `unity-import` 경고 검사를 run-tests에 포함
+- 브랜치: `milestone/m2-human`
 
-## 현재 마일스톤 체크리스트 (M1)
-### 충돌 월드 (tech/architecture.md §4.5)
-- [x] Raycast / SphereSweep / Overlap / ClosestSurface (Box OBB·Sphere·Capsule, 플래그 마스크) — 증거: `CollisionWorldTests` 16개, `ShapeCastCrossCheckTests.Cast_RandomRays_AgreesWithMarching` (형상별 무작위 3000건을 무차별 전진 계산과 비교)
-
-### spec/00 월드 스케일 & 카메라
-- [x] 빈 테스트 씬에서 플레이어를 원점 기준 ±500u 범위 어디에 두어도 이동과 충돌이 정상 동작한다 (Core). — 증거: `CollisionMovementTests.WorldRange_AnyPositionWithin500u_MovesAndCollides` (27개 위치), `FlyIntoWall_StopsBeforeSurfaceWithZeroNormalVelocity`, `DiagonalIntoWall_SlidesAlongSurface`, `VariedInputsInBox_NeverPenetrate`
-- [x] 3인칭 카메라 near clip이 `camera.nearClip`이고, 벽에 붙어도 카메라가 벽을 관통하지 않는다 (Unity). — 증거: `CameraTests.ThirdPerson_NearClipAndFov_MatchTuning`, `ThirdPerson_WallBehindPlayer_CameraDoesNotPassThroughWall` (D-027)
-- [x] pitch가 `camera.pitchLimit`를 넘지 않는다 (Unity: 입력 누적 테스트). — 증거: `CommandCollectorTests.MouseDelta_AccumulatedUpAndDown_PitchStaysWithinLimit`
-- [x] 낙하체가 1초 동안 `world.gravity`로 가속되어 490.5u(±1%) 떨어진다 (Core). — 증거: `ExternalForceTests.FallingBody_OneSecond_Falls4905u`
-- [x] 게임 시작 시 기본 시점은 3인칭이다 (Unity, 저장 데이터 없음). — 증거: `CameraTests.DefaultView_NoSavedData_IsThirdPerson`
-- [x] ToggleView 입력으로 3인칭 ↔ 1인칭이 전환되고, `camera.switchTime` 후 위치와 FOV가 목표값에 도달한다 (Unity). — 증거: `CameraTests.Toggle_AfterSwitchTime_ReachesFirstPersonTargetThenBack`, `CommandCollectorTests.ToggleViewAndPause_Gamepad_AreConsumedSeparately`
-- [x] 전환 전후의 yaw/pitch가 같다 (Unity). — 증거: `CameraTests.Toggle_BeforeAndAfter_YawPitchUnchanged`
-- [x] 같은 입력 시퀀스를 두 시점에서 재생하면 플레이어 최종 위치가 같다 (Unity: 시점 독립성). — 증거: `ViewIndependenceTests.SameInputSequence_ThirdVsFirstPerson_SameFinalPosition`
-- [x] 1인칭에서 플레이어 메시의 렌더러가 Shadows Only이고, 3인칭으로 돌아오면 원래대로 복구된다 (Unity). — 증거: `CameraTests.FirstPerson_PlayerRenderers_ShadowsOnlyThenRestored`
-- [ ] 1인칭 부착 상태에서 시선이 법선 기준 `camera.fp.attachedLookLimit`를 벗어나지 않는다 (Unity). — 진행: `LookConstraint` + `CameraTests.AttachedLook_AnyInput_StaysWithinLimitOfNormal`. 부착 상태 연결 검증은 M4 (D-028)
-- [x] 1인칭에서 벽에 최대한 붙어도 화면에 벽 뒤가 보이지 않는다 (캡처 검토: 벽 접촉 포즈 1장). — 증거: `Captures/2026-10-01_131326/Sandbox_Flight_fp_wall_contact.png`, `..._fp_wall_contact_angled.png` (시뮬레이션으로 앞 벽까지 비행 후 캡처, 캡처 검토 기록 참조)
-- [x] 선택한 시점이 재시작 후에도 유지된다 (Unity). — 증거: `CameraTests.SelectedView_PlayerPrefsStore_SurvivesRestart`, `SelectedView_NewControllerWithSameStore_IsRestored`
-
-### spec/01 비행 · 대시 · 스태미나 · 입력
-- [x] 최고 속도에서 입력을 놓으면 0.15초에 정지하고, 그동안 4.5u(±2%) 미끄러진다 (Core). — 증거: `FlightTests.Release_AtTopSpeed_StopsIn015SecondsAfterSliding45u`
-- [x] 정지 상태에서 1초 동안 W 입력 시 이동 거리가 56.4u(±1%)이다 (Core). — 증거: `FlightTests.Forward_OneSecondFromRest_Travels564u`
-- [x] 반대 방향 입력 시 속도가 가속 규칙에 따라 부드럽게 반전된다 (Core). — 증거: `FlightTests.ReverseInput_AtTopSpeed_ReversesSmoothly`
-- [x] 대시 종료 직후 속도가 대시 방향 60u/s이고 이후 감속한다 (Core). — 증거: `DashTests.Dash_JustFinished_HasFlightSpeedAlongDashThenDecelerates`
-- [x] 바람 외력은 입력과 무관하게 즉시 더해진다 (Core). — 증거: `ExternalForceTests.Wind_NoInput_AddedImmediatelyWithoutInertia`, `Wind_WithInput_AddsToInputMovement`
-- [x] 대각선 입력 속도가 단일 방향 속도와 같다 (Core). — 증거: `FlightTests.DiagonalInput_TopSpeed_EqualsSingleDirectionSpeed`
-- [x] 대시가 0.12초 동안 60u를 이동한다 (Core, ±1u). — 증거: `DashTests.Dash_FromRest_Moves60uIn012Seconds` (7틱, D-026)
-- [x] 좌우·상하 입력이 없을 때 대시는 위쪽이다 (Core: DashDirectionResolver). — 증거: `DashTests.DashDirection_NoLateralOrVerticalInput_IsUp`, `DashDirection_LargestAxisWins`, `DashDirection_TieBetweenLateralAndVertical_PrefersLateral`
-- [x] 스태미나 < 25이면 대시가 실행되지 않는다 (Core). — 증거: `DashTests.Dash_StaminaBelowCost_DoesNotExecute`
-- [x] 쿨타임 안의 재입력은 무시된다 (Core). — 증거: `DashTests.Dash_PressedDuringCooldown_IsIgnored`
-- [x] 대시 시 NoiseEvent가 정확히 1회, 반경 150u로 발생한다 (Core). — 증거: `DashTests.Dash_Executed_EmitsSingleNoiseEventWith150uRadius`
-- [x] 스태미나가 마지막 소모 1초 후부터 20/s로 회복한다 (Core). — 증거: `StaminaTests.Stamina_AfterDash_RegeneratesFrom1SecondAt20PerSecond`
-- [x] 스태미나 0이면 2초간 속도 50%, 대시 불가 (Core). — 증거: `StaminaTests.Stamina_ReachesZero_Exhausted2SecondsWithHalfSpeedAndNoDash`, `Exhaustion_WhileHidden_RecoversTwiceAsFast`
-- [x] 대시가 벽을 관통하지 않는다 (Core). — 증거: `DashTests.Dash_IntoWall_StopsWithoutPenetrating`
-- [x] 위 입력 매핑이 Input Actions 에셋에 존재하고, 게임패드로도 동일하게 동작한다 (Unity: 가상 Gamepad). — 증거: `Assets/_Project/Input/MoquiControls.inputactions`(Gameplay 맵), `CommandCollectorTests.Asset_GameplayAction_HasKeyboardAndGamepadBindings`(11개 액션), `Gamepad_AllGameplayInputs_ProduceCommand`, `KeyboardMouse_AllGameplayInputs_ProduceCommand`, `ToggleViewAndPause_Gamepad_AreConsumedSeparately`, `GamepadStick_FullRightOneSecond_RotatesYawByLookSpeed`
+## 현재 마일스톤 체크리스트 (M2: spec/02 §1~4)
+- [x] 상태 전이와 히스테리시스(40 진입 / 20 이탈)가 동작한다 (Core). — 증거: `HumanAwarenessTests.StateTransitions_Hysteresis_Enter40Exit20`
+- [x] 자극이 없으면 2초 후부터 10/s로 감소한다 (Core). — 증거: `HumanAwarenessTests.NoStimulus_DecaysAfter2SecondsAt10PerSecond`, `NoStimulus_PlayerHidden_UsesShadowDecayRate`
+- [x] Yellow Zone 안, 시야 확보 시 거리별 증가율이 25→8/s 선형이다 (Core). — 증거: `HumanVisionTests.YellowZone_LineOfSight_RateIsLinearFrom25To8`(40/150/299u), `YellowZone_IntegratedOverOneSecond_AwarenessRisesByRate`
+- [x] 장애물이 시선을 막으면 시각 증가가 0이고, 스냅샷의 PlayerVisibleToHuman이 거짓이다 (Core). — 증거: `HumanVisionTests.Obstacle_BlocksLineOfSight_NoVisionGainAndNotVisible`, `Hidden_InYellowZone_NotVisibleAndNoGain`
+- [x] Red Zone 진입 시 같은 틱에 박수 공격이 시작되고 광분이 된다 (Core). — 증거: `HumanVisionTests.RedZone_EnteredWithLineOfSight_ClapAndFrenzySameTick`
+- [x] 소리 거리는 가까운 귀 기준이다: 머리를 돌리면 같은 위치의 소음 증가율이 달라진다 (Core). — 증거: `HumanHearingTests.FlightNoise_HeadTurned_SamePositionGivesDifferentRate`, `FlightNoise_InsideRadiusOutsideEarZone_UsesNearestEarDistance`
+- [x] 비행 소음 증가율이 귀 거리 0에서 16/s, 반경 끝에서 4/s이다 (Core). — 증거: `HumanHearingTests.FlightNoise_EarDistanceZero_Is16AndRadiusEdge_Is4`, `FlightNoise_Precision_HalvesRadius`
+- [x] 귀 근접 구역에서 +30/s가 추가된다 (Core). (귀 반응 발생은 M3 §5에서 검증) — 증거: `HumanHearingTests.EarZone_Inside_Adds30PerSecond`
+- [x] 대시 NoiseEvent가 반경 안의 인간 경계를 즉시 +40 한다 (Core). — 증거: `HumanHearingTests.DashNoise_EarInsideRadius_RaisesAwarenessBy40Immediately`, `DashNoise_EarOutsideRadius_NoChange`
+- [x] 광분은 최소 8초 유지되고, 그 뒤 6초 연속 보지 못하면 경계 60, Suspicious가 된다 (Core). — 증거: `FrenzyTests.Frenzy_NeverSeen_LastsMinimum8SecondsThenCalmsTo60`, `Frenzy_SeenUntil10Seconds_CalmsAfter6UnseenSeconds` (D-030)
+- [x] 광분 중 다시 보이면 연속 미발견 시간이 초기화된다 (Core). — 증거: `FrenzyTests.Frenzy_SeenAgainWhileHidden_ResetsUnseenTimer`
+- [x] 광분 중 보이지 않아도 마지막 위치 주변에 맹목 휘두르기가 발생한다 (Core). — 증거: `FrenzyTests.Frenzy_PlayerNotVisible_BlindSwatsAroundLastSeenPosition`
+- [x] 머리가 yawLimit를 넘어 회전하지 않는다 (Core). — 증거: `HumanAwarenessTests.Head_StimulusBehind_NeverExceedsYawLimit`
+- [x] 같은 시드와 같은 입력이면 인간의 움직임과 반응이 똑같이 재현된다 (Core). (M2 범위: 머리·경계·공격. 무작위 동작·반응은 M3에서 재검증) — 증거: `FrenzyTests.SameSeedAndCommands_HumanBehaviourReplaysExactly` (다른 시드는 다른 결과)
 
 ### 마일스톤 산출물
-- [x] `Sandbox_Flight` 씬 (빌드 제외) — 증거: `Assets/_Project/Scenes/Sandbox_Flight.unity` (`Tools/build-sandboxes.ps1`로 생성), `SandboxFlightSceneTests.SandboxFlight_Play_RunsSimulationAndPlacesCameraNearPlayer`, `WorldViewTests`
+- [ ] `Sandbox_Human` 씬, 캡슐 인간 (빌드 제외)
 
 ## 완료 마일스톤
-- **M0 프로젝트 골격** — 태그 `m0-done` (2026-10-01). 체크리스트와 증거는 태그 시점의 이 문서 참조.
-
-<!-- M0 체크리스트 (보관) -->
-- [x] Unity 프로젝트 생성 (URP 템플릿), 버전 고정 및 decisions 기록 — 증거: `ProjectSettings/ProjectVersion.txt` = 6000.6.3f1, D-019, 배치 모드 임포트 exit 0
-- [x] 필수 패키지 설치 (tech/conventions.md §1) — 증거: manifest(URP 17.6.0, Input System 1.20.0 + activeInputHandler=1, Cinemachine 6.6.0(D-023), Test Framework 1.8.0, uGUI 2.6.0(TMP 포함), ProBuilder 6.1.2), `Tools/unity-import.ps1` exit 0·컴파일 이슈 0
-- [x] Core 패키지(`Packages/com.moqui.core`, noEngineReferences) + `dotnet/` 빌드·테스트 프로젝트 (tech/architecture.md §3) — 증거: `SplitMix64RandomTests` 4개 통과, Unity 배치 모드에서 Moqui.Core.dll 컴파일 CS 에러/경고 0
-- [x] `.gitignore`, `.gitattributes`(LFS) — 증거: `git check-attr filter -- a.png` → `lfs`, D-020
-- [x] `data/tuning.json`(spec/tuning.md 전체) + 로더 + 문서 일치 검사 테스트 — 증거: `TuningDocumentTests.TuningJson_EverySpecKey_HasMatchingValue`, `TuningJson_NoKeysOutsideSpec`, `Load_RepoTuningJson_Succeeds` (변조 시 실패 확인), `TuningTests`, `JsonReaderTests`
-- [x] `Tools/run-tests`, `Tools/build`, `Tools/capture` — 증거: `run-tests.ps1` exit 0 (Core 35, EditMode 1, PlayMode 1), `build.ps1` exit 0, `capture.ps1` exit 0 → `Captures/2026-10-01_123452/Boot.png`. 각 ps1에 Git Bash 래퍼(sh)
-- [x] `dotnet test` 샘플 1개, Unity EditMode/PlayMode 샘플 각 1개 통과 — 증거: `SplitMix64RandomTests`, `Moqui.Unity.Tests.UnityDataSourceTests.Load_InEditor_ReadsRepoTuning`, `Moqui.Unity.Tests.PlayModeSmokeTests.Tuning_LoadedInPlayMode_SurvivesFrame`
-- [x] 빈 씬 Standalone 빌드 성공 — 증거: `Builds/Windows/Moqui.exe`, BuildScript result=Succeeded errors=0 unexpected warnings=0 (D-024), StreamingAssets/data/tuning.json 포함 확인
-- [x] Unity 어댑터 asmdef (Runtime/Presentation/UI/Editor, Tests.EditMode/PlayMode, D-025) — 증거: `unity-import.ps1` 컴파일 이슈 0
+- **M0 프로젝트 골격** — 태그 `m0-done` (2026-10-01). 체크리스트: `plan/archive/m0-checklist.md`
+- **M1 Core 충돌 월드 · 비행 · 카메라** — 태그 `m1-done` (2026-10-01). 체크리스트: `plan/archive/m1-checklist.md`. 이월: 부착 시선 제한 → M4 (D-028)
 
 ## 사람 요청
 | ID | 요청 | 필요 사양 | 대체물 적용 여부 | 상태 |
@@ -76,7 +47,8 @@
 ## 반복 로그
 | 일시 | 마일스톤 | 한 일 | 증거 | 커밋 |
 |---|---|---|---|---|
-| 2026-10-01 | M1 | WorldView(화이트박스), SandboxFlightWorld·Bootstrap, SandboxSceneBuilder·build-sandboxes, CaptureTool 샌드박스 포즈, PlayMode 씬 스모크. M1 종료 | Core 111 + EditMode 36 + PlayMode 2 통과, 빌드 성공(예상 외 경고 0), 캡처 검토 | (이 커밋) |
+| 2026-10-01 | M2 | 브랜치·체크리스트, 인간 엔티티(몸 캡슐·머리·귀), 시각·청각 센서, 경계·상태머신·머리 행동, 광분, 공격(박수·손바닥·맹목), 난수 스트림, 스냅샷, tuning 추가(D-029), D-030. PlayMode 테스트의 사용 중단 API 경고 수정 | Core 138/138 통과, Unity CS 이슈 0 | (이 커밋) |
+| 2026-10-01 | M1 | WorldView(화이트박스), SandboxFlightWorld·Bootstrap, SandboxSceneBuilder·build-sandboxes, CaptureTool 샌드박스 포즈, PlayMode 씬 스모크. M1 종료 | Core 111 + EditMode 36 + PlayMode 2 통과, 빌드 성공(예상 외 경고 0), 캡처 검토 | 51834c3 |
 | 2026-10-01 | M1 | SimulationClock·SimulationDriver·SimulationRunner, 카메라(CameraPoseSolver·CameraController·CameraRig·LookConstraint·PlayerViewVisibility), 설정 저장 포트, D-027·D-028 | EditMode 34/34 통과 | 2824119 |
 | 2026-10-01 | M1 | 입력 에셋 MoquiControls(Gameplay 맵, spec/01 표), LookState, CommandCollector(edge 래치, 마우스·스틱 분리) | EditMode 19/19 통과 | cdbf11d |
 | 2026-10-01 | M1 | 대시(DashSystem, DashDirectionResolver), 스태미나·탈진, 바람 외력, 낙하체 중력, D-026 | Core 111/111 통과, Unity CS 이슈 0 | f11b541 |

@@ -98,6 +98,9 @@
 | head.suspiciousTurnSpeed | 90 °/s | |
 | head.frenzyTurnSpeed | 180 °/s | |
 | head.yawLimit | ±100° | 몸통 정면 기준 |
+| head.pitchLimit | ±60° | 몸통 정면 기준. 의심·광분 중 목표를 향해 고개를 드는 한계 (D-029) |
+| head.suspiciousStareTime | 2s | 의심 상태에서 마지막 자극 위치를 응시하는 시간 (spec/02 §3) |
+| head.searchAngle | ±45° | 응시 후 좌우 탐색 폭, 자극 방향 기준 (D-029) |
 
 ## frenzy (광분)
 | 키 | 값 | 설명 |
@@ -136,7 +139,9 @@
 |---|---|---|
 | attack.reach | 80u | 어깨 기준 최대 사거리 |
 | attack.clap.telegraph | 0.35s | Red Zone 즉사기 |
-| attack.clap.radius | 15u | 얼굴 앞 25u 지점 중심 |
+| attack.clap.radius | 15u | `attack.clap.offset` 지점 중심 |
+| attack.clap.offset | 25u | 판정 중심: 얼굴 앞 거리 (spec/02 §7) |
+| attack.clap.activeTime | 0.1s | 판정 유지 시간 (D-029) |
 | attack.clap.recovery | 1.0s | |
 | attack.slap.radius | 12u | 예고 시작 시점의 플레이어 위치에 고정 |
 | attack.slap.activeTime | 0.1s | 판정 유지 시간 |

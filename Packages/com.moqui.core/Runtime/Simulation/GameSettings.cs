@@ -13,7 +13,28 @@ namespace Moqui.Core.Simulation
             Dash = new DashSettings(tuning);
             Stamina = new StaminaSettings(tuning);
             Hiding = new HidingSettings(tuning);
+            Noise = new NoiseSettings(tuning);
+            Hearing = new HearingSettings(tuning);
+            Vision = new VisionSettings(tuning);
+            Awareness = new AwarenessSettings(tuning);
+            Head = new HeadSettings(tuning);
+            Frenzy = new FrenzySettings(tuning);
+            Attack = new AttackSettings(tuning);
         }
+
+        public NoiseSettings Noise { get; }
+
+        public HearingSettings Hearing { get; }
+
+        public VisionSettings Vision { get; }
+
+        public AwarenessSettings Awareness { get; }
+
+        public HeadSettings Head { get; }
+
+        public FrenzySettings Frenzy { get; }
+
+        public AttackSettings Attack { get; }
 
         public WorldSettings World { get; }
 

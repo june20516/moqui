@@ -71,6 +71,9 @@
     "head.suspiciousTurnSpeed": 90,
     "head.frenzyTurnSpeed": 180,
     "head.yawLimit": 100,
+    "head.pitchLimit": 60,
+    "head.suspiciousStareTime": 2,
+    "head.searchAngle": 45,
 
     "frenzy.minDuration": 8,
     "frenzy.calmTime": 6,
@@ -98,6 +101,8 @@
     "attack.reach": 80,
     "attack.clap.telegraph": 0.35,
     "attack.clap.radius": 15,
+    "attack.clap.offset": 25,
+    "attack.clap.activeTime": 0.1,
     "attack.clap.recovery": 1.0,
     "attack.slap.radius": 12,
     "attack.slap.activeTime": 0.1,
