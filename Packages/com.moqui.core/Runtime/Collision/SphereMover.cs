@@ -60,6 +60,26 @@ namespace Moqui.Core.Collision
             return new MoveResult(position, velocity, collided, lastNormal);
         }
 
+        /// <summary>미끄러지지 않고 직선으로 이동한다. 닿으면 그 지점에서 멈춘다 (대시).</summary>
+        public MoveResult MoveStraight(Vector3 position, float radius, Vector3 displacement, ShapeFlags mask)
+        {
+            position = Depenetrate(position, radius, mask);
+            float length = displacement.Length();
+            if (length < MinMoveLength)
+            {
+                return new MoveResult(position, Vector3.Zero, false, Vector3.Zero);
+            }
+
+            Vector3 direction = displacement / length;
+            if (!_world.SphereSweep(position, radius, direction, length + Skin, mask, out var hit))
+            {
+                return new MoveResult(position + displacement, Vector3.Zero, false, Vector3.Zero);
+            }
+
+            float travel = hit.StartedInside ? 0f : System.Math.Max(0f, System.Math.Min(length, hit.Distance - Skin));
+            return new MoveResult(position + (direction * travel), Vector3.Zero, true, hit.Normal);
+        }
+
         /// <summary>겹친 장애물에서 법선 방향으로 밀어낸다.</summary>
         public Vector3 Depenetrate(Vector3 position, float radius, ShapeFlags mask)
         {
