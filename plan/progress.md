@@ -4,7 +4,7 @@
 
 ## 현재
 - 마일스톤: **M1 Core 충돌 월드 · 비행 · 카메라** (진행 중)
-- 다음 할 일: SimulationRunner + 카메라 리그(3인칭/1인칭, 벽 충돌, 전환, 저장)
+- 다음 할 일: Sandbox_Flight 씬(화이트박스 방 + 플레이어 + 카메라 리그) + 1인칭 벽 접촉 캡처 검토
 - 브랜치: `milestone/m1-flight`
 
 ## 현재 마일스톤 체크리스트 (M1)
@@ -13,17 +13,17 @@
 
 ### spec/00 월드 스케일 & 카메라
 - [x] 빈 테스트 씬에서 플레이어를 원점 기준 ±500u 범위 어디에 두어도 이동과 충돌이 정상 동작한다 (Core). — 증거: `CollisionMovementTests.WorldRange_AnyPositionWithin500u_MovesAndCollides` (27개 위치), `FlyIntoWall_StopsBeforeSurfaceWithZeroNormalVelocity`, `DiagonalIntoWall_SlidesAlongSurface`, `VariedInputsInBox_NeverPenetrate`
-- [ ] 3인칭 카메라 near clip이 `camera.nearClip`이고, 벽에 붙어도 카메라가 벽을 관통하지 않는다 (Unity).
+- [x] 3인칭 카메라 near clip이 `camera.nearClip`이고, 벽에 붙어도 카메라가 벽을 관통하지 않는다 (Unity). — 증거: `CameraTests.ThirdPerson_NearClipAndFov_MatchTuning`, `ThirdPerson_WallBehindPlayer_CameraDoesNotPassThroughWall` (D-027)
 - [x] pitch가 `camera.pitchLimit`를 넘지 않는다 (Unity: 입력 누적 테스트). — 증거: `CommandCollectorTests.MouseDelta_AccumulatedUpAndDown_PitchStaysWithinLimit`
 - [x] 낙하체가 1초 동안 `world.gravity`로 가속되어 490.5u(±1%) 떨어진다 (Core). — 증거: `ExternalForceTests.FallingBody_OneSecond_Falls4905u`
-- [ ] 게임 시작 시 기본 시점은 3인칭이다 (Unity, 저장 데이터 없음).
-- [ ] ToggleView 입력으로 3인칭 ↔ 1인칭이 전환되고, `camera.switchTime` 후 위치와 FOV가 목표값에 도달한다 (Unity).
-- [ ] 전환 전후의 yaw/pitch가 같다 (Unity).
-- [ ] 같은 입력 시퀀스를 두 시점에서 재생하면 플레이어 최종 위치가 같다 (Unity: 시점 독립성).
-- [ ] 1인칭에서 플레이어 메시의 렌더러가 Shadows Only이고, 3인칭으로 돌아오면 원래대로 복구된다 (Unity).
-- [ ] 1인칭 부착 상태에서 시선이 법선 기준 `camera.fp.attachedLookLimit`를 벗어나지 않는다 (Unity).
+- [x] 게임 시작 시 기본 시점은 3인칭이다 (Unity, 저장 데이터 없음). — 증거: `CameraTests.DefaultView_NoSavedData_IsThirdPerson`
+- [x] ToggleView 입력으로 3인칭 ↔ 1인칭이 전환되고, `camera.switchTime` 후 위치와 FOV가 목표값에 도달한다 (Unity). — 증거: `CameraTests.Toggle_AfterSwitchTime_ReachesFirstPersonTargetThenBack`, `CommandCollectorTests.ToggleViewAndPause_Gamepad_AreConsumedSeparately`
+- [x] 전환 전후의 yaw/pitch가 같다 (Unity). — 증거: `CameraTests.Toggle_BeforeAndAfter_YawPitchUnchanged`
+- [x] 같은 입력 시퀀스를 두 시점에서 재생하면 플레이어 최종 위치가 같다 (Unity: 시점 독립성). — 증거: `ViewIndependenceTests.SameInputSequence_ThirdVsFirstPerson_SameFinalPosition`
+- [x] 1인칭에서 플레이어 메시의 렌더러가 Shadows Only이고, 3인칭으로 돌아오면 원래대로 복구된다 (Unity). — 증거: `CameraTests.FirstPerson_PlayerRenderers_ShadowsOnlyThenRestored`
+- [ ] 1인칭 부착 상태에서 시선이 법선 기준 `camera.fp.attachedLookLimit`를 벗어나지 않는다 (Unity). — 진행: `LookConstraint` + `CameraTests.AttachedLook_AnyInput_StaysWithinLimitOfNormal`. 부착 상태 연결 검증은 M4 (D-028)
 - [ ] 1인칭에서 벽에 최대한 붙어도 화면에 벽 뒤가 보이지 않는다 (캡처 검토: 벽 접촉 포즈 1장).
-- [ ] 선택한 시점이 재시작 후에도 유지된다 (Unity).
+- [x] 선택한 시점이 재시작 후에도 유지된다 (Unity). — 증거: `CameraTests.SelectedView_PlayerPrefsStore_SurvivesRestart`, `SelectedView_NewControllerWithSameStore_IsRestored`
 
 ### spec/01 비행 · 대시 · 스태미나 · 입력
 - [x] 최고 속도에서 입력을 놓으면 0.15초에 정지하고, 그동안 4.5u(±2%) 미끄러진다 (Core). — 증거: `FlightTests.Release_AtTopSpeed_StopsIn015SecondsAfterSliding45u`
@@ -75,7 +75,8 @@
 ## 반복 로그
 | 일시 | 마일스톤 | 한 일 | 증거 | 커밋 |
 |---|---|---|---|---|
-| 2026-10-01 | M1 | 입력 에셋 MoquiControls(Gameplay 맵, spec/01 표), LookState, CommandCollector(edge 래치, 마우스·스틱 분리) | EditMode 19/19 통과 | (이 커밋) |
+| 2026-10-01 | M1 | SimulationClock·SimulationDriver·SimulationRunner, 카메라(CameraPoseSolver·CameraController·CameraRig·LookConstraint·PlayerViewVisibility), 설정 저장 포트, D-027·D-028 | EditMode 34/34 통과 | (이 커밋) |
+| 2026-10-01 | M1 | 입력 에셋 MoquiControls(Gameplay 맵, spec/01 표), LookState, CommandCollector(edge 래치, 마우스·스틱 분리) | EditMode 19/19 통과 | cdbf11d |
 | 2026-10-01 | M1 | 대시(DashSystem, DashDirectionResolver), 스태미나·탈진, 바람 외력, 낙하체 중력, D-026 | Core 111/111 통과, Unity CS 이슈 0 | f11b541 |
 | 2026-10-01 | M1 | SphereMover(sweep·미끄러짐·밀어내기)를 시뮬레이션 이동에 연결 | Core 94/94 통과, Unity CS 이슈 0 | a94441c |
 | 2026-10-01 | M1 | GameSimulation(60Hz), PlayerCommand, GameSettings, CameraBasis, FlightSystem(약한 관성) | Core 63/63 통과, Unity CS 이슈 0 | bb0fa66 |
