@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using Moqui.Core.Random;
 
 namespace Moqui.Core.Simulation
 {
@@ -13,13 +15,17 @@ namespace Moqui.Core.Simulation
         private readonly FrenzySettings _frenzy;
         private readonly HeadSettings _head;
         private readonly HeadController _headController;
+        private readonly DozeSettings _doze;
+        private readonly IRandom _glanceRandom;
 
-        public HumanBrain(AwarenessSettings awareness, FrenzySettings frenzy, HeadSettings head)
+        public HumanBrain(AwarenessSettings awareness, FrenzySettings frenzy, HeadSettings head, DozeSettings doze, IRandom glanceRandom)
         {
             _awareness = awareness;
             _frenzy = frenzy;
             _head = head;
             _headController = new HeadController(head);
+            _doze = doze;
+            _glanceRandom = glanceRandom;
         }
 
         public void UpdateState(Human human, in HumanPerception perception, Player player, int tick, List<SimulationEvent> events)
@@ -52,9 +58,15 @@ namespace Moqui.Core.Simulation
                     break;
                 case AwarenessState.Frenzy:
                     human.UnseenTicks = perception.PlayerSeen ? 0 : human.UnseenTicks + 1;
-                    bool minimumElapsed = SimulationTime.HasElapsed(human.FrenzyEnteredTick, tick, _frenzy.MinDuration);
-                    if (minimumElapsed && human.UnseenTicks >= SimulationTime.ToTicks(_frenzy.CalmTime))
+                    float minDuration = _frenzy.MinDuration * (human.Definition.Traits.Has(HumanModifier.Doze) ? _doze.FrenzyDurationMul : 1f);
+                    bool minimumElapsed = SimulationTime.HasElapsed(human.FrenzyEnteredTick, tick, minDuration);
+                    int calmTicks = SimulationTime.ToTicks(_frenzy.CalmTime);
+                    human.FrenzyMinRemaining = Math.Max(0f, minDuration - ((tick - human.FrenzyEnteredTick) * GameSimulation.DeltaTime));
+                    human.CalmProgress = Math.Min(1f, (float)human.UnseenTicks / calmTicks);
+                    if (minimumElapsed && human.UnseenTicks >= calmTicks)
                     {
+                        human.FrenzyMinRemaining = 0f;
+                        human.CalmProgress = 0f;
                         human.Awareness = _frenzy.ExitValue;
                         human.LastStimulusPosition = human.LastSeenPosition;
                         human.LastStimulusTick = tick;
@@ -70,6 +82,11 @@ namespace Moqui.Core.Simulation
             switch (human.State)
             {
                 case AwarenessState.Safe:
+                    if (TryGlance(human, tick, deltaTime))
+                    {
+                        break;
+                    }
+
                     float idleYaw = human.Definition.IdleLookYaws[human.IdleLookIndex % human.Definition.IdleLookYaws.Count];
                     if (_headController.TurnToward(human, idleYaw, 0f, _head.IdleTurnSpeed, deltaTime))
                     {
@@ -114,6 +131,49 @@ namespace Moqui.Core.Simulation
 
                     break;
             }
+        }
+
+        public void Initialize(Human human)
+        {
+            var glance = human.Definition.Traits.Glance;
+            if (glance != null)
+            {
+                human.NextGlanceTick = SimulationTime.ToTicks(_glanceRandom.Range(glance.Interval.Min, glance.Interval.Max));
+            }
+        }
+
+        /// <summary>
+        /// 평온 상태의 둘러보기 (spec/07 Stage 2): interval마다 좌 또는 우로 angle만큼 duration 동안 본다.
+        /// 둘러보는 중이면 참을 돌려주고 평소 시선 패턴을 건너뛴다.
+        /// </summary>
+        private bool TryGlance(Human human, int tick, float deltaTime)
+        {
+            var glance = human.Definition.Traits.Glance;
+            if (glance == null)
+            {
+                return false;
+            }
+
+            if (human.GlanceEndTick == Player.NeverTick && tick >= human.NextGlanceTick)
+            {
+                human.GlanceYaw = _glanceRandom.Chance(0.5) ? glance.Angle : -glance.Angle;
+                human.GlanceEndTick = tick + SimulationTime.ToTicks(glance.Duration);
+                human.NextGlanceTick = tick + SimulationTime.ToTicks(_glanceRandom.Range(glance.Interval.Min, glance.Interval.Max));
+            }
+
+            if (human.GlanceEndTick == Player.NeverTick)
+            {
+                return false;
+            }
+
+            if (tick >= human.GlanceEndTick)
+            {
+                human.GlanceEndTick = Player.NeverTick;
+                return false;
+            }
+
+            _headController.TurnToward(human, human.GlanceYaw, 0f, _head.IdleTurnSpeed, deltaTime);
+            return true;
         }
 
         private void EnterFrenzy(Human human, int tick, List<SimulationEvent> events)

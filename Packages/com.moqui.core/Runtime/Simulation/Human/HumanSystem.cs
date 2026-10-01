@@ -22,7 +22,9 @@ namespace Moqui.Core.Simulation
             _vision = new VisionSensor(settings.Vision, world, settings.Humid.SteamVisionMul);
             _hearing = new HearingSensor(settings.Noise, settings.Hearing);
             Awareness = new AwarenessSystem(settings.Awareness);
-            _brain = new HumanBrain(settings.Awareness, settings.Frenzy, settings.Head);
+            _brain = new HumanBrain(settings.Awareness, settings.Frenzy, settings.Head, settings.Doze, SeedStreams.Create(seed, SeedStreams.Glance));
+            Doze = new DozeSystem(settings.Doze, settings.Awareness, SeedStreams.Create(seed, SeedStreams.Doze));
+            Breath = new BreathSystem(settings.Breath);
             _attacks = new HumanAttackSystem(settings.Attack, settings.Frenzy, SeedStreams.Create(seed, SeedStreams.BlindSwat));
             Reactions = new ReactionSystem(settings, _attacks, SeedStreams.Create(seed, SeedStreams.Reactions));
             Motion = new HumanMotionSystem(settings.HumanMotion, SeedStreams.Create(seed, SeedStreams.HumanActions));
@@ -36,6 +38,18 @@ namespace Moqui.Core.Simulation
 
         public HumanMotionSystem Motion { get; }
 
+        public DozeSystem Doze { get; }
+
+        public BreathSystem Breath { get; }
+
+        /// <summary>시작 상태: 무작위 동작 예약, 졸음, 둘러보기 예약.</summary>
+        public void Initialize(Human human, int tick)
+        {
+            Motion.Initialize(human);
+            Doze.Initialize(human, tick);
+            _brain.Initialize(human);
+        }
+
         public HumanPerception LastPerception { get; private set; }
 
         public void StepMotion(Human human, int tick)
@@ -45,10 +59,22 @@ namespace Moqui.Core.Simulation
 
         public void Step(Human human, Player player, int tick, float deltaTime, List<SimulationEvent> events)
         {
+            Doze.Step(human, tick, events);
+            Breath.Step(human, tick);
+
+            // 졸기 중에는 눈을 감아 시각이 없다(Red Zone 포함). 청각 증가는 doze.hearingMul배 (spec/06).
             var perception = default(HumanPerception);
-            _vision.Sense(human, player, tick, ref perception);
+            if (!human.IsAsleep)
+            {
+                _vision.Sense(human, player, tick, ref perception);
+            }
+
             _hearing.Sense(human, player, events, ref perception);
+            float hearingMul = Doze.HearingMultiplier(human);
+            perception.HearingRate *= hearingMul;
+            perception.InstantGain *= hearingMul;
             LastPerception = perception;
+            human.PlayerOccluded = perception.PlayerOccluded;
 
             // 물린 자국 수 n에 따른 경계 보정 (spec/04 §4).
             Awareness.GainMultiplier = _biteMarks.GainMultiplier(human.BiteMarkCount);

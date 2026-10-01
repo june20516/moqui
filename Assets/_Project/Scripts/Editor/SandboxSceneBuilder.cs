@@ -1,10 +1,14 @@
 using Moqui.Unity.Presentation;
 using Moqui.Unity.Presentation.Sandbox;
+using Moqui.Unity.Presentation.Senses;
+using Moqui.Unity.Presentation.Stage;
+using Moqui.Unity.UI.Hud;
 using Moqui.Unity.Simulation;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 
 namespace Moqui.Unity.Editor
@@ -17,13 +21,30 @@ namespace Moqui.Unity.Editor
         public const string FlightScenePath = "Assets/_Project/Scenes/Sandbox_Flight.unity";
         public const string HumanScenePath = "Assets/_Project/Scenes/Sandbox_Human.unity";
         public const string WaterScenePath = "Assets/_Project/Scenes/Sandbox_Water.unity";
+        public const string StageScenePath = "Assets/_Project/Scenes/Stage.unity";
         public const string ControlsPath = "Assets/_Project/Input/MoquiControls.inputactions";
         public const string PlayerMaterialPath = "Assets/_Project/Materials/Whitebox_Player.mat";
 
+        private const string ShadowCueMaterialPath = "Assets/_Project/Materials/Level_ShadowCue.mat";
+        private const string SteamMaterialPath = "Assets/_Project/Materials/Level_Steam.mat";
+        private const string GlassMaterialPath = "Assets/_Project/Materials/Level_Glass.mat";
+        private const string Co2MaterialPath = "Assets/_Project/Materials/Senses_Co2.mat";
+        private const string HeatMaterialPath = "Assets/_Project/Materials/Senses_Heat.mat";
+        private const string BiteMarkMaterialPath = "Assets/_Project/Materials/Senses_BiteMark.mat";
+        private const string SensesFogMaterialPath = "Assets/_Project/Materials/Senses_Fog.mat";
+        private const string SensesFogShaderName = "Moqui/SensesFog";
+        private const string SensesFogFeatureName = "SensesFog";
+        private const string PcRendererPath = "Assets/Settings/PC_Renderer.asset";
         private const float PlayerVisualDiameter = 1f;
         private const string LitShaderName = "Universal Render Pipeline/Lit";
         private const string BaseColorProperty = "_BaseColor";
         private static readonly Color PlayerColor = new Color(0.2f, 0.85f, 0.9f);
+        private static readonly Color ShadowCueColor = new Color(0.35f, 0.6f, 1f, 0.35f);
+        private static readonly Color Co2Color = new Color(0.95f, 0.78f, 0.98f, 0.5f);
+        private static readonly Color HeatColor = new Color(1f, 0.42f, 0.12f, 0.5f);
+        private static readonly Color BiteMarkColor = new Color(0.9f, 0.1f, 0.15f, 0.95f);
+        private static readonly Color SteamColor = new Color(0.9f, 0.95f, 1f, 0.25f);
+        private static readonly Color GlassColor = new Color(0.75f, 0.9f, 0.95f, 0.3f);
 
         [MenuItem("Moqui/Rebuild All Sandboxes")]
         public static void BuildAll()
@@ -31,6 +52,101 @@ namespace Moqui.Unity.Editor
             BuildFlightSandbox();
             BuildHumanSandbox();
             BuildWaterSandbox();
+            BuildStage();
+        }
+
+        /// <summary>레벨 데이터를 바꿔 끼우는 단일 Stage 씬 (tech/architecture.md §6). 빌드 설정에 포함한다.</summary>
+        [MenuItem("Moqui/Rebuild Stage")]
+        public static void BuildStage()
+        {
+            Scene scene = CreateScaffold(out SimulationRunner runner);
+            SetReference(new GameObject("HumanView").AddComponent<HumanView>(), "_runner", runner);
+            SetReference(new GameObject("WaterView").AddComponent<WaterView>(), "_runner", runner);
+
+            var materials = new GameObject("LevelMaterials").AddComponent<LevelMaterials>();
+            SetReference(materials, "_shadowCue", LoadOrCreateTransparentMaterial(ShadowCueMaterialPath, ShadowCueColor, doubleSided: true));
+            SetReference(materials, "_steam", LoadOrCreateTransparentMaterial(SteamMaterialPath, SteamColor, doubleSided: true));
+            SetReference(materials, "_glass", LoadOrCreateTransparentMaterial(GlassMaterialPath, GlassColor));
+            SetReference(materials, "_co2", LoadOrCreateTransparentMaterial(Co2MaterialPath, Co2Color));
+            SetReference(materials, "_heat", LoadOrCreateTransparentMaterial(HeatMaterialPath, HeatColor));
+            SetReference(materials, "_biteMark", LoadOrCreateTransparentMaterial(BiteMarkMaterialPath, BiteMarkColor));
+            var senses = new GameObject("SensesView").AddComponent<SensesView>();
+
+            EnsureSensesFogFeature();
+            SetReference(new GameObject("SensesFog").AddComponent<SensesFog>(), "_runner", runner);
+
+            var bootstrap = new GameObject("StageBootstrap").AddComponent<StageBootstrap>();
+            SetReference(bootstrap, "_runner", runner);
+            SetReference(bootstrap, "_materials", materials);
+            SetReference(bootstrap, "_senses", senses);
+            var hud = new GameObject("Hud", typeof(RectTransform));
+            hud.AddComponent<HudView>();
+            var hudController = hud.AddComponent<HudController>();
+            SetReference(hudController, "_runner", runner);
+            SetReference(hudController, "_camera", Camera.main);
+            SetReference(hudController, "_cameraRig", Object.FindAnyObjectByType<CameraRig>());
+            SetReference(hudController, "_audio", hud.AddComponent<HudAudioSource>());
+            SetReference(hudController, "_stage", bootstrap);
+            Save(scene, StageScenePath);
+            AddToBuildSettings(StageScenePath);
+        }
+
+        /// <summary>
+        /// PC 렌더러에 흐린 시야 전체 화면 패스를 한 번만 추가한다 (투명 렌더링 전, 깊이 필요).
+        /// 전역 최대 흐림이 0인 씬(Sandbox)에서는 원본을 그대로 낸다.
+        /// </summary>
+        public static void EnsureSensesFogFeature()
+        {
+            var rendererData = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(PcRendererPath)
+                ?? throw new System.InvalidOperationException($"Renderer data not found: {PcRendererPath}");
+            if (rendererData.rendererFeatures.Exists(feature => feature != null && feature.name == SensesFogFeatureName))
+            {
+                return;
+            }
+
+            var material = AssetDatabase.LoadAssetAtPath<Material>(SensesFogMaterialPath);
+            if (material == null)
+            {
+                Shader shader = Shader.Find(SensesFogShaderName) ?? throw new System.InvalidOperationException($"Shader '{SensesFogShaderName}' not found.");
+                material = new Material(shader);
+                AssetDatabase.CreateAsset(material, SensesFogMaterialPath);
+            }
+
+            var feature = ScriptableObject.CreateInstance<FullScreenPassRendererFeature>();
+            feature.name = SensesFogFeatureName;
+            feature.injectionPoint = FullScreenPassRendererFeature.InjectionPoint.BeforeRenderingTransparents;
+            feature.requirements = ScriptableRenderPassInput.Depth;
+            feature.fetchColorBuffer = true;
+            feature.passMaterial = material;
+            AssetDatabase.AddObjectToAsset(feature, rendererData);
+            AssetDatabase.TryGetGUIDAndLocalFileIdentifier(feature, out _, out long localId);
+
+            // 렌더러 데이터 인스펙터의 기능 추가와 같은 방식: 목록과 localId 맵을 함께 늘린다.
+            var serialized = new SerializedObject(rendererData);
+            var features = serialized.FindProperty("m_RendererFeatures");
+            var map = serialized.FindProperty("m_RendererFeatureMap");
+            features.arraySize++;
+            features.GetArrayElementAtIndex(features.arraySize - 1).objectReferenceValue = feature;
+            map.arraySize++;
+            map.GetArrayElementAtIndex(map.arraySize - 1).longValue = localId;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(rendererData);
+            AssetDatabase.SaveAssets();
+            Debug.Log($"[SandboxSceneBuilder] Added {SensesFogFeatureName} to {PcRendererPath}");
+        }
+
+        private static void AddToBuildSettings(string path)
+        {
+            var scenes = EditorBuildSettings.scenes;
+            if (System.Array.Exists(scenes, scene => scene.path == path))
+            {
+                return;
+            }
+
+            var updated = new EditorBuildSettingsScene[scenes.Length + 1];
+            scenes.CopyTo(updated, 0);
+            updated[scenes.Length] = new EditorBuildSettingsScene(path, true);
+            EditorBuildSettings.scenes = updated;
         }
 
         [MenuItem("Moqui/Rebuild Sandbox_Flight")]
@@ -77,6 +193,9 @@ namespace Moqui.Unity.Editor
             var camera = new GameObject("Main Camera").AddComponent<Camera>();
             camera.tag = "MainCamera";
 
+            // 은신 비네트(Volume)가 화면에 나오려면 URP 후처리가 켜져 있어야 한다.
+            camera.GetUniversalAdditionalCameraData().renderPostProcessing = true;
+
             runner = new GameObject("SimulationRunner").AddComponent<SimulationRunner>();
             SetReference(runner, "_controls", AssetDatabase.LoadAssetAtPath<InputActionAsset>(ControlsPath));
 
@@ -122,6 +241,26 @@ namespace Moqui.Unity.Editor
             }
 
             material.SetColor(BaseColorProperty, color);
+            EditorUtility.SetDirty(material);
+            AssetDatabase.SaveAssets();
+            return material;
+        }
+
+        /// <summary>URP Lit 반투명(알파 블렌드) 머티리얼. 은신처 표시·증기·유리처럼 뒤가 비쳐야 하는 볼륨에 쓴다.</summary>
+        /// <param name="doubleSided">볼륨 안에 들어가도 보이게 할지 (은신처·증기).</param>
+        private static Material LoadOrCreateTransparentMaterial(string path, Color color, bool doubleSided = false)
+        {
+            Material material = LoadOrCreateLitMaterial(path, color);
+            material.SetFloat("_Cull", (float)(doubleSided ? UnityEngine.Rendering.CullMode.Off : UnityEngine.Rendering.CullMode.Back));
+            material.doubleSidedGI = doubleSided;
+            material.SetFloat("_Surface", 1f);
+            material.SetFloat("_Blend", 0f);
+            material.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            material.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            material.SetFloat("_ZWrite", 0f);
+            material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            material.SetOverrideTag("RenderType", "Transparent");
+            material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
             EditorUtility.SetDirty(material);
             AssetDatabase.SaveAssets();
             return material;

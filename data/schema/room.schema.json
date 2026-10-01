@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://moqui.local/schema/room.schema.json",
+  "title": "Room",
+  "description": "방 데이터 (data/rooms/*.json): 벽, 가구 형상, Shadow Zone. 단위 u = 1cm, 원점은 바닥 중앙, +Y 위, +Z 북쪽 (spec/07).",
+  "type": "object",
+  "required": ["formatVersion", "id", "size", "shapes"],
+  "additionalProperties": false,
+  "properties": {
+    "formatVersion": { "const": 1 },
+    "id": { "type": "string", "minLength": 1 },
+    "size": { "$ref": "#/$defs/vector3" },
+    "shapes": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/shape" } }
+  },
+  "$defs": {
+    "vector3": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+    "flags": {
+      "type": "array",
+      "items": { "enum": ["obstacle", "attachable", "skinSite", "shadowZone", "hazard", "wind", "glass", "humidWeak", "humidStrong"] },
+      "uniqueItems": true
+    },
+    "shape": {
+      "type": "object",
+      "required": ["id", "type", "flags"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "type": { "enum": ["box", "sphere", "capsule"] },
+        "flags": { "$ref": "#/$defs/flags" }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "type": { "const": "box" },
+            "id": true, "flags": true,
+            "center": { "$ref": "#/$defs/vector3" },
+            "size": { "$ref": "#/$defs/vector3" },
+            "rotation": { "$ref": "#/$defs/vector3" }
+          },
+          "required": ["center", "size"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": { "const": "sphere" },
+            "id": true, "flags": true,
+            "center": { "$ref": "#/$defs/vector3" },
+            "radius": { "type": "number", "exclusiveMinimum": 0 }
+          },
+          "required": ["center", "radius"],
+          "additionalProperties": false
+        },
+        {
+          "properties": {
+            "type": { "const": "capsule" },
+            "id": true, "flags": true,
+            "a": { "$ref": "#/$defs/vector3" },
+            "b": { "$ref": "#/$defs/vector3" },
+            "radius": { "type": "number", "exclusiveMinimum": 0 }
+          },
+          "required": ["a", "b", "radius"],
+          "additionalProperties": false
+        }
+      ]
+    }
+  }
+}

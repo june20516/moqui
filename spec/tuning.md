@@ -193,9 +193,22 @@
 |---|---|---|
 | senses.clearRange | 80u | 선명한 거리 |
 | senses.fogFullRange | 250u | 최대 흐림 거리 |
+| senses.fogMaxDensity | 0.75 | 최대 흐림에서 안개색 비율 (1 미만이어야 큰 가구 실루엣이 남는다) |
+| senses.fogBlurPixels | 3px | 최대 흐림에서 블러 반경 (1080p 기준) |
 | senses.co2VisibleRange | 450u | CO₂ 흐름 표시 거리 |
 | senses.heatRange | 60u | 체온 표시 거리 |
+| senses.co2PuffInterval | 0.12s | 날숨 중 CO₂ 연기 덩이 생성 간격 |
+| senses.co2PuffLifetime | 3s | 연기 덩이가 사라질 때까지 시간 |
+| senses.co2RiseSpeed | 12u/s | 연기 덩이 상승 속도 |
+| senses.co2ForwardSpeed | 15u/s | 날숨 방향(머리 정면) 초기 속도, 수명 동안 0으로 줄어듦 |
+| senses.co2PuffStartRadius | 2u | 연기 덩이 시작 반지름 (세기 배율 적용) |
+| senses.co2PuffEndRadius | 10u | 연기 덩이 끝 반지름 (세기 배율 적용) |
+| senses.heatGlowScale | 1.8 | 체온 빛의 굵기 배율 (피부 부위 반지름 기준) |
+| senses.biteMarkDotRadius | 1.5u | 물린 자국 붉은 점 반지름 |
 | hiding.cueRange | 120u | 은신처 표시 거리 |
+| hiding.cueIntensitySafe | 0.35 | 은신처 표시 강도 — Safe |
+| hiding.cueIntensitySuspicious | 0.65 | 은신처 표시 강도 — Suspicious |
+| hiding.cueIntensityFrenzy | 1.0 | 은신처 표시 강도 — Frenzy |
 | hiding.debuffRecoveryMul | 2.0 | 숨은 상태의 디버프 회복 배율 (중독·젖은 날개·습기·탈진) |
 
 ## shadow
@@ -342,6 +355,18 @@
 | skill.decoy.noiseRadius | 80u | |
 | skill.decoy.noiseRate | +12 /s | |
 | skill.decoy.cooldown | 20s / 14s | 레벨별 |
+
+## hud (표현 전용, spec/08)
+| 키 | 값 | 설명 |
+|---|---|---|
+| hud.satietyHighlightMul | 0.85 | 포만 감속 배율이 이 값 아래면 포만 아이콘 강조 |
+
+## tutorial (spec/08 §튜토리얼)
+| 키 | 값 | 설명 |
+|---|---|---|
+| tutorial.holdSeconds | 1s | 이동·정밀 비행 안내를 끝내는 입력 유지 시간 |
+| tutorial.lookDegrees | 90° | 시점 안내를 끝내는 누적 회전 각도 |
+| tutorial.infoTimeout | 30s | 설명형 안내(Stage 2)가 행동 없이 넘어가는 시간 |
 
 ## performance
 | 키 | 값 | 설명 |

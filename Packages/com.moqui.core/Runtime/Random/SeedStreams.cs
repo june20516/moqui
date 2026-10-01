@@ -12,6 +12,8 @@ namespace Moqui.Core.Random
         public const string BlindSwat = "blindSwat";
         public const string Debuff = "debuff";
         public const string Spray = "spray";
+        public const string Doze = "doze";
+        public const string Glance = "glance";
 
         private const ulong FnvOffset = 14695981039346656037UL;
         private const ulong FnvPrime = 1099511628211UL;

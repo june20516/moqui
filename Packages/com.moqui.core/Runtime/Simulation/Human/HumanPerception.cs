@@ -22,6 +22,9 @@ namespace Moqui.Core.Simulation
 
         public bool InEarZone;
 
+        /// <summary>Yellow Zone 안이지만 장애물에 시야가 막힘 (HUD "가려짐", spec/11 §4).</summary>
+        public bool PlayerOccluded;
+
         public bool HasStimulus;
 
         public Vector3 StimulusPosition;

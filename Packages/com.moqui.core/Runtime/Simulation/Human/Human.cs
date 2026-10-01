@@ -126,11 +126,54 @@ namespace Moqui.Core.Simulation
 
         public int UnseenTicks { get; set; }
 
+        /// <summary>광분 최소 유지 시간 중 남은 초. 광분이 아니면 0 (HUD, spec/08).</summary>
+        public float FrenzyMinRemaining { get; set; }
+
+        /// <summary>진정 진행 0~1 = 연속 미발견 시간 / frenzy.calmTime. 광분이 아니면 0 (HUD, spec/08).</summary>
+        public float CalmProgress { get; set; }
+
+        /// <summary>Yellow Zone 안이지만 장애물에 시야가 막힘 (HUD "가려짐").</summary>
+        public bool PlayerOccluded { get; set; }
+
         public int FrenzyCount { get; set; }
 
         public int NextBlindSwatTick { get; set; }
 
         public HumanAttack Attack { get; } = new HumanAttack();
+
+        // ---- 졸음 (spec/06) ----
+
+        public DozeState Doze { get; set; } = DozeState.Awake;
+
+        public int DozeStateEndTick { get; set; }
+
+        public bool DozeTelegraphSent { get; set; }
+
+        /// <summary>경계가 의심 이탈선 아래로 내려간 틱 (다시 졸기 판정). 아니면 NeverTick.</summary>
+        public int CalmSinceTick { get; set; } = Player.NeverTick;
+
+        public bool IsAsleep => Doze == DozeState.Sleeping;
+
+        // ---- 둘러보기 (spec/07 Stage 2) ----
+
+        public int NextGlanceTick { get; set; }
+
+        public int GlanceEndTick { get; set; } = Player.NeverTick;
+
+        public float GlanceYaw { get; set; }
+
+        // ---- 호흡 (spec/11 §2) ----
+
+        /// <summary>호흡 주기 안의 위치 (0~1).</summary>
+        public float BreathPhase { get; set; }
+
+        public bool IsExhaling { get; set; }
+
+        /// <summary>날숨이 나오는 코·입 위치.</summary>
+        public Vector3 ExhalePosition { get; set; }
+
+        /// <summary>CO₂ 세기 (human.co2Strength × 취함 배율). 날숨이 아니면 0.</summary>
+        public float ExhaleStrength { get; set; }
 
         // ---- 무작위 동작 (spec/02 §6) ----
 

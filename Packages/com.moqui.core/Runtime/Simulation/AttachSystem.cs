@@ -50,6 +50,12 @@ namespace Moqui.Core.Simulation
             return true;
         }
 
+        /// <summary>비행 중이고 attachRange 안에 붙을 표면이 있는가 (HUD 착지 프롬프트).</summary>
+        public bool HasTarget(Player player)
+        {
+            return player.State == PlayerState.Flying && _world.ClosestSurface(player.Position, _settings.AttachRange, ShapeFlags.Attachable, out _);
+        }
+
         public static bool HasMoveInput(in PlayerCommand command)
         {
             return command.Move.LengthSquared() > 0f || command.Vertical != 0f;
@@ -96,7 +102,7 @@ namespace Moqui.Core.Simulation
             string shapeId = player.Anchor.Shape.Id;
             Release(player);
             player.State = PlayerState.Flying;
-            var move = _mover.MoveStraight(player.Position, player.CollisionRadius, normal * _settings.DetachOffset, ShapeFlags.Obstacle);
+            var move = _mover.MoveStraight(player.Position, player.CollisionRadius, normal * _settings.DetachOffset, ShapeFlags.Solid);
             player.Position = move.Position;
             events.Add(new PlayerDetached(tick, shapeId));
         }

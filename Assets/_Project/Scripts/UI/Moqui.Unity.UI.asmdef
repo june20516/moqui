@@ -4,6 +4,7 @@
     "references": [
         "Moqui.Core",
         "Moqui.Unity.Runtime",
+        "Moqui.Unity.Presentation",
         "Unity.TextMeshPro",
         "UnityEngine.UI",
         "Unity.InputSystem"

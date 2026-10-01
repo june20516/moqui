@@ -1,0 +1,36 @@
+{
+  "formatVersion": 1,
+  "id": "livingRoom",
+  "size": [500, 250, 400],
+  "shapes": [
+    { "id": "floor", "type": "box", "center": [0, -5, 0], "size": [520, 10, 420], "flags": ["obstacle", "attachable"] },
+    { "id": "ceiling", "type": "box", "center": [0, 255, 0], "size": [520, 10, 420], "flags": ["obstacle", "attachable"] },
+    { "id": "wall_north", "type": "box", "center": [0, 125, 205], "size": [520, 250, 10], "flags": ["obstacle", "attachable"] },
+    { "id": "wall_south", "type": "box", "center": [0, 125, -205], "size": [520, 250, 10], "flags": ["obstacle", "attachable"] },
+    { "id": "wall_east", "type": "box", "center": [255, 125, 0], "size": [10, 250, 400], "flags": ["obstacle", "attachable"] },
+    { "id": "wall_west", "type": "box", "center": [-255, 125, 0], "size": [10, 250, 400], "flags": ["obstacle", "attachable"] },
+
+    { "id": "sofa_seat", "type": "box", "center": [0, 22, 160], "size": [200, 45, 80], "flags": ["obstacle", "attachable"] },
+    { "id": "sofa_back", "type": "box", "center": [0, 65, 195], "size": [200, 40, 10], "flags": ["obstacle", "attachable"] },
+    { "id": "tv_stand", "type": "box", "center": [0, 25, -180], "size": [150, 50, 40], "flags": ["obstacle", "attachable"] },
+    { "id": "tv", "type": "box", "center": [0, 85, -190], "size": [110, 65, 5], "flags": ["obstacle", "attachable"] },
+
+    { "id": "coffee_table_top", "type": "box", "center": [0, 40, 40], "size": [100, 4, 50], "flags": ["obstacle", "attachable"] },
+    { "id": "coffee_table_leg_ne", "type": "box", "center": [46, 19, 61], "size": [4, 38, 4], "flags": ["obstacle", "attachable"] },
+    { "id": "coffee_table_leg_nw", "type": "box", "center": [-46, 19, 61], "size": [4, 38, 4], "flags": ["obstacle", "attachable"] },
+    { "id": "coffee_table_leg_se", "type": "box", "center": [46, 19, 19], "size": [4, 38, 4], "flags": ["obstacle", "attachable"] },
+    { "id": "coffee_table_leg_sw", "type": "box", "center": [-46, 19, 19], "size": [4, 38, 4], "flags": ["obstacle", "attachable"] },
+    { "id": "shadow_coffee_table", "type": "box", "center": [0, 19, 40], "size": [88, 38, 38], "flags": ["shadowZone"] },
+
+    { "id": "bookshelf", "type": "box", "center": [220, 90, -50], "size": [40, 180, 100], "flags": ["obstacle", "attachable"] },
+    { "id": "shadow_bookshelf", "type": "box", "center": [245, 90, -50], "size": [10, 180, 100], "flags": ["shadowZone"] },
+
+    { "id": "floor_lamp", "type": "capsule", "a": [-200, 15, 150], "b": [-200, 145, 150], "radius": 15, "flags": ["obstacle", "attachable"] },
+
+    { "id": "curtain", "type": "box", "center": [-242, 125, -120], "size": [6, 230, 120], "flags": ["obstacle", "attachable"] },
+    { "id": "shadow_curtain", "type": "box", "center": [-247.5, 125, -120], "size": [5, 230, 120], "flags": ["shadowZone"] },
+
+    { "id": "air_conditioner", "type": "box", "center": [180, 220, 195], "size": [90, 30, 25], "flags": ["obstacle", "attachable"] },
+    { "id": "hanging_plant", "type": "sphere", "center": [-150, 200, 0], "radius": 15, "flags": ["obstacle", "attachable"] }
+  ]
+}

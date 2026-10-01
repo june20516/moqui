@@ -23,6 +23,9 @@ namespace Moqui.Core.Collision
 
         /// <summary>강한 습기(증기) 영역 볼륨 (spec/05 §2).</summary>
         HumidStrong = 1 << 9,
+        /// <summary>몸이 통과할 수 없는 형상: 장애물 + 유리. 유리는 충돌하지만 시야는 막지 않는다 (spec/07).</summary>
+        Solid = Obstacle | Glass,
+
         All = ~0,
     }
 }

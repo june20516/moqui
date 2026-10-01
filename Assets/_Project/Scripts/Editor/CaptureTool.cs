@@ -7,6 +7,13 @@ using Moqui.Core.Simulation;
 using Moqui.Unity.Data;
 using Moqui.Unity.Presentation;
 using Moqui.Unity.Presentation.Sandbox;
+using Moqui.Unity.Presentation.Senses;
+using Moqui.Unity.Presentation.Stage;
+using Moqui.Unity.Settings;
+using Moqui.Unity.UI.Hud;
+using Moqui.Core.Tutorial;
+using Moqui.Core.Collision;
+using Moqui.Core.Data.Levels;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -24,6 +31,16 @@ namespace Moqui.Unity.Editor
         private const int DepthBits = 24;
         private const string CapturesFolder = "Captures";
         private const float WallApproachSeconds = 3f;
+        private const float HumanCloseupDistance = 25f;
+        private const float StageSettleSeconds = 1f;
+        private const float Co2SettleSeconds = 1.2f;
+        private const float ShadowSettleSeconds = 5f;
+        private const float HudCaptureYawOffset = 100f;
+        private static readonly Vector2Int[] HudResolutions = { new Vector2Int(1920, 1080), new Vector2Int(1280, 720), new Vector2Int(2560, 1440) };
+        private const float OverviewBackOff = 60f;
+        private const float OverviewRise = 80f;
+        private const float OverviewWallMargin = 20f;
+        private static readonly string[] StageLevelIds = { "stage01", "stage02" };
 
         [MenuItem("Moqui/Capture All")]
         public static void CaptureAll()
@@ -39,7 +56,8 @@ namespace Moqui.Unity.Editor
                 DateTime.Now.ToString("yyyy-MM-dd_HHmmss", CultureInfo.InvariantCulture));
             Directory.CreateDirectory(outputDirectory);
 
-            foreach (string scenePath in EditorBuildSettings.scenes.Where(scene => scene.enabled).Select(scene => scene.path))
+            // Stage 씬은 Awake에서 레벨을 만들므로 편집 모드 개요 캡처 대신 CaptureStage가 포즈별로 찍는다.
+            foreach (string scenePath in EditorBuildSettings.scenes.Where(scene => scene.enabled && scene.path != SandboxSceneBuilder.StageScenePath).Select(scene => scene.path))
             {
                 EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
                 string fileName = Path.GetFileNameWithoutExtension(scenePath) + ".png";
@@ -49,7 +67,176 @@ namespace Moqui.Unity.Editor
             CaptureSandboxFlight(outputDirectory);
             CaptureSandboxHuman(outputDirectory);
             CaptureSandboxWater(outputDirectory);
+            foreach (string levelId in StageLevelIds)
+            {
+                CaptureStage(levelId, outputDirectory);
+            }
+
+            CaptureHud(outputDirectory);
+
             Debug.Log($"[CaptureTool] Captures written to {outputDirectory}");
+        }
+
+        /// <summary>
+        /// 스테이지 대표 캡처 (spec/07): 전경, 시작 위치, 인간 근접, Shadow Zone 내부(3인칭) + 시작 위치 1인칭.
+        /// </summary>
+        public static void CaptureStage(string levelId, string outputDirectory)
+        {
+            EditorSceneManager.OpenScene(SandboxSceneBuilder.StageScenePath, OpenSceneMode.Single);
+            Camera camera = MainCameraOrThrow(SandboxSceneBuilder.StageScenePath);
+            Tuning tuning = TuningLoader.Load(new UnityDataSource());
+            LevelDefinition level = new LevelLoader(new UnityDataSource()).Load(levelId);
+            var simulation = new GameSimulation(GameSettings.FromTuning(tuning), level.CreateSetup());
+            var materials = UnityEngine.Object.FindAnyObjectByType<LevelMaterials>();
+            var visuals = LevelView.Build(level, simulation.World, null, materials);
+            var humanView = UnityEngine.Object.FindAnyObjectByType<HumanView>();
+            humanView.Build(simulation.Human);
+            var senses = new SensesSettings(tuning);
+            var sensesView = UnityEngine.Object.FindAnyObjectByType<SensesView>();
+            sensesView.Bind(simulation, senses, visuals, materials);
+
+            // 날숨 CO₂가 보이도록 날숨이 시작된 뒤 잠시 더 진행한다. 체온·자국 표시 확인용으로 오른 전완에 자국을 둔다.
+            Step(simulation, sensesView, StageSettleSeconds);
+            for (int i = 0; i < SimulationTime.ToTicks(simulation.Settings.Breath.Period) && !simulation.Human.IsExhaling; i++)
+            {
+                Step(simulation, sensesView, GameSimulation.DeltaTime);
+            }
+
+            Step(simulation, sensesView, Co2SettleSeconds);
+            humanView.Refresh();
+            simulation.Human.SkinSites.First(site => site.PartId == "forearmR").HasBiteMark = true;
+
+            var solver = new CameraPoseSolver(new CameraSettings(tuning), simulation.World);
+            var player = GameObject.Find("Player");
+            var visibility = player.GetComponent<PlayerViewVisibility>();
+            Vector3 spawn = simulation.Player.Position.ToUnity();
+            Vector3 head = simulation.Human.HeadCenter.ToUnity();
+            string prefix = $"Stage_{levelId}_";
+
+            void Shot(Vector3 playerPosition, CameraPose pose, bool firstPerson, string name)
+            {
+                simulation.Player.Position = playerPosition.ToCore();
+                sensesView.Render(0f);
+                SensesFog.Apply(senses, playerPosition, false);
+                Capture(camera, player, visibility, playerPosition, pose, firstPerson, outputDirectory, prefix + name);
+            }
+
+            Vector3 overviewPosition = OverviewPoint(simulation.World, spawn, head);
+            Shot(spawn, new CameraPose(overviewPosition, Quaternion.LookRotation(head - overviewPosition), camera.fieldOfView, camera.nearClipPlane), false, "overview");
+
+            float yawToHead = YawTowards(spawn, head);
+            Shot(spawn, solver.ThirdPerson(spawn, yawToHead, -10f), false, "start");
+            Shot(spawn, solver.FirstPerson(spawn, yawToHead, -5f), true, "start_fp");
+
+            var site = simulation.Human.Shapes["forearmR"];
+            Vector3 siteCenter = site.Center.ToUnity();
+            Vector3 near = siteCenter + ((spawn - siteCenter).normalized * HumanCloseupDistance);
+            Shot(near, solver.ThirdPerson(near, YawTowards(near, siteCenter), -15f), false, "human_close");
+
+            var shadow = simulation.World.Shapes.First(shape => shape.Matches(ShapeFlags.ShadowZone));
+            Vector3 hidden = shadow.Center.ToUnity();
+            var vignette = UnityEngine.Object.FindAnyObjectByType<ShadowVignette>();
+            vignette.Tick(tuning, true, ShadowSettleSeconds);
+            Shot(hidden, solver.ThirdPerson(hidden, YawTowards(hidden, head), -5f), false, "shadow_zone");
+            vignette.Tick(tuning, false, ShadowSettleSeconds);
+            SensesFog.Disable();
+            Debug.Log($"[CaptureTool] {prefix}: shapes={level.AllShapes().Count()}, shadow={shadow.Id}, human={simulation.Human.State}, co2Puffs={sensesView.Plume.Puffs.Count}");
+        }
+
+        /// <summary>
+        /// HUD 해상도 검토 캡처 (spec/08): 1920×1080, 1280×720, 2560×1440. 겹침 검토를 위해 가능한 요소를 한 화면에 모두 켠다
+        /// (광분·가려짐·흡혈 가려움·젖은 날개·습기·자국·예고 경고·머리 화살표·은신처 방향·튜토리얼 문구).
+        /// </summary>
+        public static void CaptureHud(string outputDirectory)
+        {
+            EditorSceneManager.OpenScene(SandboxSceneBuilder.StageScenePath, OpenSceneMode.Single);
+            Camera camera = MainCameraOrThrow(SandboxSceneBuilder.StageScenePath);
+            Tuning tuning = TuningLoader.Load(new UnityDataSource());
+            LevelDefinition level = new LevelLoader(new UnityDataSource()).Load(StageLevelIds[0]);
+            var simulation = new GameSimulation(GameSettings.FromTuning(tuning), level.CreateSetup());
+            var materials = UnityEngine.Object.FindAnyObjectByType<LevelMaterials>();
+            LevelView.Build(level, simulation.World, null, materials);
+            var humanView = UnityEngine.Object.FindAnyObjectByType<HumanView>();
+            humanView.Build(simulation.Human);
+            Step(simulation, PlayerCommand.None, StageSettleSeconds);
+            humanView.Refresh();
+
+            var player = simulation.Player;
+            var human = simulation.Human;
+            var site = human.SkinSites.First(s => s.PartId == "forearmR");
+            player.BloodGauge = 62f;
+            player.Stamina = simulation.Settings.Stamina.Max * 0.55f;
+            player.WetRemaining = 3.4f;
+            player.Humidity = 40f;
+            player.SuckSession = new SuckSession(site, simulation.Tick);
+            site.Itch = 40f;
+            human.BiteMarkCount = 2;
+            human.State = AwarenessState.Frenzy;
+            human.FrenzyMinRemaining = 4.3f;
+            human.CalmProgress = 0.35f;
+            human.PlayerOccluded = true;
+
+            Vector3 spawn = player.Position.ToUnity();
+            Vector3 head = human.HeadCenter.ToUnity();
+            var solver = new CameraPoseSolver(new CameraSettings(tuning), simulation.World);
+            CameraPose pose = solver.ThirdPerson(spawn, YawTowards(spawn, head) + HudCaptureYawOffset, -10f);
+            pose.ApplyTo(camera);
+            GameObject.Find("Player").transform.position = spawn;
+            human.Attack.Phase = AttackPhase.Telegraph;
+            human.Attack.Target = (camera.transform.position - (camera.transform.forward * 50f)).ToCore();
+            SensesFog.Apply(new SensesSettings(tuning), spawn, false);
+
+            var hudView = UnityEngine.Object.FindAnyObjectByType<HudView>();
+            hudView.Build();
+            var canvas = hudView.GetComponent<Canvas>();
+            var scaler = hudView.GetComponent<UnityEngine.UI.CanvasScaler>();
+            canvas.renderMode = RenderMode.ScreenSpaceCamera;
+            canvas.worldCamera = camera;
+            canvas.planeDistance = camera.nearClipPlane * 2f;
+            scaler.enabled = false;
+            var hints = new TutorialHints(new MemoryPreferenceStore());
+            var tracker = new TutorialTracker(level.Tutorial, new TutorialSettings(tuning), level.Tutorial.ToList().IndexOf("dash"));
+
+            foreach (var resolution in HudResolutions)
+            {
+                string path = Path.Combine(outputDirectory, $"Hud_{resolution.x}x{resolution.y}.png");
+                CaptureCamera(camera, path, resolution.x, resolution.y, () =>
+                {
+                    camera.ResetAspect();
+
+                    // CanvasScaler(기준 1920×1080, 너비·높이 0.5 맞춤)와 같은 배율을 직접 준다. 배치 모드에는 Update가 없다.
+                    float logWidth = Mathf.Log(resolution.x / HudView.ReferenceResolution.x, 2f);
+                    float logHeight = Mathf.Log(resolution.y / HudView.ReferenceResolution.y, 2f);
+                    canvas.scaleFactor = Mathf.Pow(2f, Mathf.Lerp(logWidth, logHeight, scaler.matchWidthOrHeight));
+                    Canvas.ForceUpdateCanvases();
+                    hudView.Apply(HudState.Compute(simulation, camera, false, tuning), 0f);
+                    hudView.TutorialText.text = hints.CurrentText(tracker, false);
+                    Canvas.ForceUpdateCanvases();
+                });
+                Debug.Log($"[CaptureTool] Hud {resolution.x}x{resolution.y}: canvas={hudView.Root.rect.size}, scale={canvas.scaleFactor:F2}");
+            }
+
+            SensesFog.Disable();
+        }
+
+        /// <summary>시작 위치와 인간 머리의 중간 위쪽에서, 벽·천장 안쪽으로 물러난 점.</summary>
+        private static Vector3 OverviewPoint(CollisionWorld world, Vector3 spawn, Vector3 head)
+        {
+            Vector3 middle = (spawn + head) * 0.5f;
+            Vector3 desired = spawn + ((spawn - head).normalized * OverviewBackOff) + (Vector3.up * OverviewRise);
+            Vector3 direction = desired - middle;
+            if (world.Raycast(middle.ToCore(), System.Numerics.Vector3.Normalize(direction.ToCore()), direction.magnitude, ShapeFlags.Solid, out var hit))
+            {
+                return middle + (direction.normalized * Mathf.Max(0f, hit.Distance - OverviewWallMargin));
+            }
+
+            return desired;
+        }
+
+        private static float YawTowards(Vector3 from, Vector3 to)
+        {
+            Vector3 flat = to - from;
+            return Mathf.Atan2(flat.x, flat.z) * Mathf.Rad2Deg;
         }
 
         /// <summary>물방울이 떨어지는 모습과, 물방울에 갇혀 함께 떨어지는 플레이어.</summary>
@@ -128,6 +315,16 @@ namespace Moqui.Unity.Editor
             CaptureHumanPose(camera, player, humanView, simulation, head + new Vector3(-120f, 40f, 160f), head, outputDirectory, "Sandbox_Human_frenzy_telegraph");
         }
 
+        /// <summary>시뮬레이션과 감각 표현(CO₂ 흐름)을 함께 진행한다.</summary>
+        private static void Step(GameSimulation simulation, SensesView sensesView, float seconds)
+        {
+            for (int i = 0; i < Mathf.Max(1, Mathf.RoundToInt(seconds * GameSimulation.TickRate)); i++)
+            {
+                simulation.Step(PlayerCommand.None);
+                sensesView.Render(GameSimulation.DeltaTime);
+            }
+        }
+
         private static void Step(GameSimulation simulation, PlayerCommand command, float seconds)
         {
             for (int i = 0; i < Mathf.RoundToInt(seconds * GameSimulation.TickRate); i++)
@@ -180,16 +377,23 @@ namespace Moqui.Unity.Editor
 
         public static void CaptureCamera(Camera camera, string path)
         {
-            var renderTexture = new RenderTexture(Width, Height, DepthBits);
-            var texture = new Texture2D(Width, Height, TextureFormat.RGB24, false);
+            CaptureCamera(camera, path, Width, Height, null);
+        }
+
+        /// <param name="beforeRender">렌더 대상 크기가 정해진 뒤 렌더 전에 부른다 (HUD 배치 갱신용).</param>
+        public static void CaptureCamera(Camera camera, string path, int width, int height, Action beforeRender)
+        {
+            var renderTexture = new RenderTexture(width, height, DepthBits);
+            var texture = new Texture2D(width, height, TextureFormat.RGB24, false);
             RenderTexture previousTarget = camera.targetTexture;
             RenderTexture previousActive = RenderTexture.active;
             try
             {
                 camera.targetTexture = renderTexture;
+                beforeRender?.Invoke();
                 camera.Render();
                 RenderTexture.active = renderTexture;
-                texture.ReadPixels(new Rect(0, 0, Width, Height), 0, 0);
+                texture.ReadPixels(new Rect(0, 0, width, height), 0, 0);
                 texture.Apply();
                 File.WriteAllBytes(path, texture.EncodeToPNG());
             }

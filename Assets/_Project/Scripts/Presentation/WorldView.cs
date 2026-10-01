@@ -22,7 +22,7 @@ namespace Moqui.Unity.Presentation
             new Color(0.45f, 0.52f, 0.47f),
         };
 
-        public static Transform Build(CollisionWorld world, Transform parent, ShapeFlags visibleMask = ShapeFlags.Obstacle)
+        public static Transform Build(CollisionWorld world, Transform parent, ShapeFlags visibleMask = ShapeFlags.Solid)
         {
             var root = new GameObject("WorldView").transform;
             root.SetParent(parent, false);

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Moqui.Core.Collision;
@@ -22,6 +23,7 @@ namespace Moqui.Core.Simulation
         private readonly HumanSystem _humanSystem;
         private readonly List<FallingBody> _bodies = new List<FallingBody>();
         private readonly List<SimulationEvent> _events = new List<SimulationEvent>();
+        private readonly List<ZoneSnapshot> _shadowZones = new List<ZoneSnapshot>();
 
         public GameSimulation(GameSettings settings, CollisionWorld world, Vector3 playerSpawn)
             : this(settings, new SimulationSetup(world, playerSpawn))
@@ -44,11 +46,18 @@ namespace Moqui.Core.Simulation
             Suck = new SuckSystem(settings.Suck, settings.Sites, settings.BiteMark);
             Water = new WaterSystem(settings.Water, World, _fallingBodies, _dash, setup.DripSources);
             Humidity = new HumiditySystem(settings.Humid, settings.Water, settings.Hiding, World, Water);
+            foreach (var shape in World.Shapes)
+            {
+                if (shape.Matches(ShapeFlags.ShadowZone))
+                {
+                    _shadowZones.Add(new ZoneSnapshot(shape));
+                }
+            }
             if (setup.Human != null)
             {
                 Human = new Human(setup.Human, World);
                 _humanSystem = new HumanSystem(settings, World, setup.Seed);
-                _humanSystem.Motion.Initialize(Human);
+                _humanSystem.Initialize(Human, 0);
             }
         }
 
@@ -69,6 +78,12 @@ namespace Moqui.Core.Simulation
 
         public SuckSystem Suck { get; }
 
+        /// <summary>현재 대시 스태미나 비용 (HUD 스태미나 눈금, spec/08).</summary>
+        public float DashCost => _dash.Cost(Player);
+
+        /// <summary>지금 착지 입력을 하면 붙을 수 있는가 (HUD 착지 프롬프트, spec/08).</summary>
+        public bool CanAttach => _attach.HasTarget(Player);
+
         public WaterSystem Water { get; }
 
         public HumiditySystem Humidity { get; }
@@ -83,6 +98,9 @@ namespace Moqui.Core.Simulation
         /// <summary>직전 Step에서 발생한 이벤트.</summary>
         public IReadOnlyList<SimulationEvent> Events => _events;
 
+        /// <summary>마지막 틱의 입력 커맨드 (튜토리얼 판정, spec/08).</summary>
+        public PlayerCommand LastCommand { get; private set; }
+
         /// <summary>스킬 와류 제어 3레벨 (spec/09). 대각선 대시를 허용한다.</summary>
         public bool DiagonalDashUnlocked { get; set; }
 
@@ -96,6 +114,7 @@ namespace Moqui.Core.Simulation
         public void Step(PlayerCommand command)
         {
             _events.Clear();
+            LastCommand = command;
 
             // 승리하면 입력을 막고 세계를 멈춘다 (spec/04 §6). 패배는 사망 연출 동안 세계가 계속 움직인다.
             if (Outcome == StageOutcome.Cleared)
@@ -149,7 +168,7 @@ namespace Moqui.Core.Simulation
             }
 
             var human = Human != null ? new HumanSnapshot(Human) : null;
-            return new SimulationSnapshot(Tick, Outcome, new PlayerSnapshot(Player), human, drops, Water.TrappedHeightRemaining(Player));
+            return new SimulationSnapshot(Tick, Outcome, new PlayerSnapshot(Player), human, drops, Water.TrappedHeightRemaining(Player), _shadowZones, Array.Empty<ZoneSnapshot>());
         }
 
         private void StepPlayer(in PlayerCommand command)
@@ -244,7 +263,7 @@ namespace Moqui.Core.Simulation
             // 틱 안에서 속도가 선형으로 변한다고 보고 평균 속도로 적분한다. 외력(바람)은 관성 없이 그대로 더한다.
             Vector3 averageVelocity = (previousVelocity + Player.Velocity) * 0.5f;
             Vector3 displacement = (averageVelocity + Player.ExternalVelocity) * DeltaTime;
-            var move = _mover.Move(Player.Position, Player.CollisionRadius, displacement, Player.Velocity, ShapeFlags.Obstacle);
+            var move = _mover.Move(Player.Position, Player.CollisionRadius, displacement, Player.Velocity, ShapeFlags.Solid);
             Player.Position = move.Position;
             Player.Velocity = move.Velocity;
         }
