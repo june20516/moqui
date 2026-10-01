@@ -3,11 +3,52 @@
 > 루프가 매 반복 끝에 갱신한다. 위에서부터 최신순으로 쓴다.
 
 ## 현재
-- 마일스톤: **M0 프로젝트 골격** (종료 기준 충족 → main merge, `m0-done`)
-- 다음 할 일: M1 시작 — spec/00, 01 수용 기준을 체크리스트로 복사
-- 브랜치: `milestone/m0-skeleton`
+- 마일스톤: **M1 Core 충돌 월드 · 비행 · 카메라** (진행 중)
+- 다음 할 일: 시뮬레이션 틱 루프 + PlayerCommand + 관성 비행 (spec/01 이동 기준)
+- 브랜치: `milestone/m1-flight`
 
-## 현재 마일스톤 체크리스트
+## 현재 마일스톤 체크리스트 (M1)
+### 충돌 월드 (tech/architecture.md §4.5)
+- [x] Raycast / SphereSweep / Overlap / ClosestSurface (Box OBB·Sphere·Capsule, 플래그 마스크) — 증거: `CollisionWorldTests` 16개, `ShapeCastCrossCheckTests.Cast_RandomRays_AgreesWithMarching` (형상별 무작위 3000건을 무차별 전진 계산과 비교)
+
+### spec/00 월드 스케일 & 카메라
+- [ ] 빈 테스트 씬에서 플레이어를 원점 기준 ±500u 범위 어디에 두어도 이동과 충돌이 정상 동작한다 (Core).
+- [ ] 3인칭 카메라 near clip이 `camera.nearClip`이고, 벽에 붙어도 카메라가 벽을 관통하지 않는다 (Unity).
+- [ ] pitch가 `camera.pitchLimit`를 넘지 않는다 (Unity: 입력 누적 테스트).
+- [ ] 낙하체가 1초 동안 `world.gravity`로 가속되어 490.5u(±1%) 떨어진다 (Core).
+- [ ] 게임 시작 시 기본 시점은 3인칭이다 (Unity, 저장 데이터 없음).
+- [ ] ToggleView 입력으로 3인칭 ↔ 1인칭이 전환되고, `camera.switchTime` 후 위치와 FOV가 목표값에 도달한다 (Unity).
+- [ ] 전환 전후의 yaw/pitch가 같다 (Unity).
+- [ ] 같은 입력 시퀀스를 두 시점에서 재생하면 플레이어 최종 위치가 같다 (Unity: 시점 독립성).
+- [ ] 1인칭에서 플레이어 메시의 렌더러가 Shadows Only이고, 3인칭으로 돌아오면 원래대로 복구된다 (Unity).
+- [ ] 1인칭 부착 상태에서 시선이 법선 기준 `camera.fp.attachedLookLimit`를 벗어나지 않는다 (Unity).
+- [ ] 1인칭에서 벽에 최대한 붙어도 화면에 벽 뒤가 보이지 않는다 (캡처 검토: 벽 접촉 포즈 1장).
+- [ ] 선택한 시점이 재시작 후에도 유지된다 (Unity).
+
+### spec/01 비행 · 대시 · 스태미나 · 입력
+- [ ] 최고 속도에서 입력을 놓으면 0.15초에 정지하고, 그동안 4.5u(±2%) 미끄러진다 (Core).
+- [ ] 정지 상태에서 1초 동안 W 입력 시 이동 거리가 56.4u(±1%)이다 (Core).
+- [ ] 반대 방향 입력 시 속도가 가속 규칙에 따라 부드럽게 반전된다 (Core).
+- [ ] 대시 종료 직후 속도가 대시 방향 60u/s이고 이후 감속한다 (Core).
+- [ ] 바람 외력은 입력과 무관하게 즉시 더해진다 (Core).
+- [ ] 대각선 입력 속도가 단일 방향 속도와 같다 (Core).
+- [ ] 대시가 0.12초 동안 60u를 이동한다 (Core, ±1u).
+- [ ] 좌우·상하 입력이 없을 때 대시는 위쪽이다 (Core: DashDirectionResolver).
+- [ ] 스태미나 < 25이면 대시가 실행되지 않는다 (Core).
+- [ ] 쿨타임 안의 재입력은 무시된다 (Core).
+- [ ] 대시 시 NoiseEvent가 정확히 1회, 반경 150u로 발생한다 (Core).
+- [ ] 스태미나가 마지막 소모 1초 후부터 20/s로 회복한다 (Core).
+- [ ] 스태미나 0이면 2초간 속도 50%, 대시 불가 (Core).
+- [ ] 대시가 벽을 관통하지 않는다 (Core).
+- [ ] 위 입력 매핑이 Input Actions 에셋에 존재하고, 게임패드로도 동일하게 동작한다 (Unity: 가상 Gamepad).
+
+### 마일스톤 산출물
+- [ ] `Sandbox_Flight` 씬 (빌드 제외)
+
+## 완료 마일스톤
+- **M0 프로젝트 골격** — 태그 `m0-done` (2026-10-01). 체크리스트와 증거는 태그 시점의 이 문서 참조.
+
+<!-- M0 체크리스트 (보관) -->
 - [x] Unity 프로젝트 생성 (URP 템플릿), 버전 고정 및 decisions 기록 — 증거: `ProjectSettings/ProjectVersion.txt` = 6000.6.3f1, D-019, 배치 모드 임포트 exit 0
 - [x] 필수 패키지 설치 (tech/conventions.md §1) — 증거: manifest(URP 17.6.0, Input System 1.20.0 + activeInputHandler=1, Cinemachine 6.6.0(D-023), Test Framework 1.8.0, uGUI 2.6.0(TMP 포함), ProBuilder 6.1.2), `Tools/unity-import.ps1` exit 0·컴파일 이슈 0
 - [x] Core 패키지(`Packages/com.moqui.core`, noEngineReferences) + `dotnet/` 빌드·테스트 프로젝트 (tech/architecture.md §3) — 증거: `SplitMix64RandomTests` 4개 통과, Unity 배치 모드에서 Moqui.Core.dll 컴파일 CS 에러/경고 0
@@ -34,7 +75,8 @@
 ## 반복 로그
 | 일시 | 마일스톤 | 한 일 | 증거 | 커밋 |
 |---|---|---|---|---|
-| 2026-10-01 | M0 | Unity 어댑터 asmdef, UnityDataSource, DataSync·BuildScript·CaptureTool, Tools/run-tests·build·capture, 씬·입력 에셋 이동, D-024·D-025. M0 종료 | Core 35 + EditMode 1 + PlayMode 1 통과, 빌드 성공(예상 외 경고 0), 캡처 1장 | (이 커밋) |
+| 2026-10-01 | M1 | 브랜치 생성, M1 체크리스트 복사, Core 충돌 월드(CollisionShape, ShapeGeometry, CollisionWorld) | Core 54/54 통과 (충돌 19 포함) | (이 커밋) |
+| 2026-10-01 | M0 | Unity 어댑터 asmdef, UnityDataSource, DataSync·BuildScript·CaptureTool, Tools/run-tests·build·capture, 씬·입력 에셋 이동, D-024·D-025. M0 종료 | Core 35 + EditMode 1 + PlayMode 1 통과, 빌드 성공(예상 외 경고 0), 캡처 1장 | e8dbd7a |
 | 2026-10-01 | M0 | Core 데이터 계층(IDataSource, JsonReader, Tuning, TuningLoader), `data/tuning.json`, spec 문서 일치 검사 | Core 35/35 통과, Unity CS 이슈 0 | 2b265df |
 | 2026-10-01 | M0 | 필수 패키지 설치, `Tools/unity-path.ps1`·`unity-import.ps1`, D-023 | unity-import exit 0, CS 이슈 0 | fd40a00 |
 | 2026-10-01 | M0 | URP 프로젝트 생성(스크래치패드 생성 후 루트로 이동, 템플릿 튜토리얼 제거), 라이선스 배치 모드 확인 | Moqui.Core Unity 컴파일 CS 0건 | 28a2f7b |
