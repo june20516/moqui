@@ -212,7 +212,7 @@ namespace Moqui.Unity.Tests
             _simulation.Player.State = PlayerState.Trapped;
             _simulation.Player.EscapePresses = 1;
             Present();
-            Assert.That(_view.PromptText.text, Is.EqualTo($"Shift ×{_simulation.Settings.Water.EscapePresses - 1}!"));
+            Assert.That(_view.PromptText.text, Is.EqualTo($"우클릭 ×{_simulation.Settings.Water.EscapePresses - 1}!"));
         }
 
         [Test]

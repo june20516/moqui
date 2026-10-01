@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using Moqui.Core.Random;
 using Moqui.Core.Collision;
 
 namespace Moqui.Core.Simulation
@@ -26,10 +27,13 @@ namespace Moqui.Core.Simulation
 
         public bool CanStart(Player player, int tick)
         {
-            return player.State == PlayerState.Flying
+            return CanLaunchFrom(player.State)
                 && SimulationTime.HasElapsed(player.LastDashStartTick, tick, _settings.Cooldown)
                 && _stamina.CanSpend(player, Cost(player));
         }
+
+        /// <summary>비행 중이거나 표면에 붙어 있을 때 대시할 수 있다 (부착 중 대시 = 법선 방향, D-051).</summary>
+        private static bool CanLaunchFrom(PlayerState state) => state == PlayerState.Flying || state == PlayerState.Attached;
 
         /// <summary>연속 와류 스킬 레벨 (spec/09). 0이면 없음, 1 = 추가 대시, 2 = 추가 대시 스태미나 없음.</summary>
         public int ChainLevel { get; set; }
@@ -40,7 +44,7 @@ namespace Moqui.Core.Simulation
         /// </summary>
         public bool CanChain(Player player, int tick)
         {
-            if (ChainLevel <= 0 || player.State != PlayerState.Flying || !player.ChainDashAvailable)
+            if (ChainLevel <= 0 || !CanLaunchFrom(player.State) || !player.ChainDashAvailable)
             {
                 return false;
             }
@@ -50,20 +54,26 @@ namespace Moqui.Core.Simulation
             return tick <= windowEnd && (ChainLevel >= 2 || _stamina.CanSpend(player, Cost(player)));
         }
 
-        public bool TryStart(Player player, in PlayerCommand command, int tick, bool allowDiagonal, List<SimulationEvent> events)
+        /// <summary>일반·연속 대시 중 하나라도 지금 시작할 수 있는가.</summary>
+        public bool CanDash(Player player, int tick) => CanStart(player, tick) || CanChain(player, tick);
+
+        /// <summary>Dash 입력이면 진행 방향(입력 없으면 무작위)으로 대시를 시작한다 (spec/01, D-051).</summary>
+        public bool TryStart(Player player, in PlayerCommand command, int tick, IRandom random, List<SimulationEvent> events)
         {
-            if (!command.DashPressed)
+            if (!command.DashPressed || !CanDash(player, tick))
             {
                 return false;
             }
 
+            Start(player, DashDirectionResolver.Resolve(command, random), tick, events);
+            return true;
+        }
+
+        /// <summary>정해진 방향으로 대시를 시작한다 (부착 중 대시 = 표면 법선 방향). 시작 가능 여부는 호출자가 CanDash로 확인한다.</summary>
+        public void Start(Player player, Vector3 direction, int tick, List<SimulationEvent> events)
+        {
             bool normal = CanStart(player, tick);
-            if (!normal && !CanChain(player, tick))
-            {
-                return false;
-            }
-
-            Begin(player, DashDirectionResolver.Resolve(command, allowDiagonal));
+            Begin(player, direction);
             player.LastDashStartTick = tick;
             player.ChainDashAvailable = normal;
             if (normal || ChainLevel < 2)
@@ -72,7 +82,6 @@ namespace Moqui.Core.Simulation
             }
 
             events.Add(new NoiseEmitted(tick, NoiseSource.Dash, player.Position, _settings.NoiseRadius * player.NoiseRadiusMultiplier, _settings.NoiseAwareness));
-            return true;
         }
 
         /// <summary>대시 스태미나 비용 = dash.staminaCost + 젖은 날개 추가 비용 (spec/05).</summary>

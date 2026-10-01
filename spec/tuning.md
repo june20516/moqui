@@ -339,7 +339,8 @@
 | skill.resistSatiety.penaltyMul | 0.75 | 감속 폭(1 − 배율)에 곱 |
 | skill.silentWings.noiseMul | 0.88 | 곱 |
 | skill.swiftWings.speedMul | 1.08 | 곱 |
-| skill.vortexControl.accelTimeMul | 0.8 | 곱, 가속·감속 시간 모두. 3레벨에서 8방향 대시 |
+| skill.vortexControl.accelTimeMul | 0.8 | 곱, 가속·감속 시간 모두 |
+| skill.vortexControl.maxLevelDashCooldownMul | 0.7 | 최대 레벨(3)에서 대시 쿨타임에 곱 (D-051) |
 | skill.stamina.maxAdd | +15 | 합 |
 | skill.stamina.regenMul | 1.1 | 곱 |
 | skill.featherLanding.landChanceMul | 0.7 | 곱 |

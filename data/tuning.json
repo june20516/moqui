@@ -263,6 +263,7 @@
     "skill.silentWings.noiseMul": 0.88,
     "skill.swiftWings.speedMul": 1.08,
     "skill.vortexControl.accelTimeMul": 0.8,
+    "skill.vortexControl.maxLevelDashCooldownMul": 0.7,
     "skill.stamina.maxAdd": 15,
     "skill.stamina.regenMul": 1.1,
     "skill.featherLanding.landChanceMul": 0.7,

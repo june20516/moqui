@@ -71,6 +71,11 @@ namespace Moqui.Core.Meta
             int vortex = skills.Level(SkillCatalog.VortexControl);
             Multiply("flight.accelTime", "skill.vortexControl.accelTimeMul", vortex);
             Multiply("flight.decelTime", "skill.vortexControl.accelTimeMul", vortex);
+            if (vortex >= SkillCatalog.Get(SkillCatalog.VortexControl).MaxLevel)
+            {
+                // 최대 레벨: 대시 쿨타임 감소 (대시가 진행 방향 전체를 쓰게 되어 "대각선 대시"를 대체, D-051).
+                values["dash.cooldown"] = JsonValue.FromNumber(tuning.GetFloat("dash.cooldown") * tuning.GetFloat("skill.vortexControl.maxLevelDashCooldownMul"));
+            }
 
             int stamina = skills.Level(SkillCatalog.Stamina);
             Add("stamina.max", "skill.stamina.maxAdd", stamina);
@@ -98,12 +103,6 @@ namespace Moqui.Core.Meta
         public static float ToxinMultiplier(Tuning tuning, SkillLoadout skills)
         {
             return (float)Math.Pow(tuning.GetFloat("skill.resistSpray.toxinMul"), skills.Level(SkillCatalog.ResistSpray));
-        }
-
-        /// <summary>와류 제어 최대 레벨에서만 대각선 포함 8방향 대시 (spec/09).</summary>
-        public static bool DiagonalDash(SkillLoadout skills)
-        {
-            return skills.Level(SkillCatalog.VortexControl) >= SkillCatalog.Get(SkillCatalog.VortexControl).MaxLevel;
         }
     }
 }

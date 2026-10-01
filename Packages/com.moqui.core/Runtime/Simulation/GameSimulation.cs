@@ -20,6 +20,7 @@ namespace Moqui.Core.Simulation
         private readonly FlightSystem _flight;
         private readonly StaminaSystem _stamina;
         private readonly DashSystem _dash;
+        private readonly IRandom _dashRandom;
         private readonly AttachSystem _attach;
         private readonly SphereMover _mover;
         private readonly FallingBodySystem _fallingBodies;
@@ -49,7 +50,7 @@ namespace Moqui.Core.Simulation
             Suck = new SuckSystem(settings.Suck, settings.Sites, settings.BiteMark);
             Water = new WaterSystem(settings.Water, World, _fallingBodies, _dash, setup.DripSources);
             Humidity = new HumiditySystem(settings.Humid, settings.Water, settings.Hiding, World, Water);
-            DiagonalDashUnlocked = SkillEffects.DiagonalDash(setup.Skills);
+            _dashRandom = SeedStreams.Create(setup.Seed, SeedStreams.Dash);
             _dash.ChainLevel = setup.Skills.Level(SkillCatalog.ChainVortex);
             Decoy = new DecoySystem(settings.Decoy, World, setup.Skills.ActiveLevel(SkillCatalog.DecoyCharm));
             Fans = new FanSystem(settings.Fan, setup.Gimmicks.Fans);
@@ -125,7 +126,6 @@ namespace Moqui.Core.Simulation
         public PlayerCommand LastCommand { get; private set; }
 
         /// <summary>스킬 와류 제어 3레벨 (spec/09). 대각선 대시를 허용한다.</summary>
-        public bool DiagonalDashUnlocked { get; set; }
 
         public IReadOnlyList<FallingBody> FallingBodies => _bodies;
 
@@ -223,6 +223,16 @@ namespace Moqui.Core.Simulation
             switch (Player.State)
             {
                 case PlayerState.Attached:
+                    // 부착 중 대시: 붙은 표면의 법선 방향으로 떨어져 나가며 대시한다 (spec/01, D-051). 대시할 수 없으면 그대로 붙어 있다.
+                    if (command.DashPressed && _dash.CanDash(Player, Tick))
+                    {
+                        Player.Anchor.Resolve(out _, out Vector3 surfaceNormal);
+                        _attach.Detach(Player, Tick, _events);
+                        _dash.Start(Player, surfaceNormal, Tick, _events);
+                        _dash.Step(Player);
+                        return;
+                    }
+
                     _attach.StepAttached(Player, command, Tick, DeltaTime, _events);
                     if (Player.State == PlayerState.Attached)
                     {
@@ -258,7 +268,7 @@ namespace Moqui.Core.Simulation
                 return;
             }
 
-            _dash.TryStart(Player, command, Tick, DiagonalDashUnlocked, _events);
+            _dash.TryStart(Player, command, Tick, _dashRandom, _events);
             if (Player.State == PlayerState.Dashing)
             {
                 _dash.Step(Player);

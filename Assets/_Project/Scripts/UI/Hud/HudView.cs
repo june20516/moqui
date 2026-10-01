@@ -170,7 +170,7 @@ namespace Moqui.Unity.UI.Hud
                 case HudPrompt.Detach:
                     return UseGamepadLabels ? "B: 이탈" : "F: 이탈";
                 case HudPrompt.Escape:
-                    return UseGamepadLabels ? $"A ×{escapePresses}!" : $"Shift ×{escapePresses}!";
+                    return UseGamepadLabels ? $"A ×{escapePresses}!" : $"우클릭 ×{escapePresses}!";
                 default:
                     return string.Empty;
             }

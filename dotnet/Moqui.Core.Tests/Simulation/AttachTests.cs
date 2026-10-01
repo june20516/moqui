@@ -13,6 +13,25 @@ namespace Moqui.Core.Tests.Simulation
     {
         private static PlayerCommand Attach => new PlayerCommand { AttachPressed = true };
 
+        /// <summary>벽 옆면·천장 아랫면처럼 방향과 무관하게 붙고, 붙어 있는 동안 표면에서 떨어지지 않는다 (spec/03, M12).</summary>
+        [TestCase("ceiling", 0f, 108.5f, 0f, 0f, -1f, 0f)]
+        [TestCase("wallSide", 8.5f, 50f, 0f, -1f, 0f, 0f)]
+        public void Attach_CeilingAndWallSide_StaysOnSurface(string name, float x, float y, float z, float nx, float ny, float nz)
+        {
+            var world = new CollisionWorld();
+            world.Add(CollisionShape.Box("ceiling", new Vector3(0, 110, 0), new Vector3(200, 2, 200), ShapeFlags.Obstacle | ShapeFlags.Attachable));
+            world.Add(CollisionShape.Box("wallSide", new Vector3(10, 50, 0), new Vector3(2, 100, 200), ShapeFlags.Obstacle | ShapeFlags.Attachable));
+            var simulation = WithWorld(world, new Vector3(x, y, z));
+
+            simulation.Step(Attach);
+            Run(simulation, PlayerCommand.None, SecondsToTicks(2f));
+
+            Assert.That(simulation.Player.State, Is.EqualTo(PlayerState.Attached), name);
+            Assert.That(Vector3.Distance(simulation.Player.Up, new Vector3(nx, ny, nz)), Is.LessThan(1e-3f), $"{name} normal");
+            Assert.That(world.ClosestSurface(simulation.Player.Position, 1f, ShapeFlags.Attachable, out var surface), Is.True);
+            Assert.That(Vector3.Distance(simulation.Player.Position, surface.Point), Is.EqualTo(simulation.Player.CollisionRadius + SphereMover.Skin).Within(1e-3f), $"{name} stays on the surface");
+        }
+
         [Test]
         public void Attach_WithinRange_AttachesAlignedToNormal()
         {

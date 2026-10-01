@@ -63,7 +63,7 @@
 - [x] 보상 계산: 기본/광분 0회/신중한 흡혈/기준시간 조합 8가지가 맞다 (Core). — 증거: `MetaTests.Reward_AllEightCombinations`(8케이스)
 - [x] 포인트가 부족하면 구매할 수 없고, 최대 레벨 이후 구매할 수 없다 (Core). — 증거: `MetaTests.Purchase_NeedsEnoughPoints_AndStopsAtMaxLevel`, `Costs_FollowTierTables`, `Equip_OnlyOwnedActiveSkills`
 - [x] 모든 패시브 스킬 효과가 레벨별로 정확히 적용된다 (스킬당 1개 테스트) (Core). — 증거: `SkillTests.ResistSpray_*`, `ResistWet_*`, `ResistSatiety_*`, `SilentWings_*`, `SwiftWings_*`, `Stamina_*`, `FeatherLanding_*`, `NumbingSaliva_*`, `ShadowBlend_*`, `MagicWand_*`, `CompoundEyes_*`, `VortexControl_*` (D-043). 해독 체질의 중독·모기향 적용은 M9에서 기믹과 함께 검증
-- [ ] 와류 제어가 레벨당 가감속 시간을 0.8배로 줄이고, 3레벨에서 대시 쿨타임이 0.7배가 된다 (Core). (M12 플레이테스트 반영, 미구현)
+- [x] 와류 제어가 레벨당 가감속 시간을 0.8배로 줄이고, 3레벨에서 대시 쿨타임이 0.7배가 된다 (Core). (M12) — 증거: `SkillTests.VortexControl_AccelTimesScaledPerLevel_DashCooldownReducedAtMaxLevel` (tuning `skill.vortexControl.maxLevelDashCooldownMul` 0.7)
 - [x] 연속 와류: 창 안의 추가 대시가 쿨타임을 무시하고 체인당 1회만 허용되며, 2레벨에서 스태미나가 줄지 않는다 (Core). — 증거: `SkillTests.ChainVortex_ExtraDashInsideWindowIgnoresCooldown_OncePerChain`, `ChainVortex_Level1CostsStamina_Level2Free`
 - [x] 미끼가 지정 지점에서 지속시간 동안 NoiseEvent를 발생시키고, 인간의 마지막 자극 위치가 미끼로 바뀐다 (Core). — 증거: `SkillTests.Decoy_EmitsNoiseAtAimPointForDuration_LastStimulusMovesToDecoy`, `Decoy_NotEquipped_DoesNothing`
 - [x] 저장 → 로드 왕복 후 모든 필드가 같다 (Core). — 증거: `MetaTests.SaveLoad_RoundTrip_AllFieldsEqual`

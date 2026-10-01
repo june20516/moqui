@@ -177,7 +177,7 @@
                                       {
                                           "name":  "negative",
                                           "id":  "5945bb17-8455-48d5-bd00-fa2fbbc602bf",
-                                          "path":  "\u003cKeyboard\u003e/leftCtrl",
+                                          "path":  "\u003cKeyboard\u003e/leftAlt",
                                           "interactions":  "",
                                           "processors":  "",
                                           "groups":  "Keyboard\u0026Mouse",
@@ -254,7 +254,7 @@
                                       {
                                           "name":  "",
                                           "id":  "4e0aa670-dabd-4f5d-b8aa-475acbbcb98b",
-                                          "path":  "\u003cKeyboard\u003e/leftShift",
+                                          "path":  "\u003cMouse\u003e/rightButton",
                                           "interactions":  "",
                                           "processors":  "",
                                           "groups":  "Keyboard\u0026Mouse",
@@ -276,7 +276,7 @@
                                       {
                                           "name":  "",
                                           "id":  "3eca7055-cd9b-4494-b08c-f0b1d6952f76",
-                                          "path":  "\u003cKeyboard\u003e/leftAlt",
+                                          "path":  "\u003cKeyboard\u003e/leftCtrl",
                                           "interactions":  "",
                                           "processors":  "",
                                           "groups":  "Keyboard\u0026Mouse",
