@@ -39,6 +39,11 @@ foreach ($platform in $platforms) {
         Write-Output "  FAILED $($case.fullname): $($case.failure.message.InnerText)"
     }
     if ($code -ne 0 -or [int]$run.failed -gt 0) { $failed = $true }
+
+    # 경고 0 규약 (tech/conventions.md §3): 이번 실행에서 다시 컴파일된 스크립트의 경고·에러도 실패로 본다.
+    $compileIssues = @(Select-String -Path $log -Pattern 'warning CS\d+|error CS\d+' | ForEach-Object { $_.Line.Trim() } | Sort-Object -Unique)
+    foreach ($issue in $compileIssues) { Write-Output "  COMPILE $issue" }
+    if ($compileIssues.Count -gt 0) { $failed = $true }
 }
 
 if ($failed) { exit 1 }

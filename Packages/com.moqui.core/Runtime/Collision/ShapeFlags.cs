@@ -14,6 +14,9 @@ namespace Moqui.Core.Collision
         Hazard = 1 << 4,
         Wind = 1 << 5,
         Glass = 1 << 6,
+
+        /// <summary>인간 몸 캡슐. 시야 판정 광선에서 제외할 때 쓴다 (D-029).</summary>
+        Body = 1 << 7,
         All = ~0,
     }
 }

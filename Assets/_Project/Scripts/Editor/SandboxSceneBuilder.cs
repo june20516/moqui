@@ -15,8 +15,8 @@ namespace Moqui.Unity.Editor
     public static class SandboxSceneBuilder
     {
         public const string FlightScenePath = "Assets/_Project/Scenes/Sandbox_Flight.unity";
+        public const string HumanScenePath = "Assets/_Project/Scenes/Sandbox_Human.unity";
         public const string ControlsPath = "Assets/_Project/Input/MoquiControls.inputactions";
-
         public const string PlayerMaterialPath = "Assets/_Project/Materials/Whitebox_Player.mat";
 
         private const float PlayerVisualDiameter = 1f;
@@ -24,8 +24,35 @@ namespace Moqui.Unity.Editor
         private const string BaseColorProperty = "_BaseColor";
         private static readonly Color PlayerColor = new Color(0.2f, 0.85f, 0.9f);
 
+        [MenuItem("Moqui/Rebuild All Sandboxes")]
+        public static void BuildAll()
+        {
+            BuildFlightSandbox();
+            BuildHumanSandbox();
+        }
+
         [MenuItem("Moqui/Rebuild Sandbox_Flight")]
         public static void BuildFlightSandbox()
+        {
+            Scene scene = CreateScaffold(out SimulationRunner runner);
+            var bootstrap = new GameObject("SandboxFlightBootstrap").AddComponent<SandboxFlightBootstrap>();
+            SetReference(bootstrap, "_runner", runner);
+            Save(scene, FlightScenePath);
+        }
+
+        [MenuItem("Moqui/Rebuild Sandbox_Human")]
+        public static void BuildHumanSandbox()
+        {
+            Scene scene = CreateScaffold(out SimulationRunner runner);
+            var humanView = new GameObject("HumanView").AddComponent<HumanView>();
+            SetReference(humanView, "_runner", runner);
+            var bootstrap = new GameObject("SandboxHumanBootstrap").AddComponent<SandboxHumanBootstrap>();
+            SetReference(bootstrap, "_runner", runner);
+            Save(scene, HumanScenePath);
+        }
+
+        /// <summary>조명, 카메라, 시뮬레이션 구동기, 플레이어 그림, 카메라 리그를 만든다.</summary>
+        private static Scene CreateScaffold(out SimulationRunner runner)
         {
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
@@ -37,12 +64,11 @@ namespace Moqui.Unity.Editor
             var camera = new GameObject("Main Camera").AddComponent<Camera>();
             camera.tag = "MainCamera";
 
-            var runner = new GameObject("SimulationRunner").AddComponent<SimulationRunner>();
+            runner = new GameObject("SimulationRunner").AddComponent<SimulationRunner>();
             SetReference(runner, "_controls", AssetDatabase.LoadAssetAtPath<InputActionAsset>(ControlsPath));
 
             var player = new GameObject("Player");
-            var playerView = player.AddComponent<PlayerView>();
-            SetReference(playerView, "_runner", runner);
+            SetReference(player.AddComponent<PlayerView>(), "_runner", runner);
             var visibility = player.AddComponent<PlayerViewVisibility>();
             var body = GameObject.CreatePrimitive(PrimitiveType.Sphere);
             body.name = "Body";
@@ -57,12 +83,13 @@ namespace Moqui.Unity.Editor
             SetReference(rig, "_runner", runner);
             SetReference(rig, "_camera", camera);
             SetReference(rig, "_playerVisibility", visibility);
+            return scene;
+        }
 
-            var bootstrap = new GameObject("SandboxFlightBootstrap").AddComponent<SandboxFlightBootstrap>();
-            SetReference(bootstrap, "_runner", runner);
-
-            EditorSceneManager.SaveScene(scene, FlightScenePath);
-            Debug.Log($"[SandboxSceneBuilder] Saved {FlightScenePath}");
+        private static void Save(Scene scene, string path)
+        {
+            EditorSceneManager.SaveScene(scene, path);
+            Debug.Log($"[SandboxSceneBuilder] Saved {path}");
         }
 
         private static Material LoadOrCreateLitMaterial(string path, Color color)

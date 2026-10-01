@@ -48,8 +48,11 @@ namespace Moqui.Core.Simulation
         /// <summary>대시 거리 배율 (포만, spec/04 §5).</summary>
         public float DashDistanceMultiplier { get; set; } = 1f;
 
-        /// <summary>숨은 상태 (spec/03). 디버프 회복이 빨라진다.</summary>
+        /// <summary>숨은 상태 = Shadow Zone 안 (spec/03). 시각 배율이 0이 되고 디버프 회복이 빨라진다.</summary>
         public bool IsHidden { get; set; }
+
+        /// <summary>이번 틱 Precision 입력. 비행 소음 반경을 줄인다.</summary>
+        public bool PrecisionHeld { get; set; }
 
         public float Stamina { get; set; }
 

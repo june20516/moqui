@@ -44,13 +44,13 @@ namespace Moqui.Core.Collision
             return _byId.TryGetValue(id, out shape);
         }
 
-        public bool Raycast(Vector3 origin, Vector3 direction, float maxDistance, ShapeFlags mask, out CollisionHit hit)
+        public bool Raycast(Vector3 origin, Vector3 direction, float maxDistance, ShapeFlags mask, out CollisionHit hit, ShapeFlags exclude = ShapeFlags.None)
         {
-            return SphereSweep(origin, 0f, direction, maxDistance, mask, out hit);
+            return SphereSweep(origin, 0f, direction, maxDistance, mask, out hit, exclude);
         }
 
-        /// <summary>구를 direction 방향으로 distance만큼 이동시킬 때 가장 먼저 닿는 형상.</summary>
-        public bool SphereSweep(Vector3 center, float radius, Vector3 direction, float distance, ShapeFlags mask, out CollisionHit hit)
+        /// <summary>구를 direction 방향으로 distance만큼 이동시킬 때 가장 먼저 닿는 형상. exclude 플래그를 가진 형상은 무시한다.</summary>
+        public bool SphereSweep(Vector3 center, float radius, Vector3 direction, float distance, ShapeFlags mask, out CollisionHit hit, ShapeFlags exclude = ShapeFlags.None)
         {
             hit = default;
             if (direction.LengthSquared() < MinDirectionLengthSquared)
@@ -63,7 +63,7 @@ namespace Moqui.Core.Collision
             float best = float.MaxValue;
             foreach (var shape in _shapes)
             {
-                if (!shape.Matches(mask))
+                if (!shape.Matches(mask) || shape.Matches(exclude))
                 {
                     continue;
                 }

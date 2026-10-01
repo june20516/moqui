@@ -28,7 +28,8 @@ namespace Moqui.Unity.Presentation
             root.SetParent(parent, false);
             foreach (var shape in world.Shapes)
             {
-                if (shape.Matches(visibleMask))
+                // 인간 몸 캡슐은 움직이므로 HumanView가 따로 그린다.
+                if (shape.Matches(visibleMask) && !shape.Matches(ShapeFlags.Body))
                 {
                     CreateShapeObject(shape, root);
                 }
@@ -39,40 +40,58 @@ namespace Moqui.Unity.Presentation
 
         public static GameObject CreateShapeObject(CollisionShape shape, Transform parent)
         {
-            GameObject visual;
+            PrimitiveType primitive;
             switch (shape.Type)
             {
                 case ShapeType.Box:
-                    visual = GameObject.CreatePrimitive(PrimitiveType.Cube);
-                    visual.transform.SetPositionAndRotation(shape.Center.ToUnity(), shape.Rotation.ToUnity());
-                    visual.transform.localScale = (shape.HalfExtents * 2f).ToUnity();
+                    primitive = PrimitiveType.Cube;
                     break;
                 case ShapeType.Sphere:
-                    visual = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                    visual.transform.position = shape.Center.ToUnity();
-                    visual.transform.localScale = Vector3.one * (shape.Radius * 2f / UnitySphereDiameter);
+                    primitive = PrimitiveType.Sphere;
                     break;
                 case ShapeType.Capsule:
-                    visual = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-                    Vector3 a = shape.PointA.ToUnity();
-                    Vector3 b = shape.PointB.ToUnity();
-                    Vector3 axis = b - a;
-                    float diameter = shape.Radius * 2f;
-                    visual.transform.position = (a + b) * 0.5f;
-                    visual.transform.rotation = axis.sqrMagnitude > 0f ? Quaternion.FromToRotation(Vector3.up, axis) : Quaternion.identity;
-                    visual.transform.localScale = new Vector3(diameter, (axis.magnitude + diameter) / UnityCapsuleHeight, diameter);
+                    primitive = PrimitiveType.Capsule;
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(shape));
             }
 
+            GameObject visual = GameObject.CreatePrimitive(primitive);
             visual.name = shape.Id;
-            visual.transform.SetParent(parent, true);
+            visual.transform.SetParent(parent, false);
+            ApplyPose(shape, visual.transform);
 
             // 판정은 Core가 하므로 Unity 콜라이더는 쓰지 않는다.
             UnityEngine.Object.DestroyImmediate(visual.GetComponent<Collider>());
             Tint(visual.GetComponent<Renderer>(), ColorFor(shape.Id));
             return visual;
+        }
+
+        /// <summary>형상의 현재 위치·회전·크기를 프리미티브에 반영한다 (월드 좌표).</summary>
+        public static void ApplyPose(CollisionShape shape, Transform visual)
+        {
+            switch (shape.Type)
+            {
+                case ShapeType.Box:
+                    visual.SetPositionAndRotation(shape.Center.ToUnity(), shape.Rotation.ToUnity());
+                    visual.localScale = (shape.HalfExtents * 2f).ToUnity();
+                    break;
+                case ShapeType.Sphere:
+                    visual.SetPositionAndRotation(shape.Center.ToUnity(), Quaternion.identity);
+                    visual.localScale = Vector3.one * (shape.Radius * 2f / UnitySphereDiameter);
+                    break;
+                case ShapeType.Capsule:
+                    Vector3 a = shape.PointA.ToUnity();
+                    Vector3 b = shape.PointB.ToUnity();
+                    Vector3 axis = b - a;
+                    float diameter = shape.Radius * 2f;
+                    Quaternion rotation = axis.sqrMagnitude > 0f ? Quaternion.FromToRotation(Vector3.up, axis) : Quaternion.identity;
+                    visual.SetPositionAndRotation((a + b) * 0.5f, rotation);
+                    visual.localScale = new Vector3(diameter, (axis.magnitude + diameter) / UnityCapsuleHeight, diameter);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(shape));
+            }
         }
 
         public static void Tint(Renderer renderer, Color color)
