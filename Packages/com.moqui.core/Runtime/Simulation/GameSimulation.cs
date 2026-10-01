@@ -98,6 +98,9 @@ namespace Moqui.Core.Simulation
         /// <summary>직전 Step에서 발생한 이벤트.</summary>
         public IReadOnlyList<SimulationEvent> Events => _events;
 
+        /// <summary>마지막 틱의 입력 커맨드 (튜토리얼 판정, spec/08).</summary>
+        public PlayerCommand LastCommand { get; private set; }
+
         /// <summary>스킬 와류 제어 3레벨 (spec/09). 대각선 대시를 허용한다.</summary>
         public bool DiagonalDashUnlocked { get; set; }
 
@@ -111,6 +114,7 @@ namespace Moqui.Core.Simulation
         public void Step(PlayerCommand command)
         {
             _events.Clear();
+            LastCommand = command;
 
             // 승리하면 입력을 막고 세계를 멈춘다 (spec/04 §6). 패배는 사망 연출 동안 세계가 계속 움직인다.
             if (Outcome == StageOutcome.Cleared)

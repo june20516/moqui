@@ -3,6 +3,7 @@ using System.Linq;
 using Moqui.Unity.Presentation;
 using Moqui.Unity.Presentation.Stage;
 using Moqui.Unity.Simulation;
+using Moqui.Unity.UI.Hud;
 using NUnit.Framework;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -20,6 +21,8 @@ namespace Moqui.Unity.Tests
         public IEnumerator Stage_Play_BuildsRequestedLevel([Values("stage01", "stage02")] string levelId)
         {
             StageBootstrap.RequestedLevelId = levelId;
+            string previousHints = PlayerPrefs.GetString(TutorialHints.PreferenceKey, "1");
+            PlayerPrefs.SetString(TutorialHints.PreferenceKey, "1");
             try
             {
                 yield return SceneManager.LoadSceneAsync(ScenePath, LoadSceneMode.Single);
@@ -39,9 +42,17 @@ namespace Moqui.Unity.Tests
                 Transform levelRoot = bootstrap.transform.Find($"Level_{levelId}");
                 Assert.That(levelRoot, Is.Not.Null);
                 Assert.That(levelRoot.childCount, Is.EqualTo(bootstrap.Level.AllShapes().Count()));
+
+                var hud = Object.FindAnyObjectByType<HudController>();
+                var hudView = hud.GetComponent<HudView>();
+                Assert.That(hud.LastState, Is.Not.Null, "HUD updates every frame");
+                Assert.That(bootstrap.Tutorial, Is.Not.Null);
+                Assert.That(bootstrap.Tutorial.CurrentStep, Is.EqualTo(bootstrap.Level.Tutorial[0]));
+                Assert.That(hudView.TutorialText.text, Is.Not.Empty, "first tutorial hint is shown");
             }
             finally
             {
+                PlayerPrefs.SetString(TutorialHints.PreferenceKey, previousHints);
                 StageBootstrap.RequestedLevelId = StageBootstrap.DefaultLevelId;
             }
         }

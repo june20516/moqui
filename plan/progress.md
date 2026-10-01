@@ -4,7 +4,7 @@
 
 ## 현재
 - 마일스톤: **M7 거실 버티컬 슬라이스 (Stage 1·2)** (진행 중)
-- 다음 할 일: Unity — HUD(spec/08), 튜토리얼, 최종 캡처, 버티컬 슬라이스 리포트
+- 다음 할 일: Stage 1·2 대표 캡처 최종 검토, 버티컬 슬라이스 리포트 → M7 종료
 - 브랜치: `milestone/m7-living-room`
 
 ## 현재 마일스톤 체크리스트 (M7)
@@ -32,12 +32,12 @@
 - [x] 은신처 표시 강도가 어그로 상태에 따라 3단계로 바뀐다 (Unity). — 증거: EditMode `SensesViewTests.ShadowCue_IntensityStepsWithAwarenessState_HiddenBeyondCueRange`
 
 ### HUD · 튜토리얼 (spec/08 중 HUD 부분)
-- [ ] HUD 요소가 각 모델 값의 변화에 반영된다 (Unity: 값 주입 후 UI 상태 확인).
-- [ ] 인간 머리가 화면 밖일 때만 방향 화살표가 보인다 (Unity).
-- [ ] 화면 밖 공격 예고 시 해당 방향 가장자리 경고와 경고음이 나온다 (Unity).
-- [ ] 광분 중에만 은신처 방향 표시가 나온다 (Unity).
-- [ ] 튜토리얼 안내가 행동 이벤트로 순서대로 진행되고, 설정으로 끌 수 있다 (Unity).
-- [ ] 1920×1080, 1280×720, 2560×1440에서 HUD 요소가 화면 밖으로 나가거나 겹치지 않는다 (캡처 3장 검토).
+- [x] HUD 요소가 각 모델 값의 변화에 반영된다 (Unity: 값 주입 후 UI 상태 확인). — 증거: EditMode `HudTests.ModelValues_AreReflectedInHudElements`, `Satiety_HighlightedOnlyWhenSpeedMultiplierBelowThreshold`, `Prompts_FollowPlayerStateAndInputDevice`, Core `HudDataTests`(5개) (D-041)
+- [x] 인간 머리가 화면 밖일 때만 방향 화살표가 보인다 (Unity). — 증거: `HudTests.HeadArrow_VisibleOnlyWhenHeadOffscreen`, `EdgeMarkers_StayInsideSafeBandAvoidingTopAndBottomHud`
+- [x] 화면 밖 공격 예고 시 해당 방향 가장자리 경고와 경고음이 나온다 (Unity). — 증거: `HudTests.OffscreenTelegraph_EdgeWarningAndSoundOnStart`
+- [x] 광분 중에만 은신처 방향 표시가 나온다 (Unity). — 증거: `HudTests.HidingDirection_OnlyDuringFrenzy`
+- [x] 튜토리얼 안내가 행동 이벤트로 순서대로 진행되고, 설정으로 끌 수 있다 (Unity). — 증거: Core `TutorialTests`(4개), EditMode `HudTests.TutorialHints_FollowTrackerSteps_AndCanBeTurnedOff`, `TutorialHints_SettingPersistsInStore_AndEveryLevelStepHasText`, PlayMode `StageSceneTests`(첫 안내 표시) (D-042)
+- [x] 1920×1080, 1280×720, 2560×1440에서 HUD 요소가 화면 밖으로 나가거나 겹치지 않는다 (캡처 3장 검토). — 증거: `Captures/2026-10-01_152002/Hud_*.png`
 
 ### 봇 · 캡처 · 리포트
 - [x] Stage 1·2 클리어 봇이 고정 시드 5개 중 4개 이상 성공한다 (Core, tech/verification §3). — 증거: `ScenarioTests.Scenario_MeetsExpectationOnEnoughSeeds("stage01_clear")` 5/5, `("stage02_clear")` 4/5 (D-038)
@@ -57,7 +57,8 @@
 ## 사람 요청
 | ID | 요청 | 필요 사양 | 대체물 적용 여부 | 상태 |
 |---|---|---|---|---|
-| 2026-10-01 | M7 | HUD 원천 데이터(Core): PlayerOccluded(가려짐), FrenzyMinRemaining·CalmProgress, CanAttach, DashCost, 스냅샷 포함 | Core 261/261 통과 | (이 커밋) |
+| 2026-10-01 | M7 | HUD(HudState·HudView·HudPresenter·HudController, 절차 스프라이트·경고음, OS 한글 글꼴), 튜토리얼(Core TutorialTracker, TutorialHints·설정), HUD 3해상도 캡처, D-041·D-042. **결함 수정**: 가장자리 표시 겹침·해상도별 위치, 누락 스크립트 | Core 265 + EditMode 64 + PlayMode 6 통과, 빌드 경고 0, 캡처 검토 | (이 커밋) |
+| 2026-10-01 | M7 | HUD 원천 데이터(Core): PlayerOccluded(가려짐), FrenzyMinRemaining·CalmProgress, CanAttach, DashCost, 스냅샷 포함 | Core 261/261 통과 | 6833ed6 |
 | 2026-10-01 | M7 | 감각 큐: Co2Plume·SenseCueModel·SensesView(CO₂·체온·자국·은신처 강도), 머티리얼 3개, tuning 키 11개, 캡처에 감각 반영, D-040 | Core 256 + EditMode 51 + PlayMode 6 통과, 캡처 검토 | 6ecbce1 |
 | 2026-10-01 | M7 | 흐린 시야: SensesSettings·FogModel·SensesFog, 깊이 기반 안개+블러 셰이더, PC_Renderer 전체 화면 패스, tuning 키 2개, D-039 | Core 256 + EditMode 46 + PlayMode 6 통과, 캡처 검토 | 0159a69 |
 | R-001 | Unity 버전 확정 | 6000.6.3f1 사용으로 사람이 확정 (D-019) | - | 해결 |
@@ -65,12 +66,14 @@
 | R-003 | Unity 로그인 + 라이선스 활성화 | Unity Personal 활성화됨, 배치 모드 라이선스 초기화 확인 | - | 해결 |
 
 ## 사람 검토 권장 (막힘 아님)
+- **한글 글꼴(D-041):** 허용 라이선스 목록에 OFL이 없어 한글 글꼴 파일을 넣지 못하고 OS 글꼴(맑은 고딕)을 실행 중에 씁니다. OFL(예: Pretendard, Noto Sans KR)을 허용 목록에 추가하면 M10에서 번들 글꼴 + TextMeshPro로 바꿀 수 있습니다.
 - **밸런스(D-035):** 설계 검증 봇 기준으로 자국 5개(하한 40 = 의심 진입선)가 되면 인간이 영구 의심 상태로 몸 주변을 훑어 접근이 거의 불가능하다. 긴 세션 전략도 40%가 자국 5개에서 멈춘다. 수치(`biteMark.floorPerBite` 8, `floorMax` 45, 반응률)는 spec 제안값 그대로 두었으며, M7 버티컬 슬라이스 리포트에서 플레이 감각과 함께 검토를 요청한다.
 
 ## 막힘
 (없음)
 
 ## 캡처 검토 기록
+- 2026-10-01 M7 `Captures/2026-10-01_152002/` HUD 3해상도: 모든 요소를 동시에 켠 상태(광분 4.3초·진정 링, 가려짐, 흡혈 62%·포만 강조·자국 2, 가려움 링·조준점, 젖은 날개 3.4s, 습기, 머리 화살표, 은신처 방향, 공격 경고, 튜토리얼 문구). 세 해상도에서 같은 비율 배치, 화면 밖·겹침 없음, 한글 정상. **결함 수정**: 첫 캡처(`151725`)에서 가장자리 표시가 하단 스태미나 문구와 겹치고 해상도마다 위치가 달랐음 → 세로 0.25~0.75 띠 제한 + 뷰포트 앵커 배치. 빌드에서 `HudAudioSource` 누락 스크립트 경고(파일명 불일치) → 파일 분리 + 씬 누락 스크립트 검사 테스트 추가
 - 2026-10-01 M7 `Captures/2026-10-01_150001/` Stage 감각 큐: 시작 위치에서 최대 흐림 너머 머리 위 CO₂ 연기(분홍) 보임, 인간 근접에서 오른 전완 체온 빛과 붉은 자국 점, 종아리 체온 빛. 체온 빛이 희게 보여 색을 더 따뜻하게 조정. 마젠타 없음
 - 2026-10-01 M7 `Captures/2026-10-01_145312/` Stage 흐린 시야: 시작 위치에서 가까운 커튼은 선명, 소파·인간·책장은 흐림과 블러, 최대 흐림에서도 가구 실루엣 유지. 은신처 표시(투명)는 안개 뒤에 그려져 선명. 마젠타 없음
 - 2026-10-01 M7(중간) `Captures/2026-10-01_144646/` Stage_stage01·02: 전경(거실 가구·커튼·책장·화분·에어컨·소파 위 캡슐 인간), 시작 위치 3인칭·1인칭, 인간 근접(오른 전완), Shadow Zone 내부(테이블 아래). 은신처 볼륨은 반투명 어두운 표시, 마젠타 없음. 감각 표현 적용 전이라 최종 검토는 감각·HUD 뒤에 다시 찍는다

@@ -1,5 +1,6 @@
 using Moqui.Core.Data.Levels;
 using Moqui.Core.Simulation;
+using Moqui.Core.Tutorial;
 using Moqui.Unity.Data;
 using Moqui.Unity.Presentation.Senses;
 using Moqui.Unity.Simulation;
@@ -28,6 +29,9 @@ namespace Moqui.Unity.Presentation.Stage
 
         public LevelDefinition Level { get; private set; }
 
+        /// <summary>레벨에 튜토리얼 안내가 있으면 진행 판정기. 없으면 null.</summary>
+        public TutorialTracker Tutorial { get; private set; }
+
         private void Awake()
         {
             var tuning = SimulationRunner.LoadTuning();
@@ -36,6 +40,12 @@ namespace Moqui.Unity.Presentation.Stage
             var visuals = LevelView.Build(Level, simulation.World, transform, _materials);
             _senses.Bind(simulation, new SensesSettings(tuning), visuals, _materials);
             _runner.Begin(tuning, simulation);
+            if (Level.Tutorial.Count > 0)
+            {
+                Tutorial = new TutorialTracker(Level.Tutorial, new TutorialSettings(tuning));
+                _runner.Driver.TickCompleted += Tutorial.Observe;
+            }
+
             Cursor.lockState = CursorLockMode.Locked;
         }
     }

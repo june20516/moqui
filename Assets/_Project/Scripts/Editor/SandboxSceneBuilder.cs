@@ -2,6 +2,7 @@ using Moqui.Unity.Presentation;
 using Moqui.Unity.Presentation.Sandbox;
 using Moqui.Unity.Presentation.Senses;
 using Moqui.Unity.Presentation.Stage;
+using Moqui.Unity.UI.Hud;
 using Moqui.Unity.Simulation;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -78,6 +79,14 @@ namespace Moqui.Unity.Editor
             SetReference(bootstrap, "_runner", runner);
             SetReference(bootstrap, "_materials", materials);
             SetReference(bootstrap, "_senses", senses);
+            var hud = new GameObject("Hud", typeof(RectTransform));
+            hud.AddComponent<HudView>();
+            var hudController = hud.AddComponent<HudController>();
+            SetReference(hudController, "_runner", runner);
+            SetReference(hudController, "_camera", Camera.main);
+            SetReference(hudController, "_cameraRig", Object.FindAnyObjectByType<CameraRig>());
+            SetReference(hudController, "_audio", hud.AddComponent<HudAudioSource>());
+            SetReference(hudController, "_stage", bootstrap);
             Save(scene, StageScenePath);
             AddToBuildSettings(StageScenePath);
         }

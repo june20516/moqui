@@ -356,6 +356,18 @@
 | skill.decoy.noiseRate | +12 /s | |
 | skill.decoy.cooldown | 20s / 14s | 레벨별 |
 
+## hud (표현 전용, spec/08)
+| 키 | 값 | 설명 |
+|---|---|---|
+| hud.satietyHighlightMul | 0.85 | 포만 감속 배율이 이 값 아래면 포만 아이콘 강조 |
+
+## tutorial (spec/08 §튜토리얼)
+| 키 | 값 | 설명 |
+|---|---|---|
+| tutorial.holdSeconds | 1s | 이동·정밀 비행 안내를 끝내는 입력 유지 시간 |
+| tutorial.lookDegrees | 90° | 시점 안내를 끝내는 누적 회전 각도 |
+| tutorial.infoTimeout | 30s | 설명형 안내(Stage 2)가 행동 없이 넘어가는 시간 |
+
 ## performance
 | 키 | 값 | 설명 |
 |---|---|---|
