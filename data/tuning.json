@@ -157,6 +157,7 @@
     "senses.heatGlowScale": 1.8,
     "senses.biteMarkDotRadius": 1.5,
     "hud.satietyHighlightMul": 0.85,
+    "hud.resultDelay": 1.5,
     "tutorial.holdSeconds": 1,
     "tutorial.lookDegrees": 90,
     "tutorial.infoTimeout": 30,

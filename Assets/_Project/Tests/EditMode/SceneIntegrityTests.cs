@@ -14,6 +14,10 @@ namespace Moqui.Unity.Tests
         [TestCase(SandboxSceneBuilder.FlightScenePath)]
         [TestCase(SandboxSceneBuilder.HumanScenePath)]
         [TestCase(SandboxSceneBuilder.WaterScenePath)]
+        [TestCase("Assets/_Project/Scenes/Boot.unity")]
+        [TestCase("Assets/_Project/Scenes/Title.unity")]
+        [TestCase("Assets/_Project/Scenes/StageSelect.unity")]
+        [TestCase("Assets/_Project/Scenes/Ending.unity")]
         public void Scene_HasNoMissingScripts(string scenePath)
         {
             var scene = EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
@@ -36,6 +40,14 @@ namespace Moqui.Unity.Tests
             EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
 
             Assert.That(Camera.main.GetUniversalAdditionalCameraData().renderPostProcessing, Is.True, scenePath);
+        }
+
+        [Test]
+        public void BuildSettings_ScreenScenesInFlowOrder()
+        {
+            var paths = System.Array.ConvertAll(EditorBuildSettings.scenes, scene => scene.path);
+            var expected = System.Array.ConvertAll(SandboxSceneBuilder.BuildOrder, SandboxSceneBuilder.ScenePath);
+            Assert.That(paths, Is.EqualTo(expected));
         }
     }
 }

@@ -1,4 +1,5 @@
 using Moqui.Core.Data.Levels;
+using Moqui.Core.Meta;
 using Moqui.Core.Simulation;
 using Moqui.Core.Tutorial;
 using Moqui.Unity.Data;
@@ -27,6 +28,9 @@ namespace Moqui.Unity.Presentation.Stage
         /// <summary>다음에 열 레벨. 화면 흐름(M8)이 정한다.</summary>
         public static string RequestedLevelId { get; set; } = DefaultLevelId;
 
+        /// <summary>가지고 들어가는 스킬 (spec/09). 화면 흐름이 저장 데이터에서 정한다.</summary>
+        public static SkillLoadout RequestedSkills { get; set; } = SkillLoadout.None;
+
         public LevelDefinition Level { get; private set; }
 
         /// <summary>레벨에 튜토리얼 안내가 있으면 진행 판정기. 없으면 null.</summary>
@@ -34,9 +38,10 @@ namespace Moqui.Unity.Presentation.Stage
 
         private void Awake()
         {
-            var tuning = SimulationRunner.LoadTuning();
+            // 스킬 수치 효과는 Tuning에 반영해 시뮬레이션·시점·감각 표현이 같은 값을 쓰게 한다 (D-043).
+            var tuning = SkillEffects.Apply(SimulationRunner.LoadTuning(), RequestedSkills);
             Level = new LevelLoader(new UnityDataSource()).Load(RequestedLevelId);
-            var simulation = new GameSimulation(GameSettings.FromTuning(tuning), Level.CreateSetup());
+            var simulation = new GameSimulation(GameSettings.FromTuning(tuning), Level.CreateSetup(RequestedSkills));
             var visuals = LevelView.Build(Level, simulation.World, transform, _materials);
             _senses.Bind(simulation, new SensesSettings(tuning), visuals, _materials);
             _runner.Begin(tuning, simulation);
