@@ -51,7 +51,34 @@ namespace Moqui.Unity.Presentation.Sandbox
                 new BodyPartDefinition("calfR", BodyPartKind.Calf, new Vector3(10, 46, 44), new Vector3(10, 8, 48), 5f, SkinSiteType.Calf),
             };
             var shoulders = new[] { new Vector3(-shoulderHalfWidth, shoulderHeight, -6), new Vector3(shoulderHalfWidth, shoulderHeight, -6) };
-            return new HumanDefinition("human", HumanPosition, 0f, parts, "head", shoulders, new[] { 0f, 35f, 0f, -35f });
+            return new HumanDefinition("human", HumanPosition, 0f, parts, "head", shoulders, new[] { 0f, 35f, 0f, -35f }, CreateActions());
+        }
+
+        /// <summary>spec/07 거실 예시 동작 (휴대폰 스크롤, 자세 고치기, 다리 떨기, 휴지 뽑기). 큰 동작은 튕겨남을 일으킨다.</summary>
+        public static HumanActionDefinition[] CreateActions()
+        {
+            return new[]
+            {
+                new HumanActionDefinition("phoneScroll", 4f, 2f, new[]
+                {
+                    new PartMotionDefinition("forearmR", Vector3.Zero, new Vector3(0f, 3f, 0f)),
+                }),
+                new HumanActionDefinition("shiftPosture", 2f, 1.5f, new[]
+                {
+                    new PartMotionDefinition("torso", new Vector3(0f, 0f, 2f), new Vector3(3f, 2f, 4f)),
+                    new PartMotionDefinition("neck", new Vector3(3f, 2f, 4f), new Vector3(3f, 2f, 4f)),
+                    new PartMotionDefinition("head", new Vector3(3f, 2f, 4f), new Vector3(3f, 2f, 4f)),
+                }),
+                new HumanActionDefinition("legBounce", 2f, 0.6f, new[]
+                {
+                    new PartMotionDefinition("calfL", Vector3.Zero, new Vector3(0f, 0f, 14f)),
+                }),
+                new HumanActionDefinition("grabTissue", 1f, 0.6f, new[]
+                {
+                    new PartMotionDefinition("upperArmR", Vector3.Zero, new Vector3(8f, 0f, 8f)),
+                    new PartMotionDefinition("forearmR", new Vector3(8f, 0f, 8f), new Vector3(25f, 10f, 15f)),
+                }),
+            };
         }
     }
 }

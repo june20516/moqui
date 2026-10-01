@@ -132,6 +132,41 @@ namespace Moqui.Core.Simulation
 
         public HumanAttack Attack { get; } = new HumanAttack();
 
+        // ---- 무작위 동작 (spec/02 §6) ----
+
+        /// <summary>진행 중인 동작. 없으면 null.</summary>
+        public HumanActionDefinition CurrentAction { get; set; }
+
+        public int ActionStartTick { get; set; }
+
+        public int NextActionTick { get; set; }
+
+        /// <summary>
+        /// 몸 캡슐을 정의 자세 + 현재 동작의 이동량 × 곡선으로 다시 놓는다. 절차적 포즈 (tech/architecture.md §4.6).
+        /// </summary>
+        public void ApplyPose(HumanActionDefinition action, float elapsedSeconds)
+        {
+            float profile = action?.Profile(elapsedSeconds) ?? 0f;
+            foreach (var part in Definition.Parts)
+            {
+                Vector3 a = part.LocalA;
+                Vector3 b = part.LocalB;
+                if (action != null)
+                {
+                    foreach (var motion in action.Motions)
+                    {
+                        if (motion.PartId == part.Id)
+                        {
+                            a += motion.OffsetA * profile;
+                            b += motion.OffsetB * profile;
+                        }
+                    }
+                }
+
+                _shapes[part.Id].SetSegment(ToWorld(a), ToWorld(b));
+            }
+        }
+
         public float DistanceToNearestEar(Vector3 point)
         {
             return MathF.Min(Vector3.Distance(point, LeftEar), Vector3.Distance(point, RightEar));

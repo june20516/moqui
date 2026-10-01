@@ -71,7 +71,8 @@ namespace Moqui.Core.Simulation
             IReadOnlyList<BodyPartDefinition> parts,
             string headPartId,
             IReadOnlyList<Vector3> shoulderLocals,
-            IReadOnlyList<float> idleLookYaws)
+            IReadOnlyList<float> idleLookYaws,
+            IReadOnlyList<HumanActionDefinition> actions = null)
         {
             Id = id ?? throw new ArgumentNullException(nameof(id));
             Position = position;
@@ -80,6 +81,7 @@ namespace Moqui.Core.Simulation
             HeadPartId = headPartId;
             ShoulderLocals = shoulderLocals ?? throw new ArgumentNullException(nameof(shoulderLocals));
             IdleLookYaws = idleLookYaws != null && idleLookYaws.Count > 0 ? idleLookYaws : new[] { 0f };
+            Actions = actions ?? Array.Empty<HumanActionDefinition>();
 
             var head = parts.FirstOrDefault(part => part.Id == headPartId);
             if (head == null || head.Kind != BodyPartKind.Head)
@@ -90,6 +92,17 @@ namespace Moqui.Core.Simulation
             if (shoulderLocals.Count == 0)
             {
                 throw new ArgumentException($"Human '{id}' needs at least one shoulder.", nameof(shoulderLocals));
+            }
+
+            foreach (var action in Actions)
+            {
+                foreach (var motion in action.Motions)
+                {
+                    if (!parts.Any(part => part.Id == motion.PartId))
+                    {
+                        throw new ArgumentException($"Human '{id}': action '{action.Name}' moves unknown part '{motion.PartId}'.", nameof(actions));
+                    }
+                }
             }
         }
 
@@ -106,5 +119,8 @@ namespace Moqui.Core.Simulation
         public IReadOnlyList<Vector3> ShoulderLocals { get; }
 
         public IReadOnlyList<float> IdleLookYaws { get; }
+
+        /// <summary>무작위 동작 목록 (spec/02 §6). 없으면 움직이지 않는다.</summary>
+        public IReadOnlyList<HumanActionDefinition> Actions { get; }
     }
 }

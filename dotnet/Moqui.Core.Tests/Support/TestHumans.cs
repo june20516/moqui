@@ -15,7 +15,27 @@ namespace Moqui.Core.Tests.Support
 
         public static Vector3 Head => new Vector3(0f, HeadHeight, 0f);
 
-        public static HumanDefinition Seated(float facingYaw = 0f, float[] idleLookYaws = null)
+        /// <summary>느린 동작: 오른쪽 팔뚝 끝을 3u 들었다 내림 (최고 속도 약 4.7u/s, 튕겨남 없음).</summary>
+        public static HumanActionDefinition Scroll => new HumanActionDefinition("scroll", 1f, 2f, new[]
+        {
+            new PartMotionDefinition("forearmR", Vector3.Zero, new Vector3(0f, 3f, 0f)),
+        });
+
+        /// <summary>빠른 동작: 오른팔을 크게 뻗음 (팔뚝 끝 최고 속도 약 190u/s, 튕겨남).</summary>
+        public static HumanActionDefinition GrabTissue => new HumanActionDefinition("grabTissue", 1f, 0.5f, new[]
+        {
+            new PartMotionDefinition("upperArmR", Vector3.Zero, new Vector3(8f, 0f, 8f)),
+            new PartMotionDefinition("forearmR", new Vector3(8f, 0f, 8f), new Vector3(25f, 10f, 15f)),
+        });
+
+        /// <summary>확률 반응을 끈다 (움직임만 검증할 때). 스킬 배율과 같은 공개 배율을 0으로 둔다.</summary>
+        public static void DisableReactions(GameSimulation simulation)
+        {
+            simulation.HumanSystem.Reactions.ExtraMultiplier = 0f;
+            simulation.HumanSystem.Reactions.LandingSkillMultiplier = 0f;
+        }
+
+        public static HumanDefinition Seated(float facingYaw = 0f, float[] idleLookYaws = null, HumanActionDefinition[] actions = null)
         {
             var parts = new[]
             {
@@ -31,7 +51,7 @@ namespace Moqui.Core.Tests.Support
                 new BodyPartDefinition("calfR", BodyPartKind.Calf, new Vector3(10, 48, 40), new Vector3(10, 5, 45), 5f, SkinSiteType.Calf),
             };
             var shoulders = new[] { new Vector3(-ShoulderHalfWidth, ShoulderHeight, -5), new Vector3(ShoulderHalfWidth, ShoulderHeight, -5) };
-            return new HumanDefinition("human", Vector3.Zero, facingYaw, parts, "head", shoulders, idleLookYaws ?? new[] { 0f });
+            return new HumanDefinition("human", Vector3.Zero, facingYaw, parts, "head", shoulders, idleLookYaws ?? new[] { 0f }, actions);
         }
 
         public static GameSimulation Simulation(Vector3 playerSpawn, CollisionWorld world = null, HumanDefinition human = null, ulong seed = DefaultSeed)

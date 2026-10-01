@@ -45,6 +45,7 @@ namespace Moqui.Core.Simulation
             {
                 Human = new Human(setup.Human, World);
                 _humanSystem = new HumanSystem(settings, World, setup.Seed);
+                _humanSystem.Motion.Initialize(Human);
             }
         }
 
@@ -84,6 +85,11 @@ namespace Moqui.Core.Simulation
         public void Step(PlayerCommand command)
         {
             _events.Clear();
+            if (Human != null)
+            {
+                _humanSystem.StepMotion(Human, Tick);
+            }
+
             if (Player.State != PlayerState.Dead)
             {
                 StepPlayer(command);

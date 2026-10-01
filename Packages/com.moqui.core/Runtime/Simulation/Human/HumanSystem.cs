@@ -5,7 +5,8 @@ using Moqui.Core.Random;
 namespace Moqui.Core.Simulation
 {
     /// <summary>
-    /// 인간 한 틱 (tech/architecture.md §4.4 순서): Sensing(Vision/Hearing) → Awareness → HumanBrain(상태·머리) → Attacks.
+    /// 인간 한 틱 (tech/architecture.md §4.4 순서). StepMotion(무작위 동작)은 플레이어 이동 전에,
+    /// Step(Sensing → Awareness → HumanBrain → Attacks → Reactions)은 플레이어 이동 뒤에 부른다.
     /// </summary>
     public sealed class HumanSystem
     {
@@ -22,6 +23,7 @@ namespace Moqui.Core.Simulation
             _brain = new HumanBrain(settings.Awareness, settings.Frenzy, settings.Head);
             _attacks = new HumanAttackSystem(settings.Attack, settings.Frenzy, SeedStreams.Create(seed, SeedStreams.BlindSwat));
             Reactions = new ReactionSystem(settings, _attacks, SeedStreams.Create(seed, SeedStreams.Reactions));
+            Motion = new HumanMotionSystem(settings.HumanMotion, SeedStreams.Create(seed, SeedStreams.HumanActions));
         }
 
         public AwarenessSystem Awareness { get; }
@@ -30,7 +32,14 @@ namespace Moqui.Core.Simulation
 
         public ReactionSystem Reactions { get; }
 
+        public HumanMotionSystem Motion { get; }
+
         public HumanPerception LastPerception { get; private set; }
+
+        public void StepMotion(Human human, int tick)
+        {
+            Motion.Step(human, tick);
+        }
 
         public void Step(Human human, Player player, int tick, float deltaTime, List<SimulationEvent> events)
         {
