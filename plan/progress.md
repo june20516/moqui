@@ -4,7 +4,7 @@
 
 ## 현재
 - 마일스톤: **M8 화면 흐름 · 스킬 트리 · 저장** (진행 중)
-- 다음 할 일: HUD 액티브 스킬 칸 테스트, 겹눈 선명 범위(Unity), 미끼 표현, 그다음 CO₂·증기 기체형 교체(사람 요청)
+- 다음 할 일: CO₂·증기 기체형 교체(사람 요청) → M8 종료
 - 브랜치: `milestone/m8-flow-skills`
 
 ## 현재 마일스톤 체크리스트 (M8)
@@ -17,7 +17,7 @@
 - [x] 미끼가 지정 지점에서 지속시간 동안 NoiseEvent를 발생시키고, 인간의 마지막 자극 위치가 미끼로 바뀐다 (Core). — 증거: `SkillTests.Decoy_EmitsNoiseAtAimPointForDuration_LastStimulusMovesToDecoy`, `Decoy_NotEquipped_DoesNothing`
 - [x] 저장 → 로드 왕복 후 모든 필드가 같다 (Core). — 증거: `MetaTests.SaveLoad_RoundTrip_AllFieldsEqual`
 - [x] 손상된 save.json에서도 예외 없이 기본값으로 시작하고 손상 파일을 보존한다 (Core). — 증거: `MetaTests.CorruptSave_StartsWithDefaults_KeepsCorruptFile`(4케이스), `MissingSave_StartsWithDefaults_Reset_DeletesFile`
-- [ ] (M7 이월) 겹눈 각성 레벨에 따라 선명 범위가 늘어난다 (Unity, spec/11).
+- [x] (M7 이월) 겹눈 각성 레벨에 따라 선명 범위가 늘어난다 (Unity, spec/11). — 증거: EditMode `SensesFogTests.CompoundEyes_ExtendsClearRangePerLevel` (Stage는 스킬 반영 Tuning으로 SensesSettings를 만든다, D-043)
 
 ### 화면 흐름 · 설정 (spec/08)
 - [x] 위 흐름의 모든 전이가 동작한다 (Unity: UI 흐름 테스트 — 버튼 이벤트를 직접 호출). — 증거: EditMode `FlowTests.Title_ButtonsLeadToStageSelectSettingsResetAndQuit`, `StageSelect_LockedStagesCannotStart_UnlockAfterClear`, `Result_RecordsAndSaves_RetrySkillsStageSelectAndEnding`, `SceneIntegrityTests.BuildSettings_ScreenScenesInFlowOrder` (D-044)
@@ -26,7 +26,7 @@
 - [x] Skills 화면에서 구매와 액티브 장착이 동작하고 저장된다 (Unity). — 증거: `FlowTests.Skills_PurchaseAndEquip_AreSaved_AndCarriedIntoStage`
 - [x] Pause 중에는 Core 시뮬레이션 틱이 진행되지 않고 입력 커맨드가 전달되지 않는다 (Unity). — 증거: PlayMode `FlowPlayModeTests.Pause_StopsTicksAndDropsInput`
 - [x] 설정 값이 재시작 후에도 유지된다 (Unity). — 증거: `FlowTests.Settings_ChangedThroughPanel_PersistInStore`, `Settings_SurvivePlayerPrefsRestart`
-- [ ] (M7 이월) HUD 액티브 스킬 칸(아이콘 + 쿨타임) (Unity).
+- [x] (M7 이월) HUD 액티브 스킬 칸(아이콘 + 쿨타임) (Unity). — 증거: `HudTests.ActiveSkill_SlotShowsOnlyWhenEquipped_WithCooldown`, 미끼 월드 표시 `SensesViewTests.Decoy_MarkerShownAtDecoyWhileActive`
 
 ### 사람 요청
 - [ ] CO₂·증기 표현을 기체형(소프트 파티클/볼륨 안개)으로 교체 (캡처 검토). M9 시작 전
@@ -60,7 +60,8 @@
 ## 사람 요청
 | ID | 요청 | 필요 사양 | 대체물 적용 여부 | 상태 |
 |---|---|---|---|---|
-| 2026-10-01 | M8 | 화면 흐름: GameSession·ScreenFlow·SceneNavigator, Title·StageSelect·Skills·Settings·Confirm·Stage(Pause/Result)·Ending·Boot, FileSaveStorage, UserSettings, Pause(틱·입력 정지), HUD 액티브 스킬 칸, 메뉴 캡처, D-044. **결함 수정**: 씬 생성기 메서드 손실 복구, 메뉴 글자 누락, 행 레이아웃 | Core 300 + EditMode 77 + PlayMode 9 통과, 빌드 경고 0, 캡처 검토 | (이 커밋) |
+| 2026-10-01 | M8 | HUD 액티브 스킬 칸 테스트, 겹눈 선명 범위 테스트, 미끼 월드 표시 | Core 300 + EditMode 80 + PlayMode 9 통과 | (이 커밋) |
+| 2026-10-01 | M8 | 화면 흐름: GameSession·ScreenFlow·SceneNavigator, Title·StageSelect·Skills·Settings·Confirm·Stage(Pause/Result)·Ending·Boot, FileSaveStorage, UserSettings, Pause(틱·입력 정지), HUD 액티브 스킬 칸, 메뉴 캡처, D-044. **결함 수정**: 씬 생성기 메서드 손실 복구, 메뉴 글자 누락, 행 레이아웃 | Core 300 + EditMode 77 + PlayMode 9 통과, 빌드 경고 0, 캡처 검토 | 42912f0 |
 | 2026-10-01 | M8 | Core 메타: SkillCatalog·SkillLoadout·SkillEffects(스킬 반영 Tuning), 연속 와류, 미끼(DecoySystem), 보상, SaveData·직렬화·SaveStore·SkillShop, D-043 | Core 300/300 통과 | 16446af |
 | 2026-10-01 | M7 | 카메라 URP 후처리 켜기(은신 비네트 미표시 결함), 은신처·증기 양면 렌더링, 씬 무결성 테스트, 대표 캡처 검토, 버티컬 슬라이스 리포트. M7 종료 | Core 265 + EditMode 66 + PlayMode 6 통과, 빌드 경고 0, 캡처 검토 | (이 커밋) |
 | 2026-10-01 | M7 | HUD(HudState·HudView·HudPresenter·HudController, 절차 스프라이트·경고음, OS 한글 글꼴), 튜토리얼(Core TutorialTracker, TutorialHints·설정), HUD 3해상도 캡처, D-041·D-042. **결함 수정**: 가장자리 표시 겹침·해상도별 위치, 누락 스크립트 | Core 265 + EditMode 64 + PlayMode 6 통과, 빌드 경고 0, 캡처 검토 | 977d12b |

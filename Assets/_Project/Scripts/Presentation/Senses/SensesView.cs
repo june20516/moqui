@@ -15,6 +15,9 @@ namespace Moqui.Unity.Presentation.Senses
     {
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
 
+        /// <summary>미끼 표시 구 반지름 (표현 전용).</summary>
+        private const float DecoyMarkerRadius = 3f;
+
         private readonly List<Renderer> _co2Pool = new List<Renderer>();
         private readonly Dictionary<string, Renderer> _heatGlows = new Dictionary<string, Renderer>();
         private readonly Dictionary<string, Renderer> _biteDots = new Dictionary<string, Renderer>();
@@ -25,6 +28,10 @@ namespace Moqui.Unity.Presentation.Senses
         private SensesSettings _settings;
         private Co2Plume _plume;
         private MaterialPropertyBlock _block;
+        private Renderer _decoy;
+
+        /// <summary>미끼 마법 위치 표시 (장착하지 않았으면 null).</summary>
+        public Renderer DecoyMarker => _decoy;
 
         public bool IsBound => _simulation != null;
 
@@ -46,6 +53,12 @@ namespace Moqui.Unity.Presentation.Senses
                 {
                     _shadowCues.Add(zone.Id, visual.GetComponent<Renderer>());
                 }
+            }
+
+            if (simulation.Decoy.IsAvailable)
+            {
+                _decoy = CreateCue(PrimitiveType.Sphere, "Decoy", materials != null ? materials.Co2 : null);
+                _decoy.transform.localScale = Vector3.one * (DecoyMarkerRadius * 2f);
             }
 
             if (simulation.Human == null)
@@ -94,6 +107,7 @@ namespace Moqui.Unity.Presentation.Senses
         {
             Vector3 viewer = _simulation.Player.Position.ToUnity();
             RenderShadowCues(viewer);
+            RenderDecoy();
             var human = _simulation.Human;
             if (human == null)
             {
@@ -110,6 +124,22 @@ namespace Moqui.Unity.Presentation.Senses
             if (IsBound)
             {
                 Render(Time.deltaTime);
+            }
+        }
+
+        private void RenderDecoy()
+        {
+            if (_decoy == null)
+            {
+                return;
+            }
+
+            var decoy = _simulation.Decoy;
+            _decoy.enabled = decoy.IsActive(_simulation.Tick);
+            if (_decoy.enabled)
+            {
+                _decoy.transform.position = decoy.Position.ToUnity();
+                SetAlpha(_decoy, 1f);
             }
         }
 

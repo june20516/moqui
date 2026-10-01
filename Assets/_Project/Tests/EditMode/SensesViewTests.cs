@@ -2,6 +2,7 @@ using System.Linq;
 using Moqui.Core.Collision;
 using Moqui.Core.Data;
 using Moqui.Core.Data.Levels;
+using Moqui.Core.Meta;
 using Moqui.Core.Simulation;
 using Moqui.Unity.Data;
 using Moqui.Unity.Presentation.Senses;
@@ -161,6 +162,29 @@ namespace Moqui.Unity.Tests
             const float drunkStrength = 1.6f;
             plume.Update(FrameTime, true, Vector3.zero, Vector3.forward, drunkStrength);
             Assert.That(plume.Radius(plume.Puffs[0]), Is.EqualTo(_settings.Co2PuffStartRadius * drunkStrength).Within(0.1f));
+        }
+    
+
+        [Test]
+        public void Decoy_MarkerShownAtDecoyWhileActive()
+        {
+            Assert.That(_view.DecoyMarker, Is.Null, "not equipped");
+
+            Tuning tuning = TuningLoader.Load(new UnityDataSource());
+            LevelDefinition level = new LevelLoader(new UnityDataSource()).Load("stage01");
+            var skills = SkillLoadout.Of((SkillCatalog.DecoyCharm, 1)).WithEquipped(SkillCatalog.DecoyCharm);
+            var simulation = new GameSimulation(GameSettings.FromTuning(tuning), level.CreateSetup(skills));
+            var visuals = LevelView.Build(level, simulation.World, _root.transform, null);
+            var view = new GameObject("DecoyView").AddComponent<SensesView>();
+            view.transform.SetParent(_root.transform);
+            view.Bind(simulation, _settings, visuals, null);
+
+            view.Render(FrameTime);
+            Assert.That(view.DecoyMarker.enabled, Is.False);
+            simulation.Step(new PlayerCommand { SkillPressed = true });
+            view.Render(FrameTime);
+            Assert.That(view.DecoyMarker.enabled, Is.True);
+            Assert.That(view.DecoyMarker.transform.position, Is.EqualTo(simulation.Decoy.Position.ToUnity()));
         }
     }
 }
