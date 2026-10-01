@@ -28,7 +28,11 @@ namespace Moqui.Core.Tests.Collision
             {
                 var shape = RandomShape(random, type);
                 Vector3 origin = RandomVector(random, 6f);
-                Vector3 direction = Vector3.Normalize((shape.Center + RandomVector(random, 2f)) - origin);
+
+                // 대부분은 형상 쪽으로, 일부는 아무 방향(멀어지는 광선 포함)으로 쏜다.
+                Vector3 direction = random.NextDouble() < 0.7
+                    ? Vector3.Normalize((shape.Center + RandomVector(random, 2f)) - origin)
+                    : Vector3.Normalize(RandomVector(random, 1f) + new Vector3(1e-3f));
                 float radius = (float)(random.NextDouble() * 1.0);
 
                 bool analytic = ShapeGeometry.Cast(shape, origin, direction, MaxDistance, radius, out var hit);

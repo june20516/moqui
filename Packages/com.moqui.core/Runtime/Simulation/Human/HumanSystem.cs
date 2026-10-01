@@ -21,11 +21,14 @@ namespace Moqui.Core.Simulation
             Awareness = new AwarenessSystem(settings.Awareness);
             _brain = new HumanBrain(settings.Awareness, settings.Frenzy, settings.Head);
             _attacks = new HumanAttackSystem(settings.Attack, settings.Frenzy, SeedStreams.Create(seed, SeedStreams.BlindSwat));
+            Reactions = new ReactionSystem(settings, _attacks, SeedStreams.Create(seed, SeedStreams.Reactions));
         }
 
         public AwarenessSystem Awareness { get; }
 
         public HumanAttackSystem Attacks => _attacks;
+
+        public ReactionSystem Reactions { get; }
 
         public HumanPerception LastPerception { get; private set; }
 
@@ -42,6 +45,7 @@ namespace Moqui.Core.Simulation
 
             _attacks.Advance(human, player, tick, events);
             _attacks.Decide(human, player, perception, tick, events);
+            Reactions.Step(human, player, perception, tick, deltaTime, events);
         }
     }
 }

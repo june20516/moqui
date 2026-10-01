@@ -16,6 +16,7 @@ namespace Moqui.Core.Simulation
         private readonly FlightSystem _flight;
         private readonly StaminaSystem _stamina;
         private readonly DashSystem _dash;
+        private readonly AttachSystem _attach;
         private readonly SphereMover _mover;
         private readonly FallingBodySystem _fallingBodies;
         private readonly HumanSystem _humanSystem;
@@ -38,6 +39,7 @@ namespace Moqui.Core.Simulation
             _flight = new FlightSystem(settings.Flight);
             _stamina = new StaminaSystem(settings.Stamina, settings.Hiding);
             _dash = new DashSystem(settings.Dash, settings.Flight, _stamina, _mover);
+            _attach = new AttachSystem(settings.Attach, settings.HumanMotion, settings.Flight, World, _mover);
             _fallingBodies = new FallingBodySystem(settings.World);
             if (setup.Human != null)
             {
@@ -117,6 +119,33 @@ namespace Moqui.Core.Simulation
             Player.Yaw = command.LookYaw;
             Player.PrecisionHeld = command.PrecisionHeld;
             Player.SpeedMultiplier = _stamina.SpeedMultiplier(Player);
+
+            switch (Player.State)
+            {
+                case PlayerState.Attached:
+                    _attach.StepAttached(Player, command, Tick, DeltaTime, _events);
+                    if (Player.State == PlayerState.Attached)
+                    {
+                        _attach.TryDislodge(Player, Tick, _events);
+                    }
+
+                    return;
+                case PlayerState.Dislodged:
+                    // 경직 동안 입력을 무시하고 밀린 속도로 감속만 한다 (spec/02 §6).
+                    if (Tick < Player.StunEndTick)
+                    {
+                        Fly(new PlayerCommand { LookYaw = command.LookYaw });
+                        return;
+                    }
+
+                    Player.State = PlayerState.Flying;
+                    break;
+            }
+
+            if (_attach.TryAttach(Player, command, Tick, _events))
+            {
+                return;
+            }
 
             _dash.TryStart(Player, command, Tick, DiagonalDashUnlocked, _events);
             if (Player.State == PlayerState.Dashing)

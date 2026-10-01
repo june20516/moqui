@@ -49,6 +49,23 @@ namespace Moqui.Core.Tests.Support
             simulation.Human.LastStimulusTick = simulation.Tick;
         }
 
+        /// <summary>몸 부위 표면 바깥 1u(부착 거리 안)에 플레이어를 놓는다. 부위 정면 바깥쪽(+X 또는 −X)을 고른다.</summary>
+        public static Vector3 PlaceNearPart(GameSimulation simulation, string partId)
+        {
+            var shape = simulation.Human.Shapes[partId];
+            Vector3 outward = shape.Center.X >= 0f ? Vector3.UnitX : -Vector3.UnitX;
+            var surface = ShapeGeometry.Closest(shape, shape.Center + (outward * 50f));
+            simulation.Player.Position = surface.Point + (surface.Normal * 1f);
+            simulation.Player.Velocity = Vector3.Zero;
+            return surface.Point;
+        }
+
+        public static SkinSiteState Site(GameSimulation simulation, string partId)
+        {
+            simulation.Human.TryGetSite(simulation.Human.Shapes[partId], out var site);
+            return site;
+        }
+
         /// <summary>시야에 걸리지 않는 위쪽 대시 (좌우·상하 입력 없음 → 위, spec/01).</summary>
         public static PlayerCommand DashUp => new PlayerCommand { DashPressed = true };
 

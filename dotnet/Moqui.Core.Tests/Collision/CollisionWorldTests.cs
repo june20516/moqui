@@ -120,6 +120,26 @@ namespace Moqui.Core.Tests.Collision
         }
 
         [Test]
+        public void SphereSweep_NearCapsuleMovingAway_NoHit()
+        {
+            var world = new CollisionWorld();
+            world.Add(CollisionShape.Capsule("arm", new Vector3(0, 0, 0), new Vector3(0, 20, 0), 4f, ShapeFlags.Obstacle));
+
+            bool hit = world.SphereSweep(new Vector3(4.41f, 10f, 0f), 0.4f, Vector3.UnitX, 2f, ShapeFlags.Obstacle, out _);
+
+            Assert.That(hit, Is.False, "moving away from the side of a capsule must not report a hit");
+        }
+
+        [Test]
+        public void SphereSweep_FarFromCapsuleMovingAway_NoHit()
+        {
+            var world = new CollisionWorld();
+            world.Add(CollisionShape.Capsule("arm", new Vector3(0, 0, 0), new Vector3(0, 20, 0), 4f, ShapeFlags.Obstacle));
+
+            Assert.That(world.SphereSweep(new Vector3(10f, 10f, 0f), 0.4f, Vector3.UnitX, 50f, ShapeFlags.Obstacle, out _), Is.False);
+        }
+
+        [Test]
         public void SphereSweep_StartsOverlapping_ReportsStartedInside()
         {
             var world = new CollisionWorld();
