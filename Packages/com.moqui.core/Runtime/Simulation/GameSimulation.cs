@@ -95,6 +95,8 @@ namespace Moqui.Core.Simulation
                 StepPlayer(command);
             }
 
+            UpdateHidden();
+
             foreach (var body in _bodies)
             {
                 _fallingBodies.Step(body, DeltaTime);
@@ -162,6 +164,12 @@ namespace Moqui.Core.Simulation
             {
                 Fly(command);
             }
+        }
+
+        /// <summary>숨은 상태 = 플레이어 충돌 구 중심이 Shadow Zone 볼륨 안 (spec/03, D-034).</summary>
+        private void UpdateHidden()
+        {
+            Player.IsHidden = World.AnyOverlap(Player.Position, 0f, ShapeFlags.ShadowZone);
         }
 
         private void Fly(in PlayerCommand command)

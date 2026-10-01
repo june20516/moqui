@@ -96,8 +96,7 @@ namespace Moqui.Core.Tests.Simulation
         [Test]
         public void Hidden_InYellowZone_NotVisibleAndNoGain()
         {
-            var simulation = TestHumans.Simulation(TestHumans.InFront(150f));
-            simulation.Player.IsHidden = true;
+            var simulation = TestHumans.Simulation(TestHumans.InFront(150f), TestSimulations.ShadowWorld(TestHumans.InFront(150f), 20f));
 
             TestSimulations.Run(simulation, PlayerCommand.None, 30);
 
