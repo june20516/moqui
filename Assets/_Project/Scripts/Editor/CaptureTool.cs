@@ -45,6 +45,9 @@ namespace Moqui.Unity.Editor
         private const float OverviewBackOff = 60f;
         private const float OverviewRise = 80f;
         private const float OverviewWallMargin = 20f;
+        private static readonly Vector3 MokiFrontOffset = new Vector3(1.2f, 0.5f, 2f);
+        private static readonly Vector3 MokiBackOffset = new Vector3(0.6f, 0.8f, -2.2f);
+        private const float MokiSampleFraction = 0.3f;
         private static readonly string[] StageLevelIds = { "stage01", "stage02", "stage03", "stage04", "stage05" };
 
         [MenuItem("Moqui/Capture All")]
@@ -64,6 +67,7 @@ namespace Moqui.Unity.Editor
             CaptureMenus(outputDirectory);
 
             CaptureSandboxFlight(outputDirectory);
+            CaptureMoki(outputDirectory);
             CaptureSandboxHuman(outputDirectory);
             CaptureSandboxWater(outputDirectory);
             foreach (string levelId in StageLevelIds)
@@ -610,6 +614,50 @@ namespace Moqui.Unity.Editor
             Capture(camera, player, visibility, contact, solver.FirstPerson(contact, 0f, 0f), true, outputDirectory, "Sandbox_Flight_fp_wall_contact");
             Capture(camera, player, visibility, contact, solver.FirstPerson(contact, -50f, 20f), true, outputDirectory, "Sandbox_Flight_fp_wall_contact_angled");
             Capture(camera, player, visibility, contact, solver.ThirdPerson(contact, 0f, 0f), false, outputDirectory, "Sandbox_Flight_tp_wall_contact");
+        }
+
+        /// <summary>모키 자세 7종 (spec/10): 각 클립의 중간 프레임을 앞쪽 비스듬한 근접 시점과 뒤쪽 3인칭 시점에서 찍는다.</summary>
+        public static void CaptureMoki(string outputDirectory)
+        {
+            Camera camera = MainCameraOrThrow(SandboxSceneBuilder.FlightScenePath);
+            var world = SandboxFlightWorld.Create();
+            WorldView.Build(world, null);
+            var player = GameObject.Find("Player");
+            Vector3 spawn = SandboxFlightWorld.PlayerSpawn.ToUnity();
+            player.transform.SetPositionAndRotation(spawn, Quaternion.identity);
+            var controller = player.GetComponent<Animator>().runtimeAnimatorController;
+
+            // 클립이 건드리지 않는 부위는 이전 샘플 값이 남으므로 매번 기본 자세로 되돌린다 (Animator의 write defaults 대신).
+            var parts = player.GetComponentsInChildren<Transform>().Where(t => t != player.transform).ToArray();
+            var restPose = parts.Select(t => (t.localPosition, t.localRotation, t.localScale)).ToArray();
+            void ResetPose()
+            {
+                for (int i = 0; i < parts.Length; i++)
+                {
+                    parts[i].localPosition = restPose[i].localPosition;
+                    parts[i].localRotation = restPose[i].localRotation;
+                    parts[i].localScale = restPose[i].localScale;
+                }
+            }
+
+            foreach (MokiPose pose in Enum.GetValues(typeof(MokiPose)))
+            {
+                ResetPose();
+                AnimationClip clip = controller.animationClips.First(c => c.name == $"Moki_{pose}");
+                float sampleTime = pose == MokiPose.Death ? clip.length : clip.length * MokiSampleFraction;
+                clip.SampleAnimation(player, sampleTime);
+                camera.transform.position = spawn + MokiFrontOffset;
+                camera.transform.LookAt(spawn);
+                CaptureCamera(camera, Path.Combine(outputDirectory, $"Moki_{pose}.png"));
+            }
+
+            ResetPose();
+            controller.animationClips.First(c => c.name == $"Moki_{MokiPose.Idle}").SampleAnimation(player, 0f);
+            camera.transform.position = spawn + MokiBackOffset;
+            camera.transform.LookAt(spawn);
+            CaptureCamera(camera, Path.Combine(outputDirectory, "Moki_Idle_back.png"));
+            ResetPose();
+            Debug.Log($"[CaptureTool] Moki: poses={Enum.GetValues(typeof(MokiPose)).Length}, clips={controller.animationClips.Length}");
         }
 
         public static void CaptureCamera(Camera camera, string path)

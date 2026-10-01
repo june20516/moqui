@@ -29,7 +29,6 @@ namespace Moqui.Unity.Editor
         /// <summary>빌드에 들어가는 화면 씬 순서 (architecture §6: Boot → Title → StageSelect → Stage → Ending).</summary>
         public static readonly ScreenId[] BuildOrder = { ScreenId.Boot, ScreenId.Title, ScreenId.StageSelect, ScreenId.Stage, ScreenId.Ending };
         public const string ControlsPath = "Assets/_Project/Input/MoquiControls.inputactions";
-        public const string PlayerMaterialPath = "Assets/_Project/Materials/Whitebox_Player.mat";
 
         private const string ShadowCueMaterialPath = "Assets/_Project/Materials/Level_ShadowCue.mat";
         private const string SteamMaterialPath = "Assets/_Project/Materials/Level_Steam.mat";
@@ -50,10 +49,7 @@ namespace Moqui.Unity.Editor
         private const string SoftGasShaderName = "Moqui/SoftGas";
         private const string VolumeFogShaderName = "Moqui/VolumeFog";
         private const string PcRendererPath = "Assets/Settings/PC_Renderer.asset";
-        private const float PlayerVisualDiameter = 1f;
         private const string BaseColorProperty = "_BaseColor";
-        /// <summary>플레이어는 흰색·연분홍 (어두운 배경에서 잘 보이게, spec/10).</summary>
-        private static readonly Color PlayerColor = new Color(1f, 0.86f, 0.92f);
         private static readonly Color KeyLightColor = new Color(1f, 0.86f, 0.72f);
         private static readonly Color AmbientColor = new Color(0.30f, 0.28f, 0.45f);
         private const string ToonResourcePath = "Assets/_Project/Resources/Materials/Toon.mat";
@@ -253,14 +249,7 @@ namespace Moqui.Unity.Editor
             var player = new GameObject("Player");
             SetReference(player.AddComponent<PlayerView>(), "_runner", runner);
             var visibility = player.AddComponent<PlayerViewVisibility>();
-            var body = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-            body.name = "Body";
-            body.transform.SetParent(player.transform, false);
-            body.transform.localScale = Vector3.one * PlayerVisualDiameter;
-            Object.DestroyImmediate(body.GetComponent<Collider>());
-
-            // MaterialPropertyBlock은 씬에 저장되지 않으므로 플레이어 색은 머티리얼 에셋으로 둔다.
-            body.GetComponent<Renderer>().sharedMaterial = LoadOrCreateShaderMaterial(PlayerMaterialPath, Moqui.Unity.Presentation.Art.ToonMaterials.OpaqueShader, PlayerColor);
+            MokiBuilder.Build(player, runner);
 
             // Shadow Zone 비네트 (spec/03): 전역 Volume, 프로필은 실행 시 만든다.
             var vignetteObject = new GameObject("ShadowVignette");
@@ -311,7 +300,7 @@ namespace Moqui.Unity.Editor
         }
 
         /// <summary>전용 셰이더 머티리얼 (기체 표현). 에셋이 다른 셰이더로 있으면 셰이더를 바꾼다.</summary>
-        private static Material LoadOrCreateShaderMaterial(string path, string shaderName, Color color)
+        internal static Material LoadOrCreateShaderMaterial(string path, string shaderName, Color color)
         {
             Shader shader = Shader.Find(shaderName) ?? throw new System.InvalidOperationException($"Shader '{shaderName}' not found.");
             var material = AssetDatabase.LoadAssetAtPath<Material>(path);
@@ -334,7 +323,7 @@ namespace Moqui.Unity.Editor
 
         /// <summary>툰 반투명 머티리얼 (Moqui/ToonTransparent). 은신처 표시·유리·거미줄·체온처럼 뒤가 비쳐야 하는 표시에 쓴다.</summary>
         /// <param name="doubleSided">볼륨 안에 들어가도 보이게 할지 (은신처·거미줄).</param>
-        private static Material LoadOrCreateTransparentMaterial(string path, Color color, bool doubleSided = false)
+        internal static Material LoadOrCreateTransparentMaterial(string path, Color color, bool doubleSided = false)
         {
             Material material = LoadOrCreateShaderMaterial(path, Moqui.Unity.Presentation.Art.ToonMaterials.TransparentShader, color);
             material.SetFloat("_Cull", (float)(doubleSided ? UnityEngine.Rendering.CullMode.Off : UnityEngine.Rendering.CullMode.Back));
@@ -350,7 +339,7 @@ namespace Moqui.Unity.Editor
             LoadOrCreateShaderMaterial(ToonTransparentResourcePath, Moqui.Unity.Presentation.Art.ToonMaterials.TransparentShader, new Color(1f, 1f, 1f, 0.6f));
         }
 
-        private static void SetReference(Object target, string field, Object value)
+        internal static void SetReference(Object target, string field, Object value)
         {
             var serialized = new SerializedObject(target);
             var property = serialized.FindProperty(field);
