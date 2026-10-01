@@ -27,6 +27,9 @@ namespace Moqui.Unity.Editor
         private const string ShadowCueMaterialPath = "Assets/_Project/Materials/Level_ShadowCue.mat";
         private const string SteamMaterialPath = "Assets/_Project/Materials/Level_Steam.mat";
         private const string GlassMaterialPath = "Assets/_Project/Materials/Level_Glass.mat";
+        private const string Co2MaterialPath = "Assets/_Project/Materials/Senses_Co2.mat";
+        private const string HeatMaterialPath = "Assets/_Project/Materials/Senses_Heat.mat";
+        private const string BiteMarkMaterialPath = "Assets/_Project/Materials/Senses_BiteMark.mat";
         private const string SensesFogMaterialPath = "Assets/_Project/Materials/Senses_Fog.mat";
         private const string SensesFogShaderName = "Moqui/SensesFog";
         private const string SensesFogFeatureName = "SensesFog";
@@ -35,7 +38,10 @@ namespace Moqui.Unity.Editor
         private const string LitShaderName = "Universal Render Pipeline/Lit";
         private const string BaseColorProperty = "_BaseColor";
         private static readonly Color PlayerColor = new Color(0.2f, 0.85f, 0.9f);
-        private static readonly Color ShadowCueColor = new Color(0.05f, 0.05f, 0.12f, 0.35f);
+        private static readonly Color ShadowCueColor = new Color(0.35f, 0.6f, 1f, 0.35f);
+        private static readonly Color Co2Color = new Color(0.95f, 0.78f, 0.98f, 0.5f);
+        private static readonly Color HeatColor = new Color(1f, 0.42f, 0.12f, 0.5f);
+        private static readonly Color BiteMarkColor = new Color(0.9f, 0.1f, 0.15f, 0.95f);
         private static readonly Color SteamColor = new Color(0.9f, 0.95f, 1f, 0.25f);
         private static readonly Color GlassColor = new Color(0.75f, 0.9f, 0.95f, 0.3f);
 
@@ -60,6 +66,10 @@ namespace Moqui.Unity.Editor
             SetReference(materials, "_shadowCue", LoadOrCreateTransparentMaterial(ShadowCueMaterialPath, ShadowCueColor));
             SetReference(materials, "_steam", LoadOrCreateTransparentMaterial(SteamMaterialPath, SteamColor));
             SetReference(materials, "_glass", LoadOrCreateTransparentMaterial(GlassMaterialPath, GlassColor));
+            SetReference(materials, "_co2", LoadOrCreateTransparentMaterial(Co2MaterialPath, Co2Color));
+            SetReference(materials, "_heat", LoadOrCreateTransparentMaterial(HeatMaterialPath, HeatColor));
+            SetReference(materials, "_biteMark", LoadOrCreateTransparentMaterial(BiteMarkMaterialPath, BiteMarkColor));
+            var senses = new GameObject("SensesView").AddComponent<SensesView>();
 
             EnsureSensesFogFeature();
             SetReference(new GameObject("SensesFog").AddComponent<SensesFog>(), "_runner", runner);
@@ -67,6 +77,7 @@ namespace Moqui.Unity.Editor
             var bootstrap = new GameObject("StageBootstrap").AddComponent<StageBootstrap>();
             SetReference(bootstrap, "_runner", runner);
             SetReference(bootstrap, "_materials", materials);
+            SetReference(bootstrap, "_senses", senses);
             Save(scene, StageScenePath);
             AddToBuildSettings(StageScenePath);
         }

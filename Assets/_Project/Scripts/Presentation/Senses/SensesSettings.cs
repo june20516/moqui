@@ -13,7 +13,18 @@ namespace Moqui.Unity.Presentation.Senses
             FogBlurPixels = tuning.GetFloat("senses.fogBlurPixels");
             Co2VisibleRange = tuning.GetFloat("senses.co2VisibleRange");
             HeatRange = tuning.GetFloat("senses.heatRange");
+            Co2PuffInterval = tuning.GetFloat("senses.co2PuffInterval");
+            Co2PuffLifetime = tuning.GetFloat("senses.co2PuffLifetime");
+            Co2RiseSpeed = tuning.GetFloat("senses.co2RiseSpeed");
+            Co2ForwardSpeed = tuning.GetFloat("senses.co2ForwardSpeed");
+            Co2PuffStartRadius = tuning.GetFloat("senses.co2PuffStartRadius");
+            Co2PuffEndRadius = tuning.GetFloat("senses.co2PuffEndRadius");
+            HeatGlowScale = tuning.GetFloat("senses.heatGlowScale");
+            BiteMarkDotRadius = tuning.GetFloat("senses.biteMarkDotRadius");
             CueRange = tuning.GetFloat("hiding.cueRange");
+            CueIntensitySafe = tuning.GetFloat("hiding.cueIntensitySafe");
+            CueIntensitySuspicious = tuning.GetFloat("hiding.cueIntensitySuspicious");
+            CueIntensityFrenzy = tuning.GetFloat("hiding.cueIntensityFrenzy");
             SteamClearRangeMul = tuning.GetFloat("humid.steamClearRangeMul");
         }
 
@@ -29,7 +40,29 @@ namespace Moqui.Unity.Presentation.Senses
 
         public float HeatRange { get; }
 
+        public float Co2PuffInterval { get; }
+
+        public float Co2PuffLifetime { get; }
+
+        public float Co2RiseSpeed { get; }
+
+        public float Co2ForwardSpeed { get; }
+
+        public float Co2PuffStartRadius { get; }
+
+        public float Co2PuffEndRadius { get; }
+
+        public float HeatGlowScale { get; }
+
+        public float BiteMarkDotRadius { get; }
+
         public float CueRange { get; }
+
+        public float CueIntensitySafe { get; }
+
+        public float CueIntensitySuspicious { get; }
+
+        public float CueIntensityFrenzy { get; }
 
         public float SteamClearRangeMul { get; }
     }

@@ -17,10 +17,25 @@ namespace Moqui.Unity.Presentation.Stage
         [SerializeField]
         private Material _glass;
 
+        [SerializeField]
+        private Material _co2;
+
+        [SerializeField]
+        private Material _heat;
+
+        [SerializeField]
+        private Material _biteMark;
+
         public Material ShadowCue => _shadowCue;
 
         public Material Steam => _steam;
 
         public Material Glass => _glass;
+
+        public Material Co2 => _co2;
+
+        public Material Heat => _heat;
+
+        public Material BiteMark => _biteMark;
     }
 }

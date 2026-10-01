@@ -1,6 +1,7 @@
 using Moqui.Core.Data.Levels;
 using Moqui.Core.Simulation;
 using Moqui.Unity.Data;
+using Moqui.Unity.Presentation.Senses;
 using Moqui.Unity.Simulation;
 using UnityEngine;
 
@@ -19,6 +20,9 @@ namespace Moqui.Unity.Presentation.Stage
         [SerializeField]
         private LevelMaterials _materials;
 
+        [SerializeField]
+        private SensesView _senses;
+
         /// <summary>다음에 열 레벨. 화면 흐름(M8)이 정한다.</summary>
         public static string RequestedLevelId { get; set; } = DefaultLevelId;
 
@@ -29,7 +33,8 @@ namespace Moqui.Unity.Presentation.Stage
             var tuning = SimulationRunner.LoadTuning();
             Level = new LevelLoader(new UnityDataSource()).Load(RequestedLevelId);
             var simulation = new GameSimulation(GameSettings.FromTuning(tuning), Level.CreateSetup());
-            LevelView.Build(Level, simulation.World, transform, _materials);
+            var visuals = LevelView.Build(Level, simulation.World, transform, _materials);
+            _senses.Bind(simulation, new SensesSettings(tuning), visuals, _materials);
             _runner.Begin(tuning, simulation);
             Cursor.lockState = CursorLockMode.Locked;
         }

@@ -30,6 +30,7 @@ namespace Moqui.Unity.Editor
         private const float WallApproachSeconds = 3f;
         private const float HumanCloseupDistance = 25f;
         private const float StageSettleSeconds = 1f;
+        private const float Co2SettleSeconds = 1.2f;
         private const float OverviewBackOff = 60f;
         private const float OverviewRise = 80f;
         private const float OverviewWallMargin = 20f;
@@ -78,11 +79,24 @@ namespace Moqui.Unity.Editor
             Tuning tuning = TuningLoader.Load(new UnityDataSource());
             LevelDefinition level = new LevelLoader(new UnityDataSource()).Load(levelId);
             var simulation = new GameSimulation(GameSettings.FromTuning(tuning), level.CreateSetup());
-            LevelView.Build(level, simulation.World, null, UnityEngine.Object.FindAnyObjectByType<LevelMaterials>());
+            var materials = UnityEngine.Object.FindAnyObjectByType<LevelMaterials>();
+            var visuals = LevelView.Build(level, simulation.World, null, materials);
             var humanView = UnityEngine.Object.FindAnyObjectByType<HumanView>();
             humanView.Build(simulation.Human);
-            Step(simulation, PlayerCommand.None, StageSettleSeconds);
+            var senses = new SensesSettings(tuning);
+            var sensesView = UnityEngine.Object.FindAnyObjectByType<SensesView>();
+            sensesView.Bind(simulation, senses, visuals, materials);
+
+            // 날숨 CO₂가 보이도록 날숨이 시작된 뒤 잠시 더 진행한다. 체온·자국 표시 확인용으로 오른 전완에 자국을 둔다.
+            Step(simulation, sensesView, StageSettleSeconds);
+            for (int i = 0; i < SimulationTime.ToTicks(simulation.Settings.Breath.Period) && !simulation.Human.IsExhaling; i++)
+            {
+                Step(simulation, sensesView, GameSimulation.DeltaTime);
+            }
+
+            Step(simulation, sensesView, Co2SettleSeconds);
             humanView.Refresh();
+            simulation.Human.SkinSites.First(site => site.PartId == "forearmR").HasBiteMark = true;
 
             var solver = new CameraPoseSolver(new CameraSettings(tuning), simulation.World);
             var player = GameObject.Find("Player");
@@ -91,9 +105,10 @@ namespace Moqui.Unity.Editor
             Vector3 head = simulation.Human.HeadCenter.ToUnity();
             string prefix = $"Stage_{levelId}_";
 
-            var senses = new SensesSettings(tuning);
             void Shot(Vector3 playerPosition, CameraPose pose, bool firstPerson, string name)
             {
+                simulation.Player.Position = playerPosition.ToCore();
+                sensesView.Render(0f);
                 SensesFog.Apply(senses, playerPosition, false);
                 Capture(camera, player, visibility, playerPosition, pose, firstPerson, outputDirectory, prefix + name);
             }
@@ -114,7 +129,7 @@ namespace Moqui.Unity.Editor
             Vector3 hidden = shadow.Center.ToUnity();
             Shot(hidden, solver.ThirdPerson(hidden, YawTowards(hidden, head), -5f), false, "shadow_zone");
             SensesFog.Disable();
-            Debug.Log($"[CaptureTool] {prefix}: shapes={level.AllShapes().Count()}, shadow={shadow.Id}, human={simulation.Human.State}");
+            Debug.Log($"[CaptureTool] {prefix}: shapes={level.AllShapes().Count()}, shadow={shadow.Id}, human={simulation.Human.State}, co2Puffs={sensesView.Plume.Puffs.Count}");
         }
 
         /// <summary>시작 위치와 인간 머리의 중간 위쪽에서, 벽·천장 안쪽으로 물러난 점.</summary>
@@ -211,6 +226,16 @@ namespace Moqui.Unity.Editor
             }
 
             CaptureHumanPose(camera, player, humanView, simulation, head + new Vector3(-120f, 40f, 160f), head, outputDirectory, "Sandbox_Human_frenzy_telegraph");
+        }
+
+        /// <summary>시뮬레이션과 감각 표현(CO₂ 흐름)을 함께 진행한다.</summary>
+        private static void Step(GameSimulation simulation, SensesView sensesView, float seconds)
+        {
+            for (int i = 0; i < Mathf.Max(1, Mathf.RoundToInt(seconds * GameSimulation.TickRate)); i++)
+            {
+                simulation.Step(PlayerCommand.None);
+                sensesView.Render(GameSimulation.DeltaTime);
+            }
         }
 
         private static void Step(GameSimulation simulation, PlayerCommand command, float seconds)
