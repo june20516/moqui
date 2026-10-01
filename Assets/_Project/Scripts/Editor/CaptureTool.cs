@@ -40,11 +40,12 @@ namespace Moqui.Unity.Editor
         private const float ShadowSettleSeconds = 5f;
         private const float HudCaptureYawOffset = 100f;
         private const float MenuCanvasDistance = 1f;
+        private const float MinExhaleSeconds = 0.7f;
         private static readonly Vector2Int[] HudResolutions = { new Vector2Int(1920, 1080), new Vector2Int(1280, 720), new Vector2Int(2560, 1440) };
         private const float OverviewBackOff = 60f;
         private const float OverviewRise = 80f;
         private const float OverviewWallMargin = 20f;
-        private static readonly string[] StageLevelIds = { "stage01", "stage02" };
+        private static readonly string[] StageLevelIds = { "stage01", "stage02", "stage03", "stage04", "stage05" };
 
         [MenuItem("Moqui/Capture All")]
         public static void CaptureAll()
@@ -93,6 +94,13 @@ namespace Moqui.Unity.Editor
             var senses = new SensesSettings(tuning);
             var sensesView = UnityEngine.Object.FindAnyObjectByType<SensesView>();
             sensesView.Bind(simulation, senses, visuals, materials);
+            var gimmickView = UnityEngine.Object.FindAnyObjectByType<Moqui.Unity.Presentation.Gimmicks.GimmickView>();
+            gimmickView.Bind(simulation, senses, materials);
+            foreach (var dispenser in simulation.Toxin.Dispensers)
+            {
+                // 기믹 검토용: 자동 분사기 연무를 미리 하나 띄운다.
+                simulation.Toxin.Spawn(dispenser, simulation.Tick);
+            }
 
             // 날숨 CO₂가 보이도록 날숨이 시작된 뒤 잠시 더 진행한다. 체온·자국 표시 확인용으로 오른 전완에 자국을 둔다.
             Step(simulation, sensesView, StageSettleSeconds);
@@ -104,6 +112,10 @@ namespace Moqui.Unity.Editor
             Step(simulation, sensesView, Co2SettleSeconds);
             humanView.Refresh();
             simulation.Human.SkinSites.First(site => site.PartId == "forearmR").HasBiteMark = true;
+            for (int i = 0; i < SimulationTime.ToTicks(Co2SettleSeconds); i++)
+            {
+                gimmickView.Render(GameSimulation.DeltaTime);
+            }
 
             var solver = new CameraPoseSolver(new CameraSettings(tuning), simulation.World);
             var player = GameObject.Find("Player");
@@ -116,6 +128,7 @@ namespace Moqui.Unity.Editor
             {
                 simulation.Player.Position = playerPosition.ToCore();
                 sensesView.Render(0f);
+                gimmickView.Render(0f);
                 SensesFog.Apply(senses, playerPosition, false);
                 Capture(camera, player, visibility, playerPosition, pose, firstPerson, outputDirectory, prefix + name);
             }
@@ -286,6 +299,85 @@ namespace Moqui.Unity.Editor
             Capture(camera, player, visibility, inside, insidePose, true, outputDirectory, "Gas_steam_inside");
             SensesFog.Disable();
             Debug.Log($"[CaptureTool] Gas: co2Puffs={sensesView.Plume.Puffs.Count}");
+            CaptureCo2InWind(outputDirectory);
+            CaptureCoilSmoke(outputDirectory);
+        }
+
+        /// <summary>Stage 3: 선풍기 바람이 얼굴 쪽을 향할 때 CO₂가 바람 방향(+Z)으로 흩어지는 모습 (spec/11 §2).</summary>
+        private static void CaptureCo2InWind(string outputDirectory)
+        {
+            EditorSceneManager.OpenScene(SandboxSceneBuilder.StageScenePath, OpenSceneMode.Single);
+            Camera camera = MainCameraOrThrow(SandboxSceneBuilder.StageScenePath);
+            Tuning tuning = TuningLoader.Load(new UnityDataSource());
+            LevelDefinition level = new LevelLoader(new UnityDataSource()).Load("stage03");
+            var simulation = new GameSimulation(GameSettings.FromTuning(tuning), level.CreateSetup());
+            var materials = UnityEngine.Object.FindAnyObjectByType<LevelMaterials>();
+            var visuals = LevelView.Build(level, simulation.World, null, materials);
+            UnityEngine.Object.FindAnyObjectByType<HumanView>().Build(simulation.Human);
+            var senses = new SensesSettings(tuning);
+            var sensesView = UnityEngine.Object.FindAnyObjectByType<SensesView>();
+            sensesView.Bind(simulation, senses, visuals, materials);
+            var fan = simulation.Fans.Fans[0];
+            float period = tuning.GetFloat("fan.oscillationPeriod");
+
+            // 날숨이 0.3초 이상 이어지고 선풍기 머리가 정면(침대 쪽, 바람 원뿔 반각 안)을 향하는 순간까지 진행한다.
+            float facingTolerance = tuning.GetFloat("fan.halfAngle");
+            int exhalingTicks = 0;
+            int limit = SimulationTime.ToTicks(period * 8f);
+            while (simulation.Tick < limit)
+            {
+                simulation.Step(PlayerCommand.None);
+                sensesView.Render(GameSimulation.DeltaTime);
+                exhalingTicks = simulation.Human.IsExhaling ? exhalingTicks + 1 : 0;
+                float offset = Mathf.Abs(Mathf.DeltaAngle(simulation.Fans.HeadYaw(fan, simulation.Tick), fan.Yaw));
+                if (exhalingTicks >= SimulationTime.ToTicks(MinExhaleSeconds) && offset < facingTolerance)
+                {
+                    break;
+                }
+            }
+
+            Vector3 head = simulation.Human.HeadCenter.ToUnity();
+            // 위에서 비스듬히 내려다봐 바람(+Z) 쪽으로 밀려가는 연기 줄기를 본다.
+            Vector3 viewer = head + new Vector3(-50f, 110f, -70f);
+            simulation.Player.Position = viewer.ToCore();
+            sensesView.Render(0f);
+            SensesFog.Apply(senses, viewer, false);
+            var player = GameObject.Find("Player");
+            var pose = new CameraPose(viewer, Quaternion.LookRotation((head + new Vector3(0f, 20f, 5f)) - viewer), camera.fieldOfView, camera.nearClipPlane);
+            Capture(camera, player, player.GetComponent<PlayerViewVisibility>(), viewer, pose, true, outputDirectory, "Gas_co2_wind_stage03");
+            SensesFog.Disable();
+            Debug.Log($"[CaptureTool] Co2 wind: fanYaw={simulation.Fans.HeadYaw(fan, simulation.Tick):F1}, puffs={sensesView.Plume.Puffs.Count}");
+        }
+
+        /// <summary>Stage 5: 모기향 받침과 바람에 휘는 연기, 모기약 연무.</summary>
+        private static void CaptureCoilSmoke(string outputDirectory)
+        {
+            EditorSceneManager.OpenScene(SandboxSceneBuilder.StageScenePath, OpenSceneMode.Single);
+            Camera camera = MainCameraOrThrow(SandboxSceneBuilder.StageScenePath);
+            Tuning tuning = TuningLoader.Load(new UnityDataSource());
+            LevelDefinition level = new LevelLoader(new UnityDataSource()).Load("stage05");
+            var simulation = new GameSimulation(GameSettings.FromTuning(tuning), level.CreateSetup());
+            var materials = UnityEngine.Object.FindAnyObjectByType<LevelMaterials>();
+            LevelView.Build(level, simulation.World, null, materials);
+            UnityEngine.Object.FindAnyObjectByType<HumanView>().Build(simulation.Human);
+            var senses = new SensesSettings(tuning);
+            var gimmickView = UnityEngine.Object.FindAnyObjectByType<Moqui.Unity.Presentation.Gimmicks.GimmickView>();
+            gimmickView.Bind(simulation, senses, materials);
+            Vector3 coil = simulation.Toxin.Coils[0].ToUnity();
+            simulation.Toxin.Spawn((coil + new Vector3(-30f, 50f, -60f)).ToCore(), 0);
+            for (int i = 0; i < SimulationTime.ToTicks(3f); i++)
+            {
+                simulation.Step(PlayerCommand.None);
+                gimmickView.Render(GameSimulation.DeltaTime);
+            }
+
+            Vector3 viewer = coil + new Vector3(30f, 45f, -90f);
+            SensesFog.Apply(senses, viewer, false);
+            var player = GameObject.Find("Player");
+            var pose = new CameraPose(viewer, Quaternion.LookRotation((coil + new Vector3(0f, 35f, 0f)) - viewer), camera.fieldOfView, camera.nearClipPlane);
+            Capture(camera, player, player.GetComponent<PlayerViewVisibility>(), viewer, pose, true, outputDirectory, "Gas_coil_spray_stage05");
+            SensesFog.Disable();
+            Debug.Log($"[CaptureTool] Coil: smokePuffs={gimmickView.VisibleSmokePuffs}, clouds={gimmickView.VisibleClouds}");
         }
 
         /// <summary>

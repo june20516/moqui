@@ -3,46 +3,9 @@
 > 루프가 매 반복 끝에 갱신한다. 위에서부터 최신순으로 쓴다.
 
 ## 현재
-- 마일스톤: **M9 Stage 3 · 4 · 5와 기믹** (진행 중)
-- 다음 할 일: Unity — Stage 3~5 씬 1:1 검사, 기믹 표현(선풍기·거미줄·연무·모기향 연기·분사기), 중독 게이지 HUD, CO₂ 바람 흩어짐, 대표 캡처
-- 브랜치: `milestone/m9-gimmicks`
-
-## 현재 마일스톤 체크리스트 (M9)
-### 선풍기 · 거미줄 (spec/06)
-- [x] 바람 원뿔 안에서 입력이 없으면 플레이어가 40u/s로 밀린다 (Core). — 증거: `GimmickTests.Fan_InsideCone_NoInput_Pushed40PerSecond`, `ExternalForceTests.Wind_*` (D-046)
-- [x] 부착 상태에서는 바람의 영향이 없다 (Core). — 증거: `GimmickTests.Fan_Attached_NotAffected` (D-046)
-- [x] 선풍기가 8초 주기로 ±45° 회전한다 (Core). — 증거: `GimmickTests.Fan_Oscillates45DegreesOver8SecondPeriod` (D-046)
-- [x] 마스킹 반경 안에서 대시 소음 반경이 75u가 된다 (Core). — 증거: `GimmickTests.Fan_NoiseMask_DashNoiseRadiusBecomes75` (D-046)
-- [x] 거미줄 접촉 1.5초 후 Web 원인으로 사망한다 (Core). (M3 이월: DeathCause Web 원인별 테스트 겸함) — 증거: `GimmickTests.Web_Contact_DiesWithWebCauseAfter15Seconds_CannotMove` (D-046)
-
-### 스프레이 · 중독 · 모기향 (spec/06)
-- [x] 연무 반경이 1초에 걸쳐 25u→60u로 커지고 8초 뒤 사라진다 (Core). — 증거: `GimmickTests.SprayCloud_Expands25To60OverOneSecond_GoneAfter8Seconds` (D-046)
-- [x] 바람 영역 안의 연무가 20u/s로 떠밀린다 (Core). — 증거: `GimmickTests.SprayCloud_InWind_DriftsAt20PerSecond` (D-046)
-- [x] 중독이 연무 안에서 30/s로 오르고 밖에서 15/s로 내린다 (Core). — 증거: `GimmickTests.Toxin_RisesInCloud30PerSecond_Decays15PerSecondOutside` (D-046)
-- [x] 중독 30/55/80에서 끊김/반전/랜덤이 누적 적용되고, 같은 시드에서 재현된다 (Core). — 증거: `GimmickTests.Debuffs_StutterInvertRandom_StackByTier_ReproducibleWithSeed` (D-046)
-- [x] 중독 100에서 Spray 원인으로 사망한다 (Core). (M3 이월: DeathCause Spray 겸함) — 증거: `GimmickTests.Toxin_100_DiesWithSprayCause` (D-046)
-- [x] 광분 + canSpray + 사거리 안에서 보일 때만 인간이 분사하고, 쿨타임을 지킨다 (Core). — 증거: `GimmickTests.HumanSpray_OnlyInFrenzyWithCanSprayWhenVisibleInRange_RespectsCooldown` (D-046)
-- [x] 자동 분사기가 12초마다 연무를 만든다 (Core). — 증거: `GimmickTests.Dispenser_CreatesCloudEvery12Seconds` (D-046)
-- [x] 끊김 확률이 중독 30에서 0.1, 55에서 0.3이다 (Core). — 증거: `GimmickTests.StutterChance_Is01At30_03At55` (D-046)
-- [x] 모기향 하한: 60u 이내 60, 400u 지점 30, 범위 밖 0이고, 바람·Shadow Zone 안에서 0.5배이다 (Core). — 증거: `GimmickTests.CoilFloor_60Within60_30At400_0Beyond_HalvedInWindAndShadow` (D-046)
-- [x] 모기향 20u 이내에서는 중독이 하한과 별개로 25/s 오른다 (Core). — 증거: `GimmickTests.Coil_Within20_RisesExtra25PerSecond` (D-046)
-- [x] 숨은 상태에서 중독이 2배 빠르게 줄어들되 하한 아래로는 내려가지 않는다 (Core). (M4 이월 D-034 중독 회복 겸함) — 증거: `GimmickTests.Hidden_ToxinDecaysTwiceAsFast_ButNotBelowCoilFloor` (D-046)
-- [x] (M8 이월) 해독 체질이 중독 증가와 모기향 하한에 적용된다 (Core). — 증거: `GimmickTests.ResistSpray_ScalesToxinRateAndCoilFloor`, `SkillTests.ResistSpray_ToxinMultiplierPerLevel` (D-046)
-
-### 취한 타겟 (spec/06)
-- [x] 취한 타겟에게서 흡혈 속도 배율이 2.0이다 (Core). — 증거: `GimmickTests.Drunk_SuckRateMultiplierIs2` (D-046)
-- [x] 무작위 휘두르기가 4~7초 간격으로, 같은 시드에서 같은 위치로 발생한다 (Core). — 증거: `GimmickTests.Drunk_RandomSwatsEvery4To7Seconds_ReproducibleWithSeed` (D-046)
-
-### 레벨 (spec/07 Stage 3~5, spec/05 적용)
-- [x] 다섯 스테이지 모두 공통 규칙의 레벨 데이터 검사를 통과한다 (Core). — 증거: `LevelDataTests.Level_PassesCommonLevelChecks`(stage01~05), `Level_AllFurnitureHasObstacleFlag`, `DataFiles_MatchJsonSchemas`
-- [x] (M6 이월) 모든 레벨의 DripSource가 착지면 기준 150u 이상이다 (Core). — 증거: `LevelDataTests.Level_DripSourcesAreHighEnough`(stage01~05, Stage 4의 샤워기·결로 4개)
-- [ ] Unity 씬의 시각 오브젝트가 레벨 데이터의 모든 형상 ID와 1:1로 대응한다 (Unity, Stage 3~5).
-- [x] 각 스테이지의 클리어 봇이 성공한다 (Core 헤드리스 봇, 고정 시드 5개 중 4개 이상). — 증거: `ScenarioTests` stage01 5/5, stage02 4/5, stage03 4/5, stage04 4/5(스킬 구성, D-048), stage05 5/5. 발각 봇 stage01~05 5/5
-- [ ] 각 스테이지의 대표 캡처 4장(전경, 시작 위치, 인간 근접, Shadow Zone 내부)이 생성된다.
-
-### 표현 (spec/06, spec/08, spec/11)
-- [ ] 중독 게이지는 중독 > 0일 때만 보이고 단계 아이콘이 맞다 (Unity, spec/08).
-- [ ] 바람 영역 안에서 CO₂ 흐름이 바람 방향으로 흩어진다 (캡처 검토: Stage 3, spec/11).
+- 마일스톤: **M10 에셋 패스** (시작 전)
+- 다음 할 일: spec/10·asset-pipeline 수용 기준을 체크리스트로 복사, 툰 셰이더·팔레트부터
+- 브랜치: `milestone/m10-assets`
 
 ## M7 버티컬 슬라이스 리포트 (2026-10-01, 사람 검토 권장)
 **할 수 있는 것:** Unity 에디터에서 `Assets/_Project/Scenes/Stage.unity`를 열고 Play하면 Stage 1(조는 인간)이 시작된다. `StageBootstrap.RequestedLevelId`로 stage02를 고를 수 있으며, 화면 흐름(타이틀·스테이지 선택)은 M8에서 붙인다. 빌드 실행 파일은 아직 Boot 씬만 연다.
@@ -70,11 +33,13 @@
 - **M6 물방울 QTE · 습기** — 태그 `m6-done` (2026-10-01). 체크리스트: `plan/archive/m6-checklist.md`. 이월: DripSource 레벨 적용 → M7
 - **M7 거실 버티컬 슬라이스 (Stage 1·2)** — 태그 `m7-done` (2026-10-01). 체크리스트: `plan/archive/m7-checklist.md`. 이월: DripSource 검사 Stage 3~5 적용·CO₂ 바람 흩어짐·중독 게이지 → M9, 액티브 스킬 HUD → M8
 - **M8 화면 흐름 · 스킬 트리 · 저장** — 태그 `m8-done` (2026-10-01). 체크리스트: `plan/archive/m8-checklist.md`. 이월: 해독 체질 적용 → M9, 음악 볼륨 → M10. 사람 요청(CO₂·증기 기체형) 반영 (D-045)
+- **M9 Stage 3 · 4 · 5와 기믹** — 태그 `m9-done` (2026-10-01). 체크리스트: `plan/archive/m9-checklist.md`. 봇: 다섯 스테이지 클리어 4/5 이상(Stage 4는 스킬 구성, D-048)
 
 ## 사람 요청
 | ID | 요청 | 필요 사양 | 대체물 적용 여부 | 상태 |
 |---|---|---|---|---|
-| 2026-10-01 | M9 | 베란다 방·Stage 5(취한 인간, canSpray, 선풍기, 거미줄 3, 모기향, 자동 분사기, 방충망 유리, 아이스박스 은신처), stage05_clear 5/5·stage05_detect 5/5, 봇은 자기 근처를 노린 예고에만 도망 | Core 336/336 통과(시나리오 10종) | (이 커밋) |
+| 2026-10-01 | M9 | Unity 기믹 표현: GimmickView(선풍기 머리·모기향 연기·연무), 거미줄 격자 머티리얼(생성 텍스처), 중독 게이지 HUD·녹색 가장자리, CO₂ 바람 흩어짐, Stage 3~5 1:1·씬 테스트·대표 캡처, Stage 3 인간 위치 조정(봇 5/5). M9 종료 | Core 336 + EditMode 91 + PlayMode 12 통과, 빌드 경고 0, 캡처 검토 | (이 커밋) |
+| 2026-10-01 | M9 | 베란다 방·Stage 5(취한 인간, canSpray, 선풍기, 거미줄 3, 모기향, 자동 분사기, 방충망 유리, 아이스박스 은신처), stage05_clear 5/5·stage05_detect 5/5, 봇은 자기 근처를 노린 예고에만 도망 | Core 336/336 통과(시나리오 10종) | bf2f3f6 |
 | 2026-10-01 | M9 | 화장실 방·Stage 4(고개 숙인 인간, 샤워 부스 유리·물방울 4·습기 강/약), stage04_clear 4/5(스킬 구성)·stage04_detect 5/5, 시나리오 skills·precise, 봇 중독 반전 보정, D-048. **결함 수정**: 봇 러너가 레벨 기믹을 빠뜨림, Stage 4 몸통이 목을 덮음 | Core 시나리오 통과(stage03 4/5, stage04 4/5) | e5901b7 |
 | 2026-10-01 | M9 | 인간 자세(facingPitch·restPitch), 레벨 기믹 배열 파서·스키마, 침실 방·Stage 3(누운 인간, 선풍기, canSpray), stage03_clear 5/5·stage03_detect 5/5, 시나리오 hideRoutes, ScenarioDiagnostics, D-047 | Core 통과(시나리오 포함) | fd7f126 |
 | 2026-10-01 | M9 | 기믹 Core: FanSystem(바람·회전·소음 마스킹), 거미줄(Webbed→Web 사망), ToxinSystem(연무·자동 분사기·모기향 하한·디버프·Spray 사망), 인간 분사, 취한 타겟(흡혈·가려움·시각 배율, 무작위 휘두르기), 해독 체질 적용, 스냅샷 기믹 상태, D-046 | Core 319/319 통과 | f238329 |
@@ -99,6 +64,7 @@
 (없음)
 
 ## 캡처 검토 기록
+- 2026-10-01 M9 `Captures/2026-10-01_165113/` Stage 3~5: 침실(누운 인간·선풍기·옷장·침대 밑 은신처), 화장실(변기 위 고개 숙인 인간·유리 샤워 부스 안 증기), 베란다(취한 인간·테이블·거미줄 격자·연녹색 모기약 연무·모기향 받침과 연기·선풍기 머리 원판). CO₂ 바람 장면은 옅지만 바람 방향으로 기욺 → 인간을 헤드보드에서 10u 띄우고 촬영 시점을 날숨·바람 정면에 맞춤. 마젠타 없음. 작은 방(화장실) 전경 카메라가 벽에 가까움 — 아트 단계에서 포즈 조정
 - 2026-10-01 M8 `Captures/2026-10-01_160546/` 기체 표현: CO₂는 코에서 흩어지는 분홍 기체 줄기(노이즈로 일렁임, 소프트 파티클), 증기는 상자 윤곽 없는 뭉게 덩어리(가구 뒤 가리지 않음), 증기 안에서는 선명 시야가 줄어든 안개. 첫 시도(`160443`)에서 증기 윤곽이 상자 모양 → 가장자리 노이즈 침식으로 수정
 - 2026-10-01 M8 `Captures/2026-10-01_155910/` 메뉴: Title, Title+설정(9행), StageSelect(Stage 1 기록, 2 열림, 3~5 준비 중), Skills(능력치 탭, 비용·레벨), Ending. 한글·배치 정상. **결함 수정**: 첫 캡처에서 글자가 모두 빠짐(캔버스 평면이 근평면에 너무 가까움 + 씬을 다시 열면 동적 글꼴 텍스처가 비워짐), 행 높이가 기본값 100으로 잡혀 목록이 패널 밖으로 넘침 → 고정 크기 행·위쪽 기준 목록·씬별 글꼴
 - 2026-10-01 M7 최종 `Captures/2026-10-01_152614/` Stage 1·2 대표: 전경(흐림 속 가구 실루엣·CO₂), 시작 위치 3인칭·1인칭, 인간 근접(체온 빛·자국 점), Shadow Zone 내부(푸른빛 + 은신 비네트). 마젠타 없음

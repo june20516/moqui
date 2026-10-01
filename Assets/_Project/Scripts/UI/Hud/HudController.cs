@@ -29,6 +29,7 @@ namespace Moqui.Unity.UI.Hud
         private HudView _view;
         private HudPresenter _presenter;
         private TutorialHints _hints;
+        private bool _tiersSet;
 
         public HudState LastState { get; private set; }
 
@@ -37,6 +38,7 @@ namespace Moqui.Unity.UI.Hud
             _view = GetComponent<HudView>();
             _view.Build();
             _presenter = new HudPresenter(_view, _audio);
+            _tiersSet = false;
             _hints = new TutorialHints(new PlayerPrefsStore());
         }
 
@@ -48,6 +50,13 @@ namespace Moqui.Unity.UI.Hud
             }
 
             UpdateDeviceLabels();
+            if (!_tiersSet)
+            {
+                var toxin = _runner.Driver.Simulation.Settings.Toxin;
+                _view.SetToxinTiers(toxin.Tier1 / Moqui.Core.Simulation.ToxinSystem.GaugeMax, toxin.Tier2 / Moqui.Core.Simulation.ToxinSystem.GaugeMax, toxin.Tier3 / Moqui.Core.Simulation.ToxinSystem.GaugeMax);
+                _tiersSet = true;
+            }
+
             bool firstPerson = _cameraRig != null && _cameraRig.Controller != null && _cameraRig.Controller.IsFirstPerson;
             LastState = HudState.Compute(_runner.Driver.Simulation, _camera, firstPerson, _runner.Tuning);
             _presenter.Present(LastState, Time.time);

@@ -6,7 +6,7 @@
   "playerSpawn": [120, 190, -190],
   "human": {
     "id": "human",
-    "position": [0, 66, 115],
+    "position": [0, 66, 105],
     "facingYaw": 180,
     "facingPitch": 90,
     "head": "head",

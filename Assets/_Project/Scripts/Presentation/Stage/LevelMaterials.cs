@@ -18,6 +18,15 @@ namespace Moqui.Unity.Presentation.Stage
         private Material _glass;
 
         [SerializeField]
+        private Material _web;
+
+        [SerializeField]
+        private Material _spray;
+
+        [SerializeField]
+        private Material _coilSmoke;
+
+        [SerializeField]
         private Material _co2;
 
         [SerializeField]
@@ -33,6 +42,15 @@ namespace Moqui.Unity.Presentation.Stage
         public Material Glass => _glass;
 
         public Material Co2 => _co2;
+
+        /// <summary>거미줄 (흰 반투명 격자, spec/06).</summary>
+        public Material Web => _web;
+
+        /// <summary>모기약 연무 (옅은 녹색 기체).</summary>
+        public Material Spray => _spray;
+
+        /// <summary>모기향 연기 (회녹색 가는 기체).</summary>
+        public Material CoilSmoke => _coilSmoke;
 
         public Material Heat => _heat;
 

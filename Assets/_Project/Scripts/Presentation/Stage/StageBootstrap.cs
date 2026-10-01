@@ -25,6 +25,9 @@ namespace Moqui.Unity.Presentation.Stage
         [SerializeField]
         private SensesView _senses;
 
+        [SerializeField]
+        private Gimmicks.GimmickView _gimmicks;
+
         /// <summary>다음에 열 레벨. 화면 흐름(M8)이 정한다.</summary>
         public static string RequestedLevelId { get; set; } = DefaultLevelId;
 
@@ -43,7 +46,9 @@ namespace Moqui.Unity.Presentation.Stage
             Level = new LevelLoader(new UnityDataSource()).Load(RequestedLevelId);
             var simulation = new GameSimulation(GameSettings.FromTuning(tuning), Level.CreateSetup(RequestedSkills));
             var visuals = LevelView.Build(Level, simulation.World, transform, _materials);
-            _senses.Bind(simulation, new SensesSettings(tuning), visuals, _materials);
+            var senses = new SensesSettings(tuning);
+            _senses.Bind(simulation, senses, visuals, _materials);
+            _gimmicks.Bind(simulation, senses, _materials);
             _runner.Begin(tuning, simulation);
             if (Level.Tutorial.Count > 0)
             {

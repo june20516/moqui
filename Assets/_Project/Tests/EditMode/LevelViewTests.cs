@@ -16,6 +16,9 @@ namespace Moqui.Unity.Tests
 
         [TestCase("stage01")]
         [TestCase("stage02")]
+        [TestCase("stage03")]
+        [TestCase("stage04")]
+        [TestCase("stage05")]
         public void Build_Level_OneVisualPerShapeIdWithMatchingPose(string levelId)
         {
             LevelDefinition level = new LevelLoader(new UnityDataSource()).Load(levelId);

@@ -37,6 +37,13 @@ namespace Moqui.Unity.Editor
         private const string Co2MaterialPath = "Assets/_Project/Materials/Senses_Co2.mat";
         private const string HeatMaterialPath = "Assets/_Project/Materials/Senses_Heat.mat";
         private const string BiteMarkMaterialPath = "Assets/_Project/Materials/Senses_BiteMark.mat";
+        private const string WebMaterialPath = "Assets/_Project/Materials/Level_Web.mat";
+        private const string SprayMaterialPath = "Assets/_Project/Materials/Senses_Spray.mat";
+        private const string CoilSmokeMaterialPath = "Assets/_Project/Materials/Senses_CoilSmoke.mat";
+        private const string WebTexturePath = "Assets/_Project/Art/Generated/web_grid.png";
+        private const int WebTextureSize = 64;
+        private const int WebLineWidth = 3;
+        private const float WebGridRepeat = 3f;
         private const string SensesFogMaterialPath = "Assets/_Project/Materials/Senses_Fog.mat";
         private const string SensesFogShaderName = "Moqui/SensesFog";
         private const string SensesFogFeatureName = "SensesFog";
@@ -52,6 +59,9 @@ namespace Moqui.Unity.Editor
         private static readonly Color Co2Color = new Color(0.95f, 0.78f, 0.98f, 0.8f);
         private static readonly Color HeatColor = new Color(1f, 0.42f, 0.12f, 0.5f);
         private static readonly Color BiteMarkColor = new Color(0.9f, 0.1f, 0.15f, 0.95f);
+        private static readonly Color WebColor = new Color(0.95f, 0.95f, 0.95f, 0.55f);
+        private static readonly Color SprayColor = new Color(0.62f, 0.9f, 0.55f, 0.7f);
+        private static readonly Color CoilSmokeColor = new Color(0.7f, 0.78f, 0.68f, 0.55f);
         private static readonly Color SteamColor = new Color(0.9f, 0.95f, 1f, 0.85f);
         private static readonly Color GlassColor = new Color(0.75f, 0.9f, 0.95f, 0.3f);
 
@@ -104,7 +114,15 @@ namespace Moqui.Unity.Editor
             SetReference(materials, "_co2", LoadOrCreateShaderMaterial(Co2MaterialPath, SoftGasShaderName, Co2Color));
             SetReference(materials, "_heat", LoadOrCreateTransparentMaterial(HeatMaterialPath, HeatColor));
             SetReference(materials, "_biteMark", LoadOrCreateTransparentMaterial(BiteMarkMaterialPath, BiteMarkColor));
+            var web = LoadOrCreateTransparentMaterial(WebMaterialPath, WebColor, doubleSided: true);
+            web.SetTexture("_BaseMap", LoadOrCreateWebTexture());
+            web.SetTextureScale("_BaseMap", new Vector2(WebGridRepeat, WebGridRepeat));
+            EditorUtility.SetDirty(web);
+            SetReference(materials, "_web", web);
+            SetReference(materials, "_spray", LoadOrCreateShaderMaterial(SprayMaterialPath, SoftGasShaderName, SprayColor));
+            SetReference(materials, "_coilSmoke", LoadOrCreateShaderMaterial(CoilSmokeMaterialPath, SoftGasShaderName, CoilSmokeColor));
             var senses = new GameObject("SensesView").AddComponent<SensesView>();
+            var gimmicks = new GameObject("GimmickView").AddComponent<Moqui.Unity.Presentation.Gimmicks.GimmickView>();
 
             EnsureSensesFogFeature();
             SetReference(new GameObject("SensesFog").AddComponent<SensesFog>(), "_runner", runner);
@@ -113,6 +131,7 @@ namespace Moqui.Unity.Editor
             SetReference(bootstrap, "_runner", runner);
             SetReference(bootstrap, "_materials", materials);
             SetReference(bootstrap, "_senses", senses);
+            SetReference(bootstrap, "_gimmicks", gimmicks);
             var hud = new GameObject("Hud", typeof(RectTransform));
             hud.AddComponent<HudView>();
             var hudController = hud.AddComponent<HudController>();
@@ -268,6 +287,36 @@ namespace Moqui.Unity.Editor
             EditorUtility.SetDirty(material);
             AssetDatabase.SaveAssets();
             return material;
+        }
+
+        /// <summary>거미줄 격자 텍스처 (코드로 생성한 자체 제작물, asset-pipeline Generated/).</summary>
+        private static Texture2D LoadOrCreateWebTexture()
+        {
+            var existing = AssetDatabase.LoadAssetAtPath<Texture2D>(WebTexturePath);
+            if (existing != null)
+            {
+                return existing;
+            }
+
+            var texture = new Texture2D(WebTextureSize, WebTextureSize, TextureFormat.RGBA32, false);
+            for (int y = 0; y < WebTextureSize; y++)
+            {
+                for (int x = 0; x < WebTextureSize; x++)
+                {
+                    bool line = x < WebLineWidth || y < WebLineWidth || System.Math.Abs(x - y) < WebLineWidth / 2 + 1;
+                    texture.SetPixel(x, y, new Color(1f, 1f, 1f, line ? 1f : 0.08f));
+                }
+            }
+
+            System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(WebTexturePath));
+            System.IO.File.WriteAllBytes(WebTexturePath, texture.EncodeToPNG());
+            Object.DestroyImmediate(texture);
+            AssetDatabase.ImportAsset(WebTexturePath);
+            var importer = (TextureImporter)AssetImporter.GetAtPath(WebTexturePath);
+            importer.alphaIsTransparency = true;
+            importer.wrapMode = TextureWrapMode.Repeat;
+            importer.SaveAndReimport();
+            return AssetDatabase.LoadAssetAtPath<Texture2D>(WebTexturePath);
         }
 
         /// <summary>전용 셰이더 머티리얼 (기체 표현). 에셋이 다른 셰이더로 있으면 셰이더를 바꾼다.</summary>
