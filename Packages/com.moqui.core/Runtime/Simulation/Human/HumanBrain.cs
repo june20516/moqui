@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Moqui.Core.Random;
 
@@ -59,8 +60,13 @@ namespace Moqui.Core.Simulation
                     human.UnseenTicks = perception.PlayerSeen ? 0 : human.UnseenTicks + 1;
                     float minDuration = _frenzy.MinDuration * (human.Definition.Traits.Has(HumanModifier.Doze) ? _doze.FrenzyDurationMul : 1f);
                     bool minimumElapsed = SimulationTime.HasElapsed(human.FrenzyEnteredTick, tick, minDuration);
-                    if (minimumElapsed && human.UnseenTicks >= SimulationTime.ToTicks(_frenzy.CalmTime))
+                    int calmTicks = SimulationTime.ToTicks(_frenzy.CalmTime);
+                    human.FrenzyMinRemaining = Math.Max(0f, minDuration - ((tick - human.FrenzyEnteredTick) * GameSimulation.DeltaTime));
+                    human.CalmProgress = Math.Min(1f, (float)human.UnseenTicks / calmTicks);
+                    if (minimumElapsed && human.UnseenTicks >= calmTicks)
                     {
+                        human.FrenzyMinRemaining = 0f;
+                        human.CalmProgress = 0f;
                         human.Awareness = _frenzy.ExitValue;
                         human.LastStimulusPosition = human.LastSeenPosition;
                         human.LastStimulusTick = tick;

@@ -50,6 +50,7 @@ namespace Moqui.Core.Simulation
             bool visible = human.LineOfSightCached && multiplier > 0f;
             perception.PlayerSeen = inYellow && visible;
             perception.RedZoneTriggered = inRed && visible;
+            perception.PlayerOccluded = inYellow && !human.LineOfSightCached;
             if (perception.PlayerSeen)
             {
                 float t = Math.Clamp(distance / _settings.YellowRange, 0f, 1f);

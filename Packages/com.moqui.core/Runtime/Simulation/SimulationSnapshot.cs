@@ -107,6 +107,9 @@ namespace Moqui.Core.Simulation
             HeadCenter = human.HeadCenter;
             HeadForward = human.HeadForward;
             PlayerVisibleToHuman = human.PlayerVisible;
+            PlayerOccluded = human.PlayerOccluded;
+            FrenzyMinRemaining = human.FrenzyMinRemaining;
+            CalmProgress = human.CalmProgress;
             AttackPhase = human.Attack.Phase;
             AttackKind = human.Attack.Kind;
             AttackTarget = human.Attack.Target;
@@ -142,6 +145,15 @@ namespace Moqui.Core.Simulation
         public Vector3 HeadForward { get; }
 
         public bool PlayerVisibleToHuman { get; }
+
+        /// <summary>Yellow Zone 안이지만 장애물에 가려짐 (HUD "가려짐").</summary>
+        public bool PlayerOccluded { get; }
+
+        /// <summary>광분 최소 유지 시간 중 남은 초.</summary>
+        public float FrenzyMinRemaining { get; }
+
+        /// <summary>진정 진행 0~1.</summary>
+        public float CalmProgress { get; }
 
         public AttackPhase AttackPhase { get; }
 

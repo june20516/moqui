@@ -126,6 +126,15 @@ namespace Moqui.Core.Simulation
 
         public int UnseenTicks { get; set; }
 
+        /// <summary>광분 최소 유지 시간 중 남은 초. 광분이 아니면 0 (HUD, spec/08).</summary>
+        public float FrenzyMinRemaining { get; set; }
+
+        /// <summary>진정 진행 0~1 = 연속 미발견 시간 / frenzy.calmTime. 광분이 아니면 0 (HUD, spec/08).</summary>
+        public float CalmProgress { get; set; }
+
+        /// <summary>Yellow Zone 안이지만 장애물에 시야가 막힘 (HUD "가려짐").</summary>
+        public bool PlayerOccluded { get; set; }
+
         public int FrenzyCount { get; set; }
 
         public int NextBlindSwatTick { get; set; }

@@ -78,6 +78,12 @@ namespace Moqui.Core.Simulation
 
         public SuckSystem Suck { get; }
 
+        /// <summary>현재 대시 스태미나 비용 (HUD 스태미나 눈금, spec/08).</summary>
+        public float DashCost => _dash.Cost(Player);
+
+        /// <summary>지금 착지 입력을 하면 붙을 수 있는가 (HUD 착지 프롬프트, spec/08).</summary>
+        public bool CanAttach => _attach.HasTarget(Player);
+
         public WaterSystem Water { get; }
 
         public HumiditySystem Humidity { get; }
