@@ -3,8 +3,8 @@
 > 루프가 매 반복 끝에 갱신한다. 위에서부터 최신순으로 쓴다.
 
 ## 현재
-- 마일스톤: **M0 프로젝트 골격** (진행 중)
-- 다음 할 일: Unity 어댑터 asmdef + EditMode/PlayMode 샘플 테스트 → `Tools/run-tests`
+- 마일스톤: **M0 프로젝트 골격** (종료 기준 충족 → main merge, `m0-done`)
+- 다음 할 일: M1 시작 — spec/00, 01 수용 기준을 체크리스트로 복사
 - 브랜치: `milestone/m0-skeleton`
 
 ## 현재 마일스톤 체크리스트
@@ -13,9 +13,10 @@
 - [x] Core 패키지(`Packages/com.moqui.core`, noEngineReferences) + `dotnet/` 빌드·테스트 프로젝트 (tech/architecture.md §3) — 증거: `SplitMix64RandomTests` 4개 통과, Unity 배치 모드에서 Moqui.Core.dll 컴파일 CS 에러/경고 0
 - [x] `.gitignore`, `.gitattributes`(LFS) — 증거: `git check-attr filter -- a.png` → `lfs`, D-020
 - [x] `data/tuning.json`(spec/tuning.md 전체) + 로더 + 문서 일치 검사 테스트 — 증거: `TuningDocumentTests.TuningJson_EverySpecKey_HasMatchingValue`, `TuningJson_NoKeysOutsideSpec`, `Load_RepoTuningJson_Succeeds` (변조 시 실패 확인), `TuningTests`, `JsonReaderTests`
-- [ ] `Tools/run-tests`, `Tools/build`, `Tools/capture` — `run-core-tests`(ps1 정본 + sh 래퍼) 완료, 나머지 남음
-- [ ] `dotnet test` 샘플 1개, Unity EditMode/PlayMode 샘플 각 1개 통과 — dotnet 샘플 통과(`SplitMix64RandomTests`), Unity 샘플 남음
-- [ ] 빈 씬 Standalone 빌드 성공
+- [x] `Tools/run-tests`, `Tools/build`, `Tools/capture` — 증거: `run-tests.ps1` exit 0 (Core 35, EditMode 1, PlayMode 1), `build.ps1` exit 0, `capture.ps1` exit 0 → `Captures/2026-10-01_123452/Boot.png`. 각 ps1에 Git Bash 래퍼(sh)
+- [x] `dotnet test` 샘플 1개, Unity EditMode/PlayMode 샘플 각 1개 통과 — 증거: `SplitMix64RandomTests`, `Moqui.Unity.Tests.UnityDataSourceTests.Load_InEditor_ReadsRepoTuning`, `Moqui.Unity.Tests.PlayModeSmokeTests.Tuning_LoadedInPlayMode_SurvivesFrame`
+- [x] 빈 씬 Standalone 빌드 성공 — 증거: `Builds/Windows/Moqui.exe`, BuildScript result=Succeeded errors=0 unexpected warnings=0 (D-024), StreamingAssets/data/tuning.json 포함 확인
+- [x] Unity 어댑터 asmdef (Runtime/Presentation/UI/Editor, Tests.EditMode/PlayMode, D-025) — 증거: `unity-import.ps1` 컴파일 이슈 0
 
 ## 사람 요청
 | ID | 요청 | 필요 사양 | 대체물 적용 여부 | 상태 |
@@ -28,12 +29,13 @@
 (없음)
 
 ## 캡처 검토 기록
-(없음)
+- 2026-10-01 M0 `Captures/2026-10-01_123452/Boot.png`: 템플릿 빈 씬(하늘·바닥). 마젠타 없음, 템플릿 볼륨의 피사계 심도로 전체가 흐림 — 표현 작업(M1 이후)에서 볼륨 프로파일 정리 필요
 
 ## 반복 로그
 | 일시 | 마일스톤 | 한 일 | 증거 | 커밋 |
 |---|---|---|---|---|
-| 2026-10-01 | M0 | Core 데이터 계층(IDataSource, JsonReader, Tuning, TuningLoader), `data/tuning.json`, spec 문서 일치 검사 | Core 35/35 통과, Unity CS 이슈 0 | (이 커밋) |
+| 2026-10-01 | M0 | Unity 어댑터 asmdef, UnityDataSource, DataSync·BuildScript·CaptureTool, Tools/run-tests·build·capture, 씬·입력 에셋 이동, D-024·D-025. M0 종료 | Core 35 + EditMode 1 + PlayMode 1 통과, 빌드 성공(예상 외 경고 0), 캡처 1장 | (이 커밋) |
+| 2026-10-01 | M0 | Core 데이터 계층(IDataSource, JsonReader, Tuning, TuningLoader), `data/tuning.json`, spec 문서 일치 검사 | Core 35/35 통과, Unity CS 이슈 0 | 2b265df |
 | 2026-10-01 | M0 | 필수 패키지 설치, `Tools/unity-path.ps1`·`unity-import.ps1`, D-023 | unity-import exit 0, CS 이슈 0 | fd40a00 |
 | 2026-10-01 | M0 | URP 프로젝트 생성(스크래치패드 생성 후 루트로 이동, 템플릿 튜토리얼 제거), 라이선스 배치 모드 확인 | Moqui.Core Unity 컴파일 CS 0건 | 28a2f7b |
 | 2026-10-01 | M0 | Unity 버전 확정(D-019), Windows 기준 재확인(D-022), 번들 .NET SDK 사용(D-021), Core 패키지 + dotnet sln + IRandom 샘플 테스트, `Tools/run-core-tests` | `SplitMix64RandomTests` 4/4 통과 (ps1·sh 양쪽) | d26f851 |

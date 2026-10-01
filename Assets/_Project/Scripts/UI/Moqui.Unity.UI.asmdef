@@ -1,0 +1,20 @@
+{
+    "name": "Moqui.Unity.UI",
+    "rootNamespace": "Moqui.Unity.UI",
+    "references": [
+        "Moqui.Core",
+        "Moqui.Unity.Runtime",
+        "Unity.TextMeshPro",
+        "UnityEngine.UI",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

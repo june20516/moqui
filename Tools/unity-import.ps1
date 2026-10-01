@@ -7,7 +7,7 @@ New-Item -ItemType Directory -Force $logDir | Out-Null
 $log = Join-Path $logDir 'unity-import.log'
 
 $code = Invoke-UnityBatch -Arguments @('-quit') -LogFile $log
-$issues = Select-String -Path $log -Pattern 'error CS\d+|warning CS\d+' | ForEach-Object { $_.Line.Trim() } | Sort-Object -Unique
+$issues = Select-String -Path $log -Pattern 'error CS\d+|warning CS\d+|will not be compiled' | ForEach-Object { $_.Line.Trim() } | Sort-Object -Unique
 $issues | ForEach-Object { Write-Output $_ }
 Write-Output "unity exit=$code, compile issues=$(@($issues).Count), log=$log"
 if ($code -ne 0 -or @($issues).Count -gt 0) { exit 1 }

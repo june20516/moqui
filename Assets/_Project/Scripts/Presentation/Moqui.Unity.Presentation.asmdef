@@ -1,0 +1,18 @@
+{
+    "name": "Moqui.Unity.Presentation",
+    "rootNamespace": "Moqui.Unity.Presentation",
+    "references": [
+        "Moqui.Core",
+        "Moqui.Unity.Runtime",
+        "Unity.Cinemachine"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

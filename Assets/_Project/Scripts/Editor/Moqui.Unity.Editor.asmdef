@@ -1,0 +1,21 @@
+{
+    "name": "Moqui.Unity.Editor",
+    "rootNamespace": "Moqui.Unity.Editor",
+    "references": [
+        "Moqui.Core",
+        "Moqui.Unity.Runtime",
+        "Moqui.Unity.Presentation",
+        "Moqui.Unity.UI"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
