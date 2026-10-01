@@ -9,10 +9,12 @@ namespace Moqui.Core.Simulation
     /// </summary>
     public sealed class SimulationSnapshot
     {
-        public SimulationSnapshot(int tick, StageOutcome outcome, PlayerSnapshot player, HumanSnapshot human)
+        public SimulationSnapshot(int tick, StageOutcome outcome, PlayerSnapshot player, HumanSnapshot human, IReadOnlyList<Vector3> drops, float trappedHeightRemaining)
         {
             Tick = tick;
             Outcome = outcome;
+            Drops = drops;
+            TrappedHeightRemaining = trappedHeightRemaining;
             Player = player;
             Human = human;
         }
@@ -20,6 +22,12 @@ namespace Moqui.Core.Simulation
         public int Tick { get; }
 
         public StageOutcome Outcome { get; }
+
+        /// <summary>낙하 중인 물방울 위치.</summary>
+        public IReadOnlyList<Vector3> Drops { get; }
+
+        /// <summary>Trapped 중 바닥까지 남은 거리 (QTE 높이 게이지).</summary>
+        public float TrappedHeightRemaining { get; }
 
         public PlayerSnapshot Player { get; }
 
@@ -43,6 +51,10 @@ namespace Moqui.Core.Simulation
             BloodGauge = player.BloodGauge;
             HasSuckSession = player.SuckSession != null;
             SessionAmount = player.SuckSession?.Amount ?? 0f;
+            Humidity = player.Humidity;
+            WetRemaining = player.WetRemaining;
+            InSteam = player.InSteam;
+            EscapePresses = player.EscapePresses;
         }
 
         public Vector3 Position { get; }
@@ -65,6 +77,14 @@ namespace Moqui.Core.Simulation
         public bool HasSuckSession { get; }
 
         public float SessionAmount { get; }
+
+        public float Humidity { get; }
+
+        public float WetRemaining { get; }
+
+        public bool InSteam { get; }
+
+        public int EscapePresses { get; }
     }
 
     public sealed class HumanSnapshot

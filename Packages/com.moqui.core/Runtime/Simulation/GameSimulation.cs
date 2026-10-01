@@ -42,6 +42,8 @@ namespace Moqui.Core.Simulation
             _attach = new AttachSystem(settings.Attach, settings.HumanMotion, settings.Flight, World, _mover);
             _fallingBodies = new FallingBodySystem(settings.World);
             Suck = new SuckSystem(settings.Suck, settings.Sites, settings.BiteMark);
+            Water = new WaterSystem(settings.Water, World, _fallingBodies, _dash, setup.DripSources);
+            Humidity = new HumiditySystem(settings.Humid, settings.Water, settings.Hiding, World, Water);
             if (setup.Human != null)
             {
                 Human = new Human(setup.Human, World);
@@ -66,6 +68,10 @@ namespace Moqui.Core.Simulation
         public HumanSystem HumanSystem => _humanSystem;
 
         public SuckSystem Suck { get; }
+
+        public WaterSystem Water { get; }
+
+        public HumiditySystem Humidity { get; }
 
         public StageOutcome Outcome { get; private set; }
 
@@ -109,6 +115,8 @@ namespace Moqui.Core.Simulation
             }
 
             UpdateHidden();
+            Water.Step(Player, Tick, DeltaTime, _events);
+            Humidity.Step(Player, DeltaTime);
 
             foreach (var body in _bodies)
             {
@@ -134,7 +142,14 @@ namespace Moqui.Core.Simulation
 
         public SimulationSnapshot CaptureSnapshot()
         {
-            return new SimulationSnapshot(Tick, Outcome, new PlayerSnapshot(Player), Human != null ? new HumanSnapshot(Human) : null);
+            var drops = new List<Vector3>();
+            foreach (var drop in Water.Drops)
+            {
+                drops.Add(drop.Position);
+            }
+
+            var human = Human != null ? new HumanSnapshot(Human) : null;
+            return new SimulationSnapshot(Tick, Outcome, new PlayerSnapshot(Player), human, drops, Water.TrappedHeightRemaining(Player));
         }
 
         private void StepPlayer(in PlayerCommand command)
@@ -143,6 +158,9 @@ namespace Moqui.Core.Simulation
             Player.PrecisionHeld = command.PrecisionHeld;
             Player.SpeedMultiplier = _stamina.SpeedMultiplier(Player) * Suck.SpeedMultiplier(Player.BloodGauge);
             Player.DashDistanceMultiplier = Suck.DashMultiplier(Player.BloodGauge);
+            Player.StaminaRegenMultiplier = 1f;
+            Player.DashCostAdd = 0f;
+            Humidity.ApplyWetEffects(Player);
 
             switch (Player.State)
             {
@@ -164,6 +182,15 @@ namespace Moqui.Core.Simulation
 
                     Player.State = PlayerState.Flying;
                     break;
+                case PlayerState.Trapped:
+                    // 이동 입력은 무시하고 탈출(Dash) 입력만 센다 (spec/05). 탈출하면 같은 틱에 위로 대시를 시작한다.
+                    Water.StepTrapped(Player, command, Tick, _events);
+                    if (Player.State == PlayerState.Dashing)
+                    {
+                        _dash.Step(Player);
+                    }
+
+                    return;
             }
 
             if (_attach.TryAttach(Player, command, Tick, _events))

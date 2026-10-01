@@ -15,11 +15,14 @@ namespace Moqui.Core.Simulation
         private readonly VisionSettings _settings;
         private readonly CollisionWorld _world;
         private readonly int _losIntervalTicks;
+        private readonly float _steamVisionMul;
 
-        public VisionSensor(VisionSettings settings, CollisionWorld world)
+        /// <param name="steamVisionMul">증기 속 플레이어에 대한 시각 배율 (humid.steamVisionMul, spec/05 §2).</param>
+        public VisionSensor(VisionSettings settings, CollisionWorld world, float steamVisionMul = 1f)
         {
             _settings = settings;
             _world = world;
+            _steamVisionMul = steamVisionMul;
             _losIntervalTicks = Math.Max(1, SimulationTime.ToTicks(settings.LosCheckInterval));
         }
 
@@ -66,6 +69,11 @@ namespace Moqui.Core.Simulation
             if (player.IsHidden)
             {
                 multiplier *= _settings.ShadowMul;
+            }
+
+            if (player.InSteam)
+            {
+                multiplier *= _steamVisionMul;
             }
 
             return multiplier;

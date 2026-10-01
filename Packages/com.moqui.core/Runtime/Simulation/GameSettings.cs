@@ -26,7 +26,13 @@ namespace Moqui.Core.Simulation
             Attach = new AttachSettings(tuning);
             BiteMark = new BiteMarkSettings(tuning);
             Suck = new SuckSettings(tuning);
+            Water = new WaterSettings(tuning);
+            Humid = new HumidSettings(tuning);
         }
+
+        public WaterSettings Water { get; }
+
+        public HumidSettings Humid { get; }
 
         public SuckSettings Suck { get; }
 

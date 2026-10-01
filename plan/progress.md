@@ -3,22 +3,26 @@
 > 루프가 매 반복 끝에 갱신한다. 위에서부터 최신순으로 쓴다.
 
 ## 현재
-- 마일스톤: **M5 흡혈 세션 · 물린 자국 · 포만 · 승리** (종료 기준 충족 → main merge, `m5-done`)
-- 다음 할 일: M6 시작 — spec/05 수용 기준 + 이월(젖은 날개·습기 2배 회복 D-034, WaterImpact D-031)을 체크리스트로 복사
-- 브랜치: `milestone/m5-suck`
+- 마일스톤: **M6 물방울 QTE · 습기** (종료 기준 충족 → main merge, `m6-done`. 이월: DripSource 높이 검사의 실제 레벨 적용 → M7 (D-036))
+- 다음 할 일: M7 시작 — 거실 버티컬 슬라이스(레벨 데이터 포맷, 거실 Stage 1·2, 졸음, HUD, 튜토리얼, 감각, 봇) 체크리스트 작성
+- 브랜치: `milestone/m6-water`
 
-## 현재 마일스톤 체크리스트 (M5: spec/04 + 이월)
-- [x] 세션 흡혈 속도가 2%/s에서 시작해 6초에 걸쳐 6%/s까지 선형으로 오른다 (forearm 기준) (Core). — 증거: `SuckTests.SessionRate_Forearm_Linear2To6Over6Seconds`(0/1.5/3/4.5/6/8초 측정)
-- [x] 부위 유형별 혈액량과 가려움 증가가 표의 배율을 따른다 (Core). — 증거: `SuckTests.SiteType_BloodAmountAndItch_FollowTable`(팔뚝·종아리·볼)
-- [x] 부착 중 Suck을 놓았다 다시 눌러도 세션 가속이 유지되고, 이탈하면 초기화된다 (Core). — 증거: `SuckTests.SuckReleasedAndPressedAgain_KeepsAcceleration_DetachResets`
-- [x] 부착하지 않았거나 피부가 아닌 표면에서는 흡혈이 되지 않는다 (Core). — 증거: `SuckTests.Suck_NotAttached_NoGain`, `Suck_AttachedToWall_NoGain`, `Suck_AttachedToClothedBodyPart_NoGain`
-- [x] 세션 종료 시 빤 양이 5% 이상이면 자국이 생기고 경계가 +15 오른다. 5% 미만이면 생기지 않는다 (Core). — 증거: `SuckTests.SessionEnd_AmountAtLeast5_BiteMarkAndAwarenessPlus15`, `SessionEnd_AmountBelow5_NoBiteMark`
-- [x] 자국 수에 따른 증가·감소 배율, 하한, 반응 배율이 정확히 적용된다 (n = 0, 1, 3, 6) (Core). — 증거: `SuckTests.BiteMarks_ModifiersMatchFormula`(n=0,1,3,6), `BiteMarks_AppliedToAwarenessAndReactions`(n=0,1,3,6: 시각 증가·감소·하한·반응 배율을 시뮬레이션에서 측정)
-- [x] 포만 0%/50%/100%에서 속도 배율이 1.0/0.8/0.6, 대시 거리 배율이 1.0/0.875/0.75이다 (Core). — 증거: `SuckTests.Satiety_SpeedAndDashMultipliers`(0/50/100%)
-- [x] 게이지 100% 도달 시 Stage Clear 이벤트가 정확히 1회 발생한다 (Core). — 증거: `SuckTests.Gauge100_StageClearedExactlyOnce`, `Cleared_InputIgnoredWorldFrozen`
-- [x] 설계 검증: 같은 스테이지에서 "긴 세션 2회" 시나리오가 "짧은 세션 6회" 시나리오보다 평균 경계가 낮고 클리어 시간이 짧다 (Core 시나리오 비교, 시드 20개 평균). — 증거: `DesignValidationTests.LongSessions_VersusShortSessions_LowerAwarenessAndFasterClear` — 시드 20: 긴 세션 12/20 클리어·평균 경계 28.2·평균 280.6초, 짧은 세션 0/20·38.8·600초 (D-035)
-- [x] (M3 이월, D-033) 무작위 움직임이 흡혈 중에도 발생하고, 붙어 있는 모기가 부위를 따라 움직인다 (Core). — 증거: `SuckTests.RandomMotion_WhileSucking_SessionContinuesAndFollowsPart`, `HumanMotionTests.Actions_KeepHappeningWhilePlayerIsAttached`
-- [x] (M3 이월, D-033) 부위 속도가 dislodgeSpeed를 넘으면 모기가 튕겨 나가고 흡혈 세션이 끝나며, 사망하지 않는다 (Core). — 증거: `SuckTests.Dislodged_WhileSucking_SessionEndsWithoutDeath`, `HumanMotionTests.FastAction_PartFasterThanDislodgeSpeed_DislodgesWithoutDeath`
+## 현재 마일스톤 체크리스트 (M6: spec/05 + 이월)
+- [x] 물방울이 2.5초 간격으로 생성된다 (Core). — 증거: `WaterTests.Drops_SpawnEvery25Seconds`, `Drops_FallAndVanishOnFloor`
+- [x] 물방울에 닿으면 Trapped가 되고 이동 입력이 무시된다 (Core). — 증거: `WaterTests.DropHitsPlayer_Trapped_MoveInputIgnored`, `DropPassesPlayer_AnyHeight_AlwaysTraps`
+- [x] Trapped 중 낙하 속도가 100u/s 등속이다 (Core, ±2%). — 증거: `WaterTests.Trapped_FallsAtConstant100`
+- [x] 대시 2회 입력 시 탈출하고, 스태미나가 줄지 않는다 (Core). — 증거: `WaterTests.DashTwice_Escapes_StaminaUnchanged`
+- [x] 탈출 전 바닥 충돌 시 WaterImpact로 사망한다 (Core). (spec/04 §7 DeathCause.WaterImpact 원인별 테스트 겸함 — D-031) — 증거: `WaterTests.TrappedUntilFloor_DiesWithWaterImpact`
+- [x] 탈출 후 10초간 속도 0.7배, 회복 0.5배, 대시 비용 35 (Core). — 증거: `WaterTests.AfterEscape_WetWingsFor10Seconds_SpeedRegenDashCost`
+- [x] 젖은 날개 중 다시 젖으면 지속시간만 10초로 갱신된다 (Core). — 증거: `WaterTests.WetAgain_DurationRefreshedNotStacked`
+- [ ] 모든 레벨의 DripSource가 착지면 기준 150u 이상이다 (Core: 레벨 데이터 검사 — 아래로 광선 검사). (검사 함수는 M6, 실제 레벨 적용은 M7 — D-036) — 진행: 검사 함수 `LevelChecks.DripSourceHighEnough` + `WaterTests.DripSourceHeight_CheckedByDownwardRay`. 실제 레벨 적용은 M7
+- [x] 습기 게이지가 강/약 영역에서 15/5 per s로 오르고, 밖에서 10/s로 내린다 (Core). — 증거: `WaterTests.Humidity_StrongWeakOutside_15_5_Minus10`, `Humidity_RisesWhileAttached`
+- [x] 습기 100에서 젖은 날개가 걸리고, 영역 안에 머무는 동안 지속시간이 갱신된다 (Core). — 증거: `WaterTests.Humidity_Reaches100_WetWingsAndRefreshedWhileInside`
+- [x] 증기 안의 플레이어에 대한 시각 증가율이 0.6배이다 (Core). — 증거: `WaterTests.Steam_VisionRateIs06Times`, `Steam_IntegratedInHumanSystem`
+- [x] 숨은 상태에서 젖은 날개 시간과 습기 게이지가 2배 빠르게 줄어든다 (Core). (spec/03 2배 회복 기준의 젖은 날개·습기 부분 겸함 — D-034) — 증거: `WaterTests.Hidden_WetAndHumidityRecoverTwiceAsFast`
+
+### 마일스톤 산출물
+- [x] `Sandbox_Water` 씬 (빌드 제외) — 증거: `Assets/_Project/Scenes/Sandbox_Water.unity`, `SandboxWaterSceneTests.SandboxWater_Play_SpawnsAndDrawsDrops`, 캡처 `Captures/2026-10-01_141811/Sandbox_Water_*.png`
 
 ## 완료 마일스톤
 - **M0 프로젝트 골격** — 태그 `m0-done` (2026-10-01). 체크리스트: `plan/archive/m0-checklist.md`
@@ -26,6 +30,7 @@
 - **M2 인간 감지 · 어그로 · 광분** — 태그 `m2-done` (2026-10-01). 체크리스트: `plan/archive/m2-checklist.md`
 - **M3 공격 · 반응 · 무작위 움직임 · 사망** — 태그 `m3-done` (2026-10-01). 체크리스트: `plan/archive/m3-checklist.md`. 이월: 흡혈 연결 2개 → M5 (D-033), 사망 원인 WaterImpact → M6, Web·Spray → M9 (D-031)
 - **M4 스텔스** — 태그 `m4-done` (2026-10-01). 체크리스트: `plan/archive/m4-checklist.md`. 이월: 젖은 날개·습기 2배 회복 → M6, 중독 → M9, 레벨 데이터 obstacle 검사 → M7 (D-034)
+- **M5 흡혈 세션 · 물린 자국 · 포만 · 승리** — 태그 `m5-done` (2026-10-01). 체크리스트: `plan/archive/m5-checklist.md`
 
 ## 사람 요청
 | ID | 요청 | 필요 사양 | 대체물 적용 여부 | 상태 |
@@ -41,6 +46,7 @@
 (없음)
 
 ## 캡처 검토 기록
+- 2026-10-01 M6 `Captures/2026-10-01_141811/` Sandbox_Water: 물방울(지름 3u)이 플레이어 위에서 낙하, 갇힌 플레이어가 물방울과 함께 세면대로 낙하(남은 높이 36.4u). 마젠타 없음. 첫 캡처에서 갇히지 않은 것은 물방울이 틱당 7u를 떨어지며 플레이어를 건너뛴 결함 → 선분 거리 판정으로 수정, 높이별 회귀 테스트 추가
 - 2026-10-01 M2 `Captures/2026-10-01_133118/` Sandbox_Human: 평온(머리 초록, 시선 패턴 yaw 11°), 대시 소음 뒤 의심(머리 노랑, 소리 쪽 뒤-오른쪽으로 돌아 yawLimit 100°에서 멈춤), 광분 손바닥 예고(머리 빨강, 플레이어 위치에 주황 예고 표시 반경 12u). 마젠타 없음. 캡슐 인간 비율·소파 배치 정상. 첫 캡처에서 광분 장면 예고가 안 뜬 것은 머리가 뒤를 보고 있어 시야 밖이었기 때문(정상 동작) → 캡처 시나리오에서 머리를 정면으로 되돌림
 - 2026-10-01 M1 `Captures/2026-10-01_131326/`, `2026-10-01_131432/` Sandbox_Flight: 3인칭 개요(가구·벽·플레이어 구 정상), 1인칭 벽 접촉 정면·비스듬히(벽면과 방 안쪽만 보임, 벽 뒤 노출 없음), 3인칭 벽 접촉(카메라가 벽 안쪽 유지). 마젠타 없음. 첫 캡처에서 플레이어 색이 빠진 문제(MaterialPropertyBlock 미저장) → 머티리얼 에셋 `Whitebox_Player.mat`으로 수정 후 재확인
 - 2026-10-01 M0 `Captures/2026-10-01_123452/Boot.png`: 템플릿 빈 씬(하늘·바닥). 마젠타 없음, 템플릿 볼륨의 피사계 심도로 전체가 흐림 — 표현 작업(M1 이후)에서 볼륨 프로파일 정리 필요
@@ -48,7 +54,8 @@
 ## 반복 로그
 | 일시 | 마일스톤 | 한 일 | 증거 | 커밋 |
 |---|---|---|---|---|
-| 2026-10-01 | M5 | 설계 검증 시나리오(SessionStrategyBot, Shadow Zone 무대, 실패=제한 시간), D-035, 밸런스 검토 권장 기록 | Core 204 + EditMode 40 + PlayMode 3 통과, 빌드 성공. M5 종료 | (이 커밋) |
+| 2026-10-01 | M6 | 브랜치·체크리스트, D-036, WaterSystem(발생·Trapped·탈출·WaterImpact), HumiditySystem(습기·증기·젖은 날개), 대시 비용·회복 배율, LevelChecks, 스냅샷 확장, WaterView·Sandbox_Water·캡처. **결함 수정**: 물방울 포획 터널링(선분 판정). M6 종료 | Core 220 + EditMode 40 + PlayMode 4 통과, 빌드 성공, 캡처 검토 | (이 커밋) |
+| 2026-10-01 | M5 | 설계 검증 시나리오(SessionStrategyBot, Shadow Zone 무대, 실패=제한 시간), D-035, 밸런스 검토 권장 기록 | Core 204 + EditMode 40 + PlayMode 3 통과, 빌드 성공. M5 종료 | 6119aeb |
 | 2026-10-01 | M5 | 브랜치·체크리스트, SuckSystem(세션 가속·가려움·자국·포만), 자국 경계 보정, StageOutcome·StageCleared, 스냅샷에 게이지·결과 추가 | Core 203/203 통과, Unity CS 이슈 0 | fcb7377 |
 | 2026-10-01 | M4 | ShadowVignette(URP Volume), 1인칭 부착 시선 제한·카메라 up(D-028 해소), 샌드박스 탁자 밑 Shadow Zone, run-tests가 결과 없을 때도 컴파일 오류 출력. M4 종료 | Core 178 + EditMode 40 + PlayMode 3 통과, 빌드 성공 | f644e2f |
 | 2026-10-01 | M4 | 브랜치·체크리스트, D-034, Shadow Zone 판정(매 틱 IsHidden), 숨김 테스트를 실제 볼륨으로 전환, StealthTests | Core 178/178 통과 | cb64102 |

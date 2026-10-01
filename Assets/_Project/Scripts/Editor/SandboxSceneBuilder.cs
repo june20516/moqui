@@ -16,6 +16,7 @@ namespace Moqui.Unity.Editor
     {
         public const string FlightScenePath = "Assets/_Project/Scenes/Sandbox_Flight.unity";
         public const string HumanScenePath = "Assets/_Project/Scenes/Sandbox_Human.unity";
+        public const string WaterScenePath = "Assets/_Project/Scenes/Sandbox_Water.unity";
         public const string ControlsPath = "Assets/_Project/Input/MoquiControls.inputactions";
         public const string PlayerMaterialPath = "Assets/_Project/Materials/Whitebox_Player.mat";
 
@@ -29,6 +30,7 @@ namespace Moqui.Unity.Editor
         {
             BuildFlightSandbox();
             BuildHumanSandbox();
+            BuildWaterSandbox();
         }
 
         [MenuItem("Moqui/Rebuild Sandbox_Flight")]
@@ -49,6 +51,17 @@ namespace Moqui.Unity.Editor
             var bootstrap = new GameObject("SandboxHumanBootstrap").AddComponent<SandboxHumanBootstrap>();
             SetReference(bootstrap, "_runner", runner);
             Save(scene, HumanScenePath);
+        }
+
+        [MenuItem("Moqui/Rebuild Sandbox_Water")]
+        public static void BuildWaterSandbox()
+        {
+            Scene scene = CreateScaffold(out SimulationRunner runner);
+            var waterView = new GameObject("WaterView").AddComponent<WaterView>();
+            SetReference(waterView, "_runner", runner);
+            var bootstrap = new GameObject("SandboxWaterBootstrap").AddComponent<SandboxWaterBootstrap>();
+            SetReference(bootstrap, "_runner", runner);
+            Save(scene, WaterScenePath);
         }
 
         /// <summary>조명, 카메라, 시뮬레이션 구동기, 플레이어 그림, 카메라 리그를 만든다.</summary>
