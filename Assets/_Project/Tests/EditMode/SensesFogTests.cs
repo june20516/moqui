@@ -1,4 +1,5 @@
 using Moqui.Core.Data;
+using Moqui.Core.Meta;
 using Moqui.Unity.Data;
 using Moqui.Unity.Editor;
 using Moqui.Unity.Presentation.Senses;
@@ -83,6 +84,20 @@ namespace Moqui.Unity.Tests
             Assert.That(feature.passMaterial.shader.name, Is.EqualTo("Moqui/SensesFog"));
             Assert.That(ShaderUtil.ShaderHasError(feature.passMaterial.shader), Is.False);
             Assert.That(rendererData.rendererFeatures.FindAll(f => f != null && f.name == "SensesFog").Count, Is.EqualTo(1), "added once");
+        }
+    
+
+        [Test]
+        public void CompoundEyes_ExtendsClearRangePerLevel()
+        {
+            Tuning tuning = TuningLoader.Load(new UnityDataSource());
+            float baseClear = new SensesSettings(tuning).ClearRange;
+            float add = tuning.GetFloat("skill.compoundEyes.clearRangeAdd");
+            for (int level = 0; level <= 2; level++)
+            {
+                var skilled = new SensesSettings(SkillEffects.Apply(tuning, SkillLoadout.Of((SkillCatalog.CompoundEyes, level))));
+                Assert.That(FogModel.ClearRange(skilled, false), Is.EqualTo(baseClear + (add * level)).Within(Tolerance), $"level {level}");
+            }
         }
     }
 }

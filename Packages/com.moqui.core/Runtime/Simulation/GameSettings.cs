@@ -30,7 +30,11 @@ namespace Moqui.Core.Simulation
             Humid = new HumidSettings(tuning);
             Doze = new DozeSettings(tuning);
             Breath = new BreathSettings(tuning);
+            Decoy = new DecoySettings(tuning);
         }
+
+        /// <summary>액티브 스킬 미끼 마법 (spec/09).</summary>
+        public DecoySettings Decoy { get; }
 
         public DozeSettings Doze { get; }
 

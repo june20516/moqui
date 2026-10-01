@@ -10,7 +10,10 @@ using Moqui.Unity.Presentation.Sandbox;
 using Moqui.Unity.Presentation.Senses;
 using Moqui.Unity.Presentation.Stage;
 using Moqui.Unity.Settings;
+using Moqui.Unity.UI;
+using Moqui.Unity.UI.Flow;
 using Moqui.Unity.UI.Hud;
+using Moqui.Core.Meta;
 using Moqui.Core.Tutorial;
 using Moqui.Core.Collision;
 using Moqui.Core.Data.Levels;
@@ -36,6 +39,7 @@ namespace Moqui.Unity.Editor
         private const float Co2SettleSeconds = 1.2f;
         private const float ShadowSettleSeconds = 5f;
         private const float HudCaptureYawOffset = 100f;
+        private const float MenuCanvasDistance = 1f;
         private static readonly Vector2Int[] HudResolutions = { new Vector2Int(1920, 1080), new Vector2Int(1280, 720), new Vector2Int(2560, 1440) };
         private const float OverviewBackOff = 60f;
         private const float OverviewRise = 80f;
@@ -56,13 +60,7 @@ namespace Moqui.Unity.Editor
                 DateTime.Now.ToString("yyyy-MM-dd_HHmmss", CultureInfo.InvariantCulture));
             Directory.CreateDirectory(outputDirectory);
 
-            // Stage 씬은 Awake에서 레벨을 만들므로 편집 모드 개요 캡처 대신 CaptureStage가 포즈별로 찍는다.
-            foreach (string scenePath in EditorBuildSettings.scenes.Where(scene => scene.enabled && scene.path != SandboxSceneBuilder.StageScenePath).Select(scene => scene.path))
-            {
-                EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
-                string fileName = Path.GetFileNameWithoutExtension(scenePath) + ".png";
-                CaptureCamera(MainCameraOrThrow(scenePath), Path.Combine(outputDirectory, fileName));
-            }
+            CaptureMenus(outputDirectory);
 
             CaptureSandboxFlight(outputDirectory);
             CaptureSandboxHuman(outputDirectory);
@@ -73,6 +71,7 @@ namespace Moqui.Unity.Editor
             }
 
             CaptureHud(outputDirectory);
+            CaptureGas(outputDirectory);
 
             Debug.Log($"[CaptureTool] Captures written to {outputDirectory}");
         }
@@ -141,6 +140,152 @@ namespace Moqui.Unity.Editor
             vignette.Tick(tuning, false, ShadowSettleSeconds);
             SensesFog.Disable();
             Debug.Log($"[CaptureTool] {prefix}: shapes={level.AllShapes().Count()}, shadow={shadow.Id}, human={simulation.Human.State}, co2Puffs={sensesView.Plume.Puffs.Count}");
+        }
+
+        private sealed class MemoryStorage : ISaveStorage
+        {
+            private readonly System.Collections.Generic.Dictionary<string, string> _files = new System.Collections.Generic.Dictionary<string, string>();
+
+            public bool Exists(string fileName) => _files.ContainsKey(fileName);
+
+            public string Read(string fileName) => _files[fileName];
+
+            public void Write(string fileName, string text) => _files[fileName] = text;
+
+            public void Move(string fromFileName, string toFileName)
+            {
+                _files[toFileName] = _files[fromFileName];
+                _files.Remove(fromFileName);
+            }
+
+            public void Delete(string fileName) => _files.Remove(fileName);
+        }
+
+        private sealed class NullNavigator : ISceneNavigator
+        {
+            public void Load(ScreenId screen)
+            {
+            }
+
+            public void Quit()
+            {
+            }
+        }
+
+        /// <summary>
+        /// 메뉴 화면 캡처 (spec/08): Title, Title+설정, StageSelect, StageSelect+Skills, Ending. 예시 저장 데이터(Stage 1 클리어, 포인트 340)를 쓴다.
+        /// 화면은 편집 모드에서 직접 만들고, 오버레이 캔버스를 카메라 캔버스로 바꿔 렌더 텍스처에 그린다.
+        /// </summary>
+        public static void CaptureMenus(string outputDirectory)
+        {
+            Tuning tuning = TuningLoader.Load(new UnityDataSource());
+            var session = new GameSession(tuning, new SaveStore(new MemoryStorage()), new MemoryPreferenceStore(), id => id == "stage01" || id == "stage02");
+            session.Save.BloodPoints = 340;
+            session.Save.SkillLevels[SkillCatalog.SwiftWings] = 1;
+            session.Save.Stages["stage01"] = new StageRecord { Cleared = true, BestSeconds = 128.4f, NoFrenzy = true, MinBiteMarks = 2 };
+            var flow = new ScreenFlow(session, new NullNavigator());
+
+            CaptureMenu<TitleScreen>(SandboxSceneBuilder.ScenePath(ScreenId.Title), flow, outputDirectory, "Menu_Title", null);
+            CaptureMenu<TitleScreen>(SandboxSceneBuilder.ScenePath(ScreenId.Title), flow, outputDirectory, "Menu_Title_Settings", title => title.Settings.Open(title.SettingsButton));
+            CaptureMenu<StageSelectScreen>(SandboxSceneBuilder.ScenePath(ScreenId.StageSelect), flow, outputDirectory, "Menu_StageSelect", null);
+            CaptureMenu<StageSelectScreen>(SandboxSceneBuilder.ScenePath(ScreenId.StageSelect), flow, outputDirectory, "Menu_Skills", select =>
+            {
+                select.Skills.Open(select.SkillsButton);
+                select.Skills.ShowTab(SkillCategory.Stats);
+            });
+            CaptureMenu<EndingScreen>(SandboxSceneBuilder.ScenePath(ScreenId.Ending), flow, outputDirectory, "Menu_Ending", null);
+        }
+
+        private static void CaptureMenu<T>(string scenePath, ScreenFlow flow, string outputDirectory, string name, Action<T> prepare)
+            where T : ScreenBase
+        {
+            EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+            Camera camera = MainCameraOrThrow(scenePath);
+            var screen = UnityEngine.Object.FindAnyObjectByType<T>();
+            screen.Initialize(flow);
+            prepare?.Invoke(screen);
+            foreach (var canvas in UnityEngine.Object.FindObjectsByType<Canvas>())
+            {
+                canvas.renderMode = RenderMode.ScreenSpaceCamera;
+                canvas.worldCamera = camera;
+                canvas.planeDistance = MenuCanvasDistance;
+            }
+
+            CaptureCamera(camera, Path.Combine(outputDirectory, name + ".png"), Width, Height, () =>
+            {
+                camera.ResetAspect();
+                RebuildUi();
+            });
+        }
+
+        /// <summary>
+        /// 배치 모드에는 다음 프레임이 없으므로 레이아웃과 글꼴 글리프 갱신을 즉시 끝낸다.
+        /// 동적 글꼴은 첫 갱신에서 글리프 텍스처를 다시 만들고 텍스트를 다시 더럽히므로 한 번 더 갱신한다.
+        /// </summary>
+        private static void RebuildUi()
+        {
+            for (int pass = 0; pass < 2; pass++)
+            {
+                Canvas.ForceUpdateCanvases();
+                foreach (var canvas in UnityEngine.Object.FindObjectsByType<Canvas>())
+                {
+                    UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)canvas.transform);
+                }
+            }
+
+            Canvas.ForceUpdateCanvases();
+        }
+
+        /// <summary>
+        /// 기체 표현 검토 (D-045): 인간 머리 근처 CO₂ 소프트 파티클, TV 앞에 둔 시험용 증기 볼륨(밖에서·안에서).
+        /// Stage 1·2에는 습기 영역이 없으므로 캡처용 박스를 임시로 둔다(씬은 저장하지 않는다).
+        /// </summary>
+        public static void CaptureGas(string outputDirectory)
+        {
+            EditorSceneManager.OpenScene(SandboxSceneBuilder.StageScenePath, OpenSceneMode.Single);
+            Camera camera = MainCameraOrThrow(SandboxSceneBuilder.StageScenePath);
+            Tuning tuning = TuningLoader.Load(new UnityDataSource());
+            LevelDefinition level = new LevelLoader(new UnityDataSource()).Load(StageLevelIds[0]);
+            var simulation = new GameSimulation(GameSettings.FromTuning(tuning), level.CreateSetup());
+            var materials = UnityEngine.Object.FindAnyObjectByType<LevelMaterials>();
+            var visuals = LevelView.Build(level, simulation.World, null, materials);
+            UnityEngine.Object.FindAnyObjectByType<HumanView>().Build(simulation.Human);
+            var senses = new SensesSettings(tuning);
+            var sensesView = UnityEngine.Object.FindAnyObjectByType<SensesView>();
+            sensesView.Bind(simulation, senses, visuals, materials);
+            for (int i = 0; i < SimulationTime.ToTicks(simulation.Settings.Breath.Period) && !simulation.Human.IsExhaling; i++)
+            {
+                Step(simulation, sensesView, GameSimulation.DeltaTime);
+            }
+
+            Step(simulation, sensesView, Co2SettleSeconds);
+            var player = GameObject.Find("Player");
+            var visibility = player.GetComponent<PlayerViewVisibility>();
+            Vector3 head = simulation.Human.HeadCenter.ToUnity();
+            Vector3 viewer = head + new Vector3(-70f, 20f, -60f);
+            simulation.Player.Position = viewer.ToCore();
+            sensesView.Render(0f);
+            SensesFog.Apply(senses, viewer, false);
+            var closePose = new CameraPose(viewer, Quaternion.LookRotation((head + (Vector3.up * 20f)) - viewer), camera.fieldOfView, camera.nearClipPlane);
+            Capture(camera, player, visibility, viewer, closePose, true, outputDirectory, "Gas_co2_close");
+
+            var steam = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            UnityEngine.Object.DestroyImmediate(steam.GetComponent<Collider>());
+            steam.name = "CaptureSteam";
+            steam.transform.position = new Vector3(0f, 70f, -120f);
+            steam.transform.localScale = new Vector3(120f, 140f, 80f);
+            steam.GetComponent<Renderer>().sharedMaterial = materials.Steam;
+            Vector3 outside = new Vector3(60f, 110f, 60f);
+            SensesFog.Apply(senses, outside, false);
+            var outsidePose = new CameraPose(outside, Quaternion.LookRotation(steam.transform.position - outside), camera.fieldOfView, camera.nearClipPlane);
+            Capture(camera, player, visibility, outside, outsidePose, true, outputDirectory, "Gas_steam_outside");
+
+            Vector3 inside = steam.transform.position + new Vector3(0f, 10f, 20f);
+            SensesFog.Apply(senses, inside, true);
+            var insidePose = new CameraPose(inside, Quaternion.LookRotation(Vector3.forward), camera.fieldOfView, camera.nearClipPlane);
+            Capture(camera, player, visibility, inside, insidePose, true, outputDirectory, "Gas_steam_inside");
+            SensesFog.Disable();
+            Debug.Log($"[CaptureTool] Gas: co2Puffs={sensesView.Plume.Puffs.Count}");
         }
 
         /// <summary>

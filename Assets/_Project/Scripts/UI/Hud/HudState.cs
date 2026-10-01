@@ -69,6 +69,13 @@ namespace Moqui.Unity.UI.Hud
 
         public bool CrosshairVisible { get; private set; }
 
+        /// <summary>장착한 액티브 스킬이 있는가 (우하단 칸).</summary>
+        public bool ActiveSkillVisible { get; private set; }
+
+        public float ActiveSkillCooldown { get; private set; }
+
+        public bool ActiveSkillInUse { get; private set; }
+
         /// <summary>인간 머리가 화면 밖일 때만.</summary>
         public EdgeMarker HeadArrow { get; private set; }
 
@@ -102,6 +109,9 @@ namespace Moqui.Unity.UI.Hud
             };
 
             state.Prompt = PromptFor(simulation);
+            state.ActiveSkillVisible = simulation.Decoy.IsAvailable;
+            state.ActiveSkillCooldown = simulation.Decoy.CooldownRemaining(simulation.Tick);
+            state.ActiveSkillInUse = simulation.Decoy.IsActive(simulation.Tick);
             state.EscapePressesRemaining = Mathf.Max(0, settings.Water.EscapePresses - player.EscapePresses);
 
             var human = simulation.Human;

@@ -2,6 +2,7 @@ using System.Linq;
 using Moqui.Core.Collision;
 using Moqui.Core.Data;
 using Moqui.Core.Data.Levels;
+using Moqui.Core.Meta;
 using Moqui.Core.Simulation;
 using Moqui.Core.Tutorial;
 using Moqui.Unity.Data;
@@ -271,6 +272,27 @@ namespace Moqui.Unity.Tests
                 Assert.That(marker.Viewport.x, Is.InRange(margin.x - Tolerance, 1f - margin.x + Tolerance));
                 Assert.That(marker.Viewport.y, Is.InRange(margin.y - Tolerance, 1f - margin.y + Tolerance));
             }
+        }
+    
+
+        [Test]
+        public void ActiveSkill_SlotShowsOnlyWhenEquipped_WithCooldown()
+        {
+            Present();
+            Assert.That(_view.ActiveSkillRoot.activeSelf, Is.False, "nothing equipped");
+
+            LevelDefinition level = new LevelLoader(new UnityDataSource()).Load("stage01");
+            var skills = SkillLoadout.Of((SkillCatalog.DecoyCharm, 1)).WithEquipped(SkillCatalog.DecoyCharm);
+            _simulation = new GameSimulation(GameSettings.FromTuning(_tuning), level.CreateSetup(skills));
+            Present();
+            Assert.That(_view.ActiveSkillRoot.activeSelf, Is.True);
+            Assert.That(_view.ActiveSkillText.text, Is.EqualTo("Q"), "ready shows the key");
+
+            _simulation.Step(new PlayerCommand { SkillPressed = true });
+            var state = Present();
+            Assert.That(state.ActiveSkillInUse, Is.True);
+            Assert.That(state.ActiveSkillCooldown, Is.GreaterThan(0f));
+            Assert.That(_view.ActiveSkillText.text, Does.EndWith("s"), "cooldown seconds");
         }
     }
 }

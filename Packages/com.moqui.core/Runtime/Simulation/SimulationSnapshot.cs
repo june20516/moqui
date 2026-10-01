@@ -9,8 +9,9 @@ namespace Moqui.Core.Simulation
     /// </summary>
     public sealed class SimulationSnapshot
     {
-        public SimulationSnapshot(int tick, StageOutcome outcome, PlayerSnapshot player, HumanSnapshot human, IReadOnlyList<Vector3> drops, float trappedHeightRemaining, IReadOnlyList<ZoneSnapshot> shadowZones, IReadOnlyList<ZoneSnapshot> windZones)
+        public SimulationSnapshot(int tick, StageOutcome outcome, PlayerSnapshot player, HumanSnapshot human, IReadOnlyList<Vector3> drops, float trappedHeightRemaining, IReadOnlyList<ZoneSnapshot> shadowZones, IReadOnlyList<ZoneSnapshot> windZones, DecoySnapshot decoy = null)
         {
+            Decoy = decoy;
             ShadowZones = shadowZones;
             WindZones = windZones;
             Tick = tick;
@@ -22,6 +23,9 @@ namespace Moqui.Core.Simulation
         }
 
         public int Tick { get; }
+
+        /// <summary>장착한 미끼 마법 상태. 장착하지 않았으면 null.</summary>
+        public DecoySnapshot Decoy { get; }
 
         public StageOutcome Outcome { get; }
 
@@ -228,5 +232,25 @@ namespace Moqui.Core.Simulation
         public System.Numerics.Vector3 HalfExtents { get; }
 
         public System.Numerics.Quaternion Rotation { get; }
+    }
+}
+
+namespace Moqui.Core.Simulation
+{
+    /// <summary>미끼 마법 상태 (HUD 쿨타임, 미끼 표현).</summary>
+    public sealed class DecoySnapshot
+    {
+        public DecoySnapshot(bool active, Vector3 position, float cooldownRemaining)
+        {
+            Active = active;
+            Position = position;
+            CooldownRemaining = cooldownRemaining;
+        }
+
+        public bool Active { get; }
+
+        public Vector3 Position { get; }
+
+        public float CooldownRemaining { get; }
     }
 }

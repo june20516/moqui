@@ -3,9 +3,9 @@
 > 루프가 매 반복 끝에 갱신한다. 위에서부터 최신순으로 쓴다.
 
 ## 현재
-- 마일스톤: **M8 화면 흐름 · 스킬 트리 · 저장** (시작 전)
-- 다음 할 일: M8 브랜치 생성, spec/08(흐름·설정·Skills)·spec/09 수용 기준을 체크리스트로 복사
-- 브랜치: `milestone/m8-flow-skills` (생성 예정)
+- 마일스톤: **M9 Stage 3 · 4 · 5와 기믹** (시작 전)
+- 다음 할 일: spec/05·06·07(Stage 3~5) 수용 기준을 체크리스트로 복사, 기믹 Core부터
+- 브랜치: `milestone/m9-gimmicks`
 
 ## M7 버티컬 슬라이스 리포트 (2026-10-01, 사람 검토 권장)
 **할 수 있는 것:** Unity 에디터에서 `Assets/_Project/Scenes/Stage.unity`를 열고 Play하면 Stage 1(조는 인간)이 시작된다. `StageBootstrap.RequestedLevelId`로 stage02를 고를 수 있으며, 화면 흐름(타이틀·스테이지 선택)은 M8에서 붙인다. 빌드 실행 파일은 아직 Boot 씬만 연다.
@@ -32,11 +32,15 @@
 - **M5 흡혈 세션 · 물린 자국 · 포만 · 승리** — 태그 `m5-done` (2026-10-01). 체크리스트: `plan/archive/m5-checklist.md`
 - **M6 물방울 QTE · 습기** — 태그 `m6-done` (2026-10-01). 체크리스트: `plan/archive/m6-checklist.md`. 이월: DripSource 레벨 적용 → M7
 - **M7 거실 버티컬 슬라이스 (Stage 1·2)** — 태그 `m7-done` (2026-10-01). 체크리스트: `plan/archive/m7-checklist.md`. 이월: DripSource 검사 Stage 3~5 적용·CO₂ 바람 흩어짐·중독 게이지 → M9, 액티브 스킬 HUD → M8
-- **M7 거실 버티컬 슬라이스 (Stage 1·2)** — 태그 `m7-done` (2026-10-01). 체크리스트: `plan/archive/m7-checklist.md`. 이월: DripSource 검사 Stage 3~5 적용·CO₂ 바람 흩어짐 → M9, 중독 게이지 → M9, 액티브 스킬 HUD → M8
+- **M8 화면 흐름 · 스킬 트리 · 저장** — 태그 `m8-done` (2026-10-01). 체크리스트: `plan/archive/m8-checklist.md`. 이월: 해독 체질 적용 → M9, 음악 볼륨 → M10. 사람 요청(CO₂·증기 기체형) 반영 (D-045)
 
 ## 사람 요청
 | ID | 요청 | 필요 사양 | 대체물 적용 여부 | 상태 |
 |---|---|---|---|---|
+| 2026-10-01 | M8 | (사람 요청) CO₂·증기 기체형: SoftGas·VolumeFog 셰이더, GasNoise, 쿼드 빌보드 CO₂, 기체 캡처, D-045. M8 종료 | Core 300 + EditMode 82 + PlayMode 9 통과, 빌드 경고 0, 캡처 검토 | (이 커밋) |
+| 2026-10-01 | M8 | HUD 액티브 스킬 칸 테스트, 겹눈 선명 범위 테스트, 미끼 월드 표시 | Core 300 + EditMode 80 + PlayMode 9 통과 | 18ced4e |
+| 2026-10-01 | M8 | 화면 흐름: GameSession·ScreenFlow·SceneNavigator, Title·StageSelect·Skills·Settings·Confirm·Stage(Pause/Result)·Ending·Boot, FileSaveStorage, UserSettings, Pause(틱·입력 정지), HUD 액티브 스킬 칸, 메뉴 캡처, D-044. **결함 수정**: 씬 생성기 메서드 손실 복구, 메뉴 글자 누락, 행 레이아웃 | Core 300 + EditMode 77 + PlayMode 9 통과, 빌드 경고 0, 캡처 검토 | 42912f0 |
+| 2026-10-01 | M8 | Core 메타: SkillCatalog·SkillLoadout·SkillEffects(스킬 반영 Tuning), 연속 와류, 미끼(DecoySystem), 보상, SaveData·직렬화·SaveStore·SkillShop, D-043 | Core 300/300 통과 | 16446af |
 | 2026-10-01 | M7 | 카메라 URP 후처리 켜기(은신 비네트 미표시 결함), 은신처·증기 양면 렌더링, 씬 무결성 테스트, 대표 캡처 검토, 버티컬 슬라이스 리포트. M7 종료 | Core 265 + EditMode 66 + PlayMode 6 통과, 빌드 경고 0, 캡처 검토 | (이 커밋) |
 | 2026-10-01 | M7 | HUD(HudState·HudView·HudPresenter·HudController, 절차 스프라이트·경고음, OS 한글 글꼴), 튜토리얼(Core TutorialTracker, TutorialHints·설정), HUD 3해상도 캡처, D-041·D-042. **결함 수정**: 가장자리 표시 겹침·해상도별 위치, 누락 스크립트 | Core 265 + EditMode 64 + PlayMode 6 통과, 빌드 경고 0, 캡처 검토 | 977d12b |
 | 2026-10-01 | M7 | HUD 원천 데이터(Core): PlayerOccluded(가려짐), FrenzyMinRemaining·CalmProgress, CanAttach, DashCost, 스냅샷 포함 | Core 261/261 통과 | 6833ed6 |
@@ -54,6 +58,8 @@
 (없음)
 
 ## 캡처 검토 기록
+- 2026-10-01 M8 `Captures/2026-10-01_160546/` 기체 표현: CO₂는 코에서 흩어지는 분홍 기체 줄기(노이즈로 일렁임, 소프트 파티클), 증기는 상자 윤곽 없는 뭉게 덩어리(가구 뒤 가리지 않음), 증기 안에서는 선명 시야가 줄어든 안개. 첫 시도(`160443`)에서 증기 윤곽이 상자 모양 → 가장자리 노이즈 침식으로 수정
+- 2026-10-01 M8 `Captures/2026-10-01_155910/` 메뉴: Title, Title+설정(9행), StageSelect(Stage 1 기록, 2 열림, 3~5 준비 중), Skills(능력치 탭, 비용·레벨), Ending. 한글·배치 정상. **결함 수정**: 첫 캡처에서 글자가 모두 빠짐(캔버스 평면이 근평면에 너무 가까움 + 씬을 다시 열면 동적 글꼴 텍스처가 비워짐), 행 높이가 기본값 100으로 잡혀 목록이 패널 밖으로 넘침 → 고정 크기 행·위쪽 기준 목록·씬별 글꼴
 - 2026-10-01 M7 최종 `Captures/2026-10-01_152614/` Stage 1·2 대표: 전경(흐림 속 가구 실루엣·CO₂), 시작 위치 3인칭·1인칭, 인간 근접(체온 빛·자국 점), Shadow Zone 내부(푸른빛 + 은신 비네트). 마젠타 없음
 - 2026-10-01 M7 `Captures/2026-10-01_152002/` HUD 3해상도: 모든 요소를 동시에 켠 상태(광분 4.3초·진정 링, 가려짐, 흡혈 62%·포만 강조·자국 2, 가려움 링·조준점, 젖은 날개 3.4s, 습기, 머리 화살표, 은신처 방향, 공격 경고, 튜토리얼 문구). 세 해상도에서 같은 비율 배치, 화면 밖·겹침 없음, 한글 정상. **결함 수정**: 첫 캡처(`151725`)에서 가장자리 표시가 하단 스태미나 문구와 겹치고 해상도마다 위치가 달랐음 → 세로 0.25~0.75 띠 제한 + 뷰포트 앵커 배치. 빌드에서 `HudAudioSource` 누락 스크립트 경고(파일명 불일치) → 파일 분리 + 씬 누락 스크립트 검사 테스트 추가
 - 2026-10-01 M7 `Captures/2026-10-01_150001/` Stage 감각 큐: 시작 위치에서 최대 흐림 너머 머리 위 CO₂ 연기(분홍) 보임, 인간 근접에서 오른 전완 체온 빛과 붉은 자국 점, 종아리 체온 빛. 체온 빛이 희게 보여 색을 더 따뜻하게 조정. 마젠타 없음

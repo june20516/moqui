@@ -2,6 +2,8 @@ using Moqui.Unity.Presentation;
 using Moqui.Unity.Presentation.Sandbox;
 using Moqui.Unity.Presentation.Senses;
 using Moqui.Unity.Presentation.Stage;
+using Moqui.Unity.UI;
+using Moqui.Unity.UI.Flow;
 using Moqui.Unity.UI.Hud;
 using Moqui.Unity.Simulation;
 using UnityEditor;
@@ -22,6 +24,10 @@ namespace Moqui.Unity.Editor
         public const string HumanScenePath = "Assets/_Project/Scenes/Sandbox_Human.unity";
         public const string WaterScenePath = "Assets/_Project/Scenes/Sandbox_Water.unity";
         public const string StageScenePath = "Assets/_Project/Scenes/Stage.unity";
+        public const string ScenesFolder = "Assets/_Project/Scenes";
+
+        /// <summary>빌드에 들어가는 화면 씬 순서 (architecture §6: Boot → Title → StageSelect → Stage → Ending).</summary>
+        public static readonly ScreenId[] BuildOrder = { ScreenId.Boot, ScreenId.Title, ScreenId.StageSelect, ScreenId.Stage, ScreenId.Ending };
         public const string ControlsPath = "Assets/_Project/Input/MoquiControls.inputactions";
         public const string PlayerMaterialPath = "Assets/_Project/Materials/Whitebox_Player.mat";
 
@@ -34,16 +40,19 @@ namespace Moqui.Unity.Editor
         private const string SensesFogMaterialPath = "Assets/_Project/Materials/Senses_Fog.mat";
         private const string SensesFogShaderName = "Moqui/SensesFog";
         private const string SensesFogFeatureName = "SensesFog";
+        private const string SoftGasShaderName = "Moqui/SoftGas";
+        private const string VolumeFogShaderName = "Moqui/VolumeFog";
         private const string PcRendererPath = "Assets/Settings/PC_Renderer.asset";
         private const float PlayerVisualDiameter = 1f;
         private const string LitShaderName = "Universal Render Pipeline/Lit";
         private const string BaseColorProperty = "_BaseColor";
         private static readonly Color PlayerColor = new Color(0.2f, 0.85f, 0.9f);
+        private static readonly Color MenuBackground = new Color(0.1f, 0.08f, 0.15f);
         private static readonly Color ShadowCueColor = new Color(0.35f, 0.6f, 1f, 0.35f);
-        private static readonly Color Co2Color = new Color(0.95f, 0.78f, 0.98f, 0.5f);
+        private static readonly Color Co2Color = new Color(0.95f, 0.78f, 0.98f, 0.8f);
         private static readonly Color HeatColor = new Color(1f, 0.42f, 0.12f, 0.5f);
         private static readonly Color BiteMarkColor = new Color(0.9f, 0.1f, 0.15f, 0.95f);
-        private static readonly Color SteamColor = new Color(0.9f, 0.95f, 1f, 0.25f);
+        private static readonly Color SteamColor = new Color(0.9f, 0.95f, 1f, 0.85f);
         private static readonly Color GlassColor = new Color(0.75f, 0.9f, 0.95f, 0.3f);
 
         [MenuItem("Moqui/Rebuild All Sandboxes")]
@@ -53,6 +62,31 @@ namespace Moqui.Unity.Editor
             BuildHumanSandbox();
             BuildWaterSandbox();
             BuildStage();
+            BuildFlowScenes();
+        }
+
+        public static string ScenePath(ScreenId screen) => $"{ScenesFolder}/{screen}.unity";
+
+        /// <summary>Boot·Title·StageSelect·Ending 씬과 빌드 설정 순서 (spec/08 화면 흐름).</summary>
+        [MenuItem("Moqui/Rebuild Flow Scenes")]
+        public static void BuildFlowScenes()
+        {
+            BuildMenuScene(ScreenId.Boot, root => root.AddComponent<BootLoader>());
+            BuildMenuScene(ScreenId.Title, root => root.AddComponent<TitleScreen>());
+            BuildMenuScene(ScreenId.StageSelect, root => root.AddComponent<StageSelectScreen>());
+            BuildMenuScene(ScreenId.Ending, root => root.AddComponent<EndingScreen>());
+            EditorBuildSettings.scenes = System.Array.ConvertAll(BuildOrder, screen => new EditorBuildSettingsScene(ScenePath(screen), true));
+        }
+
+        private static void BuildMenuScene(ScreenId screen, System.Action<GameObject> addScreen)
+        {
+            Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            var camera = new GameObject("Main Camera").AddComponent<Camera>();
+            camera.tag = "MainCamera";
+            camera.clearFlags = CameraClearFlags.SolidColor;
+            camera.backgroundColor = MenuBackground;
+            addScreen(new GameObject(screen.ToString()));
+            Save(scene, ScenePath(screen));
         }
 
         /// <summary>레벨 데이터를 바꿔 끼우는 단일 Stage 씬 (tech/architecture.md §6). 빌드 설정에 포함한다.</summary>
@@ -65,9 +99,9 @@ namespace Moqui.Unity.Editor
 
             var materials = new GameObject("LevelMaterials").AddComponent<LevelMaterials>();
             SetReference(materials, "_shadowCue", LoadOrCreateTransparentMaterial(ShadowCueMaterialPath, ShadowCueColor, doubleSided: true));
-            SetReference(materials, "_steam", LoadOrCreateTransparentMaterial(SteamMaterialPath, SteamColor, doubleSided: true));
+            SetReference(materials, "_steam", LoadOrCreateShaderMaterial(SteamMaterialPath, VolumeFogShaderName, SteamColor));
             SetReference(materials, "_glass", LoadOrCreateTransparentMaterial(GlassMaterialPath, GlassColor));
-            SetReference(materials, "_co2", LoadOrCreateTransparentMaterial(Co2MaterialPath, Co2Color));
+            SetReference(materials, "_co2", LoadOrCreateShaderMaterial(Co2MaterialPath, SoftGasShaderName, Co2Color));
             SetReference(materials, "_heat", LoadOrCreateTransparentMaterial(HeatMaterialPath, HeatColor));
             SetReference(materials, "_biteMark", LoadOrCreateTransparentMaterial(BiteMarkMaterialPath, BiteMarkColor));
             var senses = new GameObject("SensesView").AddComponent<SensesView>();
@@ -87,8 +121,12 @@ namespace Moqui.Unity.Editor
             SetReference(hudController, "_cameraRig", Object.FindAnyObjectByType<CameraRig>());
             SetReference(hudController, "_audio", hud.AddComponent<HudAudioSource>());
             SetReference(hudController, "_stage", bootstrap);
+
+            var stageScreen = new GameObject("StageScreen").AddComponent<StageScreen>();
+            SetReference(stageScreen, "_runner", runner);
+            SetReference(stageScreen, "_stage", bootstrap);
+            SetReference(stageScreen, "_controls", AssetDatabase.LoadAssetAtPath<InputActionAsset>(ControlsPath));
             Save(scene, StageScenePath);
-            AddToBuildSettings(StageScenePath);
         }
 
         /// <summary>
@@ -133,20 +171,6 @@ namespace Moqui.Unity.Editor
             EditorUtility.SetDirty(rendererData);
             AssetDatabase.SaveAssets();
             Debug.Log($"[SandboxSceneBuilder] Added {SensesFogFeatureName} to {PcRendererPath}");
-        }
-
-        private static void AddToBuildSettings(string path)
-        {
-            var scenes = EditorBuildSettings.scenes;
-            if (System.Array.Exists(scenes, scene => scene.path == path))
-            {
-                return;
-            }
-
-            var updated = new EditorBuildSettingsScene[scenes.Length + 1];
-            scenes.CopyTo(updated, 0);
-            updated[scenes.Length] = new EditorBuildSettingsScene(path, true);
-            EditorBuildSettings.scenes = updated;
         }
 
         [MenuItem("Moqui/Rebuild Sandbox_Flight")]
@@ -238,6 +262,27 @@ namespace Moqui.Unity.Editor
                 material = new Material(lit);
                 System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(path));
                 AssetDatabase.CreateAsset(material, path);
+            }
+
+            material.SetColor(BaseColorProperty, color);
+            EditorUtility.SetDirty(material);
+            AssetDatabase.SaveAssets();
+            return material;
+        }
+
+        /// <summary>전용 셰이더 머티리얼 (기체 표현). 에셋이 다른 셰이더로 있으면 셰이더를 바꾼다.</summary>
+        private static Material LoadOrCreateShaderMaterial(string path, string shaderName, Color color)
+        {
+            Shader shader = Shader.Find(shaderName) ?? throw new System.InvalidOperationException($"Shader '{shaderName}' not found.");
+            var material = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (material == null)
+            {
+                material = new Material(shader);
+                AssetDatabase.CreateAsset(material, path);
+            }
+            else if (material.shader != shader)
+            {
+                material.shader = shader;
             }
 
             material.SetColor(BaseColorProperty, color);

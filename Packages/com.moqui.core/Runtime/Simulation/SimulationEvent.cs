@@ -16,6 +16,9 @@ namespace Moqui.Core.Simulation
     public enum NoiseSource
     {
         Dash,
+
+        /// <summary>미끼 마법 (spec/09). 인간은 진짜 소음처럼 듣는다.</summary>
+        Decoy,
     }
 
     /// <summary>반경 안의 인간 경계를 즉시 올리는 소음 핑 (spec/01 대시, spec/02).</summary>

@@ -28,6 +28,9 @@ namespace Moqui.Unity.UI.Hud
         private static readonly Color ItchColor = new Color(1f, 0.45f, 0.2f);
         private static readonly Color SuspiciousVignette = new Color(1f, 0.85f, 0.3f, 0.25f);
         private static readonly Color FrenzyVignette = new Color(1f, 0.1f, 0.1f, 0.45f);
+        private static readonly Color ActiveReadyColor = new Color(0.75f, 0.55f, 1f, 0.9f);
+        private static readonly Color ActiveCoolingColor = new Color(0.35f, 0.32f, 0.4f, 0.8f);
+        private static readonly Color ActiveInUseColor = new Color(1f, 0.85f, 0.4f, 0.95f);
         private const float PulseSpeed = 6f;
         private const float PulseDepth = 0.35f;
 
@@ -75,6 +78,12 @@ namespace Moqui.Unity.UI.Hud
         public RectTransform HidingArrow { get; private set; }
 
         public Text TutorialText { get; private set; }
+
+        public GameObject ActiveSkillRoot { get; private set; }
+
+        public Image ActiveSkillIcon { get; private set; }
+
+        public Text ActiveSkillText { get; private set; }
 
         public RectTransform Root { get; private set; }
 
@@ -239,6 +248,15 @@ namespace Moqui.Unity.UI.Hud
 
             PromptText = CreateText("Prompt", Root, 30, TextAnchor.MiddleCenter);
             Place(PromptText.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 120f), new Vector2(800f, 44f));
+            var active = CreateRect("ActiveSkill", Root, new Vector2(1f, 0f), new Vector2(-110f, 70f), new Vector2(72f, 72f));
+            ActiveSkillRoot = active.gameObject;
+            ActiveSkillIcon = CreateImage("Icon", active, HudSprites.Circle, ActiveReadyColor);
+            Stretch(ActiveSkillIcon.rectTransform);
+            ActiveSkillText = CreateText("Cooldown", active, 20, TextAnchor.MiddleCenter);
+            Place(ActiveSkillText.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, -22f), new Vector2(140f, 28f));
+            var activeLabel = CreateText("Name", active, 18, TextAnchor.MiddleCenter);
+            activeLabel.text = "미끼";
+            Stretch(activeLabel.rectTransform);
             TutorialText = CreateText("Tutorial", Root, 26, TextAnchor.MiddleCenter);
             Place(TutorialText.rectTransform, new Vector2(0.5f, 0f), new Vector2(0f, 180f), new Vector2(1000f, 40f));
         }
@@ -308,6 +326,10 @@ namespace Moqui.Unity.UI.Hud
             HumidityRoot.SetActive(state.HumidityVisible);
             HumidityFill.fillAmount = state.HumidityFraction;
             PromptText.text = PromptLabel(state.Prompt, state.EscapePressesRemaining);
+            ActiveSkillRoot.SetActive(state.ActiveSkillVisible);
+            bool ready = state.ActiveSkillCooldown <= 0f;
+            ActiveSkillIcon.color = state.ActiveSkillInUse ? ActiveInUseColor : ready ? ActiveReadyColor : ActiveCoolingColor;
+            ActiveSkillText.text = ready ? (UseGamepadLabels ? "Y" : "Q") : $"{state.ActiveSkillCooldown:0.0}s";
         }
 
         private void ApplyCenter(HudState state)

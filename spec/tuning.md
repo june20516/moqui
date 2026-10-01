@@ -360,6 +360,7 @@
 | 키 | 값 | 설명 |
 |---|---|---|
 | hud.satietyHighlightMul | 0.85 | 포만 감속 배율이 이 값 아래면 포만 아이콘 강조 |
+| hud.resultDelay | 1.5s | 클리어·사망 후 Result 화면까지 (사망 연출 시간) |
 
 ## tutorial (spec/08 §튜토리얼)
 | 키 | 값 | 설명 |

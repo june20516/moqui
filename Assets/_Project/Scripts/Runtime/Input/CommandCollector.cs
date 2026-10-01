@@ -97,6 +97,16 @@ namespace Moqui.Unity.Input
             return command;
         }
 
+        /// <summary>래치된 눌림을 모두 버린다 (일시정지 해제 시).</summary>
+        public void ClearLatches()
+        {
+            _dashLatched = false;
+            _attachLatched = false;
+            _skillLatched = false;
+            _toggleViewLatched = false;
+            _pauseLatched = false;
+        }
+
         public bool ConsumeToggleView()
         {
             bool pressed = _toggleViewLatched;

@@ -31,16 +31,46 @@ namespace Moqui.Core.Simulation
                 && _stamina.CanSpend(player, Cost(player));
         }
 
+        /// <summary>연속 와류 스킬 레벨 (spec/09). 0이면 없음, 1 = 추가 대시, 2 = 추가 대시 스태미나 없음.</summary>
+        public int ChainLevel { get; set; }
+
+        /// <summary>
+        /// 연속 와류 추가 대시 가능 여부: 직전 일반 대시가 끝난 뒤 dash.chainWindow 안이고, 그 체인에서 아직 쓰지 않았다.
+        /// 쿨타임은 무시한다. 1레벨은 스태미나가 필요하고 2레벨은 쓰지 않는다.
+        /// </summary>
+        public bool CanChain(Player player, int tick)
+        {
+            if (ChainLevel <= 0 || player.State != PlayerState.Flying || !player.ChainDashAvailable)
+            {
+                return false;
+            }
+
+            int dashTicks = Math.Max(1, SimulationTime.ToTicks(_settings.Duration));
+            int windowEnd = player.LastDashStartTick + dashTicks + SimulationTime.ToTicks(_settings.ChainWindow);
+            return tick <= windowEnd && (ChainLevel >= 2 || _stamina.CanSpend(player, Cost(player)));
+        }
+
         public bool TryStart(Player player, in PlayerCommand command, int tick, bool allowDiagonal, List<SimulationEvent> events)
         {
-            if (!command.DashPressed || !CanStart(player, tick))
+            if (!command.DashPressed)
+            {
+                return false;
+            }
+
+            bool normal = CanStart(player, tick);
+            if (!normal && !CanChain(player, tick))
             {
                 return false;
             }
 
             Begin(player, DashDirectionResolver.Resolve(command, allowDiagonal));
             player.LastDashStartTick = tick;
-            _stamina.Spend(player, Cost(player), tick);
+            player.ChainDashAvailable = normal;
+            if (normal || ChainLevel < 2)
+            {
+                _stamina.Spend(player, Cost(player), tick);
+            }
+
             events.Add(new NoiseEmitted(tick, NoiseSource.Dash, player.Position, _settings.NoiseRadius, _settings.NoiseAwareness));
             return true;
         }
