@@ -65,6 +65,31 @@ namespace Moqui.Core.Simulation
 
         public int LastDashStartTick { get; set; } = NeverTick;
 
+        /// <summary>스태미나 회복 배율 (젖은 날개, 스킬). 틱 시작마다 다시 계산한다.</summary>
+        public float StaminaRegenMultiplier { get; set; } = 1f;
+
+        /// <summary>대시 스태미나 비용에 더하는 값 (젖은 날개). 틱 시작마다 다시 계산한다.</summary>
+        public float DashCostAdd { get; set; }
+
+        // ---- 물 (spec/05) ----
+
+        /// <summary>갇혀 있는 물방울. Trapped가 아니면 null.</summary>
+        public FallingBody TrappedDrop { get; set; }
+
+        /// <summary>Trapped 중 누른 탈출(Dash) 입력 횟수.</summary>
+        public int EscapePresses { get; set; }
+
+        /// <summary>젖은 날개 남은 시간 (s).</summary>
+        public float WetRemaining { get; set; }
+
+        public bool IsWet => WetRemaining > 0f;
+
+        /// <summary>습기 게이지 (0~100).</summary>
+        public float Humidity { get; set; }
+
+        /// <summary>강한 습기(증기) 영역 안.</summary>
+        public bool InSteam { get; set; }
+
         // ---- 흡혈 (spec/04) ----
 
         /// <summary>흡혈 게이지 b (0~100%). 100이면 Stage Clear.</summary>

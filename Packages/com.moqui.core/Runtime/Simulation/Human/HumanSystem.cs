@@ -19,7 +19,7 @@ namespace Moqui.Core.Simulation
         public HumanSystem(GameSettings settings, CollisionWorld world, ulong seed)
         {
             _biteMarks = settings.BiteMark;
-            _vision = new VisionSensor(settings.Vision, world);
+            _vision = new VisionSensor(settings.Vision, world, settings.Humid.SteamVisionMul);
             _hearing = new HearingSensor(settings.Noise, settings.Hearing);
             Awareness = new AwarenessSystem(settings.Awareness);
             _brain = new HumanBrain(settings.Awareness, settings.Frenzy, settings.Head);

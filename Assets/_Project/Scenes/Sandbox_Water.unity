@@ -130,7 +130,7 @@ GameObject:
   - component: {fileID: 210468104}
   - component: {fileID: 210468103}
   m_Layer: 0
-  m_Name: HumanView
+  m_Name: WaterView
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -145,9 +145,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 210468102}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 48c21412c4d758a45a1a2960242ff531, type: 3}
+  m_Script: {fileID: 11500000, guid: 82d898a91bbf18c4f8a5760283585efc, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Moqui.Unity.Presentation::Moqui.Unity.Presentation.HumanView
+  m_EditorClassIdentifier: Moqui.Unity.Presentation::Moqui.Unity.Presentation.WaterView
   _runner: {fileID: 637642639}
 --- !u!4 &210468104
 Transform:
@@ -612,7 +612,7 @@ GameObject:
   - component: {fileID: 1817756979}
   - component: {fileID: 1817756978}
   m_Layer: 0
-  m_Name: SandboxHumanBootstrap
+  m_Name: SandboxWaterBootstrap
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -627,9 +627,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1817756977}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2af383831ae2e494f938c7de527f028a, type: 3}
+  m_Script: {fileID: 11500000, guid: ddd07cd78b1180c43ba80f79eb7a00fd, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Moqui.Unity.Presentation::Moqui.Unity.Presentation.Sandbox.SandboxHumanBootstrap
+  m_EditorClassIdentifier: Moqui.Unity.Presentation::Moqui.Unity.Presentation.Sandbox.SandboxWaterBootstrap
   _runner: {fileID: 637642639}
 --- !u!4 &1817756979
 Transform:

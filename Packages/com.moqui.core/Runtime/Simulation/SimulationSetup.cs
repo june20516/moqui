@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Numerics;
 using Moqui.Core.Collision;
 
@@ -13,17 +14,18 @@ namespace Moqui.Core.Simulation
     {
         private readonly Func<CollisionWorld> _worldFactory;
 
-        public SimulationSetup(Func<CollisionWorld> worldFactory, Vector3 playerSpawn, HumanDefinition human = null, ulong seed = 0)
+        public SimulationSetup(Func<CollisionWorld> worldFactory, Vector3 playerSpawn, HumanDefinition human = null, ulong seed = 0, IReadOnlyList<Vector3> dripSources = null)
         {
             _worldFactory = worldFactory ?? throw new ArgumentNullException(nameof(worldFactory));
             PlayerSpawn = playerSpawn;
             Human = human;
             Seed = seed;
+            DripSources = dripSources ?? Array.Empty<Vector3>();
         }
 
         /// <summary>이미 만든 월드로 구성한다. 인간 캡슐이 월드에 등록되므로 이 구성은 한 번만 쓸 수 있다 (재시도 불가).</summary>
-        public SimulationSetup(CollisionWorld world, Vector3 playerSpawn, HumanDefinition human = null, ulong seed = 0)
-            : this(SingleUse(world), playerSpawn, human, seed)
+        public SimulationSetup(CollisionWorld world, Vector3 playerSpawn, HumanDefinition human = null, ulong seed = 0, IReadOnlyList<Vector3> dripSources = null)
+            : this(SingleUse(world), playerSpawn, human, seed, dripSources)
         {
         }
 
@@ -32,6 +34,9 @@ namespace Moqui.Core.Simulation
         public HumanDefinition Human { get; }
 
         public ulong Seed { get; }
+
+        /// <summary>물방울 발생원 위치 (spec/05 §1, 레벨 데이터 dripSources[]).</summary>
+        public IReadOnlyList<Vector3> DripSources { get; }
 
         public CollisionWorld CreateWorld()
         {

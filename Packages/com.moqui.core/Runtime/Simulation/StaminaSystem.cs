@@ -48,7 +48,7 @@ namespace Moqui.Core.Simulation
 
             if (SimulationTime.HasElapsed(player.LastStaminaSpendTick, tick, _settings.RegenDelay))
             {
-                player.Stamina = Math.Min(_settings.Max, player.Stamina + (_settings.RegenRate * deltaTime));
+                player.Stamina = Math.Min(_settings.Max, player.Stamina + (_settings.RegenRate * player.StaminaRegenMultiplier * deltaTime));
             }
         }
     }

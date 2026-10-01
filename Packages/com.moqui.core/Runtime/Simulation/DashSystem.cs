@@ -28,7 +28,7 @@ namespace Moqui.Core.Simulation
         {
             return player.State == PlayerState.Flying
                 && SimulationTime.HasElapsed(player.LastDashStartTick, tick, _settings.Cooldown)
-                && _stamina.CanSpend(player, _settings.StaminaCost);
+                && _stamina.CanSpend(player, Cost(player));
         }
 
         public bool TryStart(Player player, in PlayerCommand command, int tick, bool allowDiagonal, List<SimulationEvent> events)
@@ -38,16 +38,33 @@ namespace Moqui.Core.Simulation
                 return false;
             }
 
+            Begin(player, DashDirectionResolver.Resolve(command, allowDiagonal));
+            player.LastDashStartTick = tick;
+            _stamina.Spend(player, Cost(player), tick);
+            events.Add(new NoiseEmitted(tick, NoiseSource.Dash, player.Position, _settings.NoiseRadius, _settings.NoiseAwareness));
+            return true;
+        }
+
+        /// <summary>대시 스태미나 비용 = dash.staminaCost + 젖은 날개 추가 비용 (spec/05).</summary>
+        public float Cost(Player player)
+        {
+            return _settings.StaminaCost + player.DashCostAdd;
+        }
+
+        /// <summary>스태미나·쿨타임·소음 없이 대시 1회분을 시작한다 (물방울 탈출, spec/05, D-036).</summary>
+        public void StartFree(Player player, Vector3 direction)
+        {
+            Begin(player, direction);
+        }
+
+        private void Begin(Player player, Vector3 direction)
+        {
             int ticks = Math.Max(1, SimulationTime.ToTicks(_settings.Duration));
             float distance = _settings.Distance * player.DashDistanceMultiplier;
             player.State = PlayerState.Dashing;
-            player.DashDirection = DashDirectionResolver.Resolve(command, allowDiagonal);
+            player.DashDirection = direction;
             player.DashTicksRemaining = ticks;
             player.DashStepDistance = distance / ticks;
-            player.LastDashStartTick = tick;
-            _stamina.Spend(player, _settings.StaminaCost, tick);
-            events.Add(new NoiseEmitted(tick, NoiseSource.Dash, player.Position, _settings.NoiseRadius, _settings.NoiseAwareness));
-            return true;
         }
 
         /// <summary>대시 중 1틱 이동. 대시가 끝나면 Flying으로 돌아간다.</summary>

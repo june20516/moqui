@@ -120,6 +120,25 @@ namespace Moqui.Core.Simulation
         public Vector3 Direction { get; }
     }
 
+    public sealed class PlayerTrapped : SimulationEvent
+    {
+        public PlayerTrapped(int tick, string dropId)
+            : base(tick)
+        {
+            DropId = dropId;
+        }
+
+        public string DropId { get; }
+    }
+
+    public sealed class PlayerEscapedDrop : SimulationEvent
+    {
+        public PlayerEscapedDrop(int tick)
+            : base(tick)
+        {
+        }
+    }
+
     public sealed class SuckSessionEnded : SimulationEvent
     {
         public SuckSessionEnded(int tick, string partId, float amount, bool biteMark)

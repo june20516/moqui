@@ -48,7 +48,45 @@ namespace Moqui.Unity.Editor
 
             CaptureSandboxFlight(outputDirectory);
             CaptureSandboxHuman(outputDirectory);
+            CaptureSandboxWater(outputDirectory);
             Debug.Log($"[CaptureTool] Captures written to {outputDirectory}");
+        }
+
+        /// <summary>물방울이 떨어지는 모습과, 물방울에 갇혀 함께 떨어지는 플레이어.</summary>
+        public static void CaptureSandboxWater(string outputDirectory)
+        {
+            EditorSceneManager.OpenScene(SandboxSceneBuilder.WaterScenePath, OpenSceneMode.Single);
+            Camera camera = MainCameraOrThrow(SandboxSceneBuilder.WaterScenePath);
+            Tuning tuning = TuningLoader.Load(new UnityDataSource());
+            var simulation = new GameSimulation(GameSettings.FromTuning(tuning), SandboxWaterWorld.CreateSetup());
+            WorldView.Build(simulation.World, null);
+            var waterView = UnityEngine.Object.FindAnyObjectByType<WaterView>();
+            var player = GameObject.Find("Player");
+            float dropRadius = simulation.Settings.Water.DropRadius;
+            Vector3 lookAt = SandboxWaterWorld.UnderDrip.ToUnity();
+            Vector3 cameraPosition = lookAt + new Vector3(-45f, 15f, -60f);
+
+            simulation.Player.Position = SandboxWaterWorld.UnderDrip;
+            Step(simulation, PlayerCommand.None, 0.4f);
+            CaptureWaterPose(camera, player, waterView, simulation, dropRadius, cameraPosition, lookAt, outputDirectory, "Sandbox_Water_drop_falling");
+
+            for (int i = 0; i < GameSimulation.TickRate && simulation.Player.State != PlayerState.Trapped; i++)
+            {
+                simulation.Step(PlayerCommand.None);
+            }
+
+            Step(simulation, PlayerCommand.None, 0.2f);
+            CaptureWaterPose(camera, player, waterView, simulation, dropRadius, cameraPosition, simulation.Player.Position.ToUnity(), outputDirectory, "Sandbox_Water_trapped");
+        }
+
+        private static void CaptureWaterPose(Camera camera, GameObject player, WaterView waterView, GameSimulation simulation, float dropRadius, Vector3 cameraPosition, Vector3 lookAt, string outputDirectory, string name)
+        {
+            player.transform.position = simulation.Player.Position.ToUnity();
+            waterView.Render(simulation.CaptureSnapshot().Drops, dropRadius);
+            var pose = new CameraPose(cameraPosition, Quaternion.LookRotation(lookAt - cameraPosition), camera.fieldOfView, camera.nearClipPlane);
+            pose.ApplyTo(camera);
+            CaptureCamera(camera, Path.Combine(outputDirectory, name + ".png"));
+            Debug.Log($"[CaptureTool] {name}: player={simulation.Player.State}, drops={waterView.VisibleDrops}, heightLeft={simulation.CaptureSnapshot().TrappedHeightRemaining:F1}");
         }
 
         /// <summary>
