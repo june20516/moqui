@@ -35,6 +35,6 @@
 - CC0 리깅 휴머노이드 + 포함된 애니메이션을 우선 쓴다. 앉기/눕기 자세는 본 회전으로 고정 포즈를 만들고, 머리 회전과 팔 공격은 Core가 계산한 포즈를 따르는 IK/절차적 애니메이션으로 처리한다. 손으로 만든 애니메이션을 쓰면 판정 프록시를 베이크한다 (`tech/architecture.md` §4.6).
 
 ## 수용 기준
-- [ ] `CREDITS.md`의 모든 행이 허용 목록 라이선스이고 URL과 확인일이 있다.
-- [ ] `Assets/_Project/Art`, `Audio` 아래 모든 외부 파일이 CREDITS에 있다 (Unity: 파일 목록 대조 검사, 자체 제작물은 `Generated/` 폴더로 구분).
-- [ ] 사람 요청 항목이 비어 있지 않다면, 각 항목에 대체물이 적용되어 게임이 동작한다.
+- [x] `CREDITS.md`의 모든 행이 허용 목록 라이선스이고 URL과 확인일이 있다. — 증거: `Assets/_Project/CREDITS.md`(외부 에셋 0행, 자체 제작물 목록), EditMode `CreditsTests` 행 검사
+- [x] `Assets/_Project/Art`, `Audio` 아래 모든 외부 파일이 CREDITS에 있다 (Unity: 파일 목록 대조 검사, 자체 제작물은 `Generated/` 폴더로 구분). — 증거: `CreditsTests.EveryExternalFile_IsCredited`(현재 40개 파일 모두 `Generated/`)
+- [x] 사람 요청 항목이 비어 있지 않다면, 각 항목에 대체물이 적용되어 게임이 동작한다. — 증거: 에셋 관련 사람 요청 없음(R-001~003은 환경, 모두 해결). 모키·사운드는 조달 1·2순위(자체 생성)로 충족(D-049)

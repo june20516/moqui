@@ -3,18 +3,12 @@
 > 루프가 매 반복 끝에 갱신한다. 위에서부터 최신순으로 쓴다.
 
 ## 현재
-- 마일스톤: **M11 폴리시 · 릴리스** (진행 중)
-- 다음 할 일: spec 수용 기준 체크박스 동기화(D3), 게임패드 전 흐름 테스트(D2)
-- 브랜치: `milestone/m11-release`
+- 마일스톤: **완료** (M0~M11, GOAL D1~D9 충족)
+- 다음 할 일: 없음 (사람 검토 항목은 `plan/final-report.md` §4)
+- 브랜치: `main` (태그 `m11-done`)
 
-## 현재 마일스톤 체크리스트 (M11)
-### 폴리시 · 릴리스 (plan/milestones.md, GOAL.md §2)
-- [ ] 게임패드로 Title → StageSelect → Stage 1~5 → Ending 전 흐름 진행 확인 (D2, 키보드/마우스 포함)
-- [ ] 성능 측정: `perf.targetFps` 기준 프레임 타임 로그 기록
-- [ ] spec/ 모든 문서 수용 기준 체크박스를 증거와 함께 체크 (D3, 보관 체크리스트에서 동기화)
-- [ ] 봇 전체 플레이스루 동안 Error/Exception 로그 0건 (D6)
-- [ ] 버그 정리 (알려진 결함·경고 점검)
-- [ ] GOAL D1~D9 체크와 `plan/final-report.md` (D9)
+## 현재 마일스톤 체크리스트
+(없음 — GOAL D1~D9 완료, 루프 종료. `plan/final-report.md` 참조)
 
 ## M7 버티컬 슬라이스 리포트 (2026-10-01, 사람 검토 권장)
 **할 수 있는 것:** Unity 에디터에서 `Assets/_Project/Scenes/Stage.unity`를 열고 Play하면 Stage 1(조는 인간)이 시작된다. `StageBootstrap.RequestedLevelId`로 stage02를 고를 수 있으며, 화면 흐름(타이틀·스테이지 선택)은 M8에서 붙인다. 빌드 실행 파일은 아직 Boot 씬만 연다.
@@ -42,6 +36,7 @@
 - **M6 물방울 QTE · 습기** — 태그 `m6-done` (2026-10-01). 체크리스트: `plan/archive/m6-checklist.md`. 이월: DripSource 레벨 적용 → M7
 - **M7 거실 버티컬 슬라이스 (Stage 1·2)** — 태그 `m7-done` (2026-10-01). 체크리스트: `plan/archive/m7-checklist.md`. 이월: DripSource 검사 Stage 3~5 적용·CO₂ 바람 흩어짐·중독 게이지 → M9, 액티브 스킬 HUD → M8
 - **M8 화면 흐름 · 스킬 트리 · 저장** — 태그 `m8-done` (2026-10-01). 체크리스트: `plan/archive/m8-checklist.md`. 이월: 해독 체질 적용 → M9, 음악 볼륨 → M10. 사람 요청(CO₂·증기 기체형) 반영 (D-045)
+- **M11 폴리시 · 릴리스** — 태그 `m11-done` (2026-10-01). 체크리스트: `plan/archive/m11-checklist.md`. 전 흐름 테스트(D2), spec 체크박스 동기화(D3), 성능 측정, Unity 안 봇 재생 스모크(D6), 결함 수정 6건, 최종 보고서
 - **M10 에셋 패스** — 태그 `m10-done` (2026-10-01). 체크리스트: `plan/archive/m10-checklist.md`. 툰 셰이더·팔레트·후처리, 모키(애니메이터 7상태), 인간 머리·공격 팔, 사운드 31종 합성·카탈로그, CREDITS(D-049). 빌드 성공(예상 밖 경고 0)
 - **M9 Stage 3 · 4 · 5와 기믹** — 태그 `m9-done` (2026-10-01). 체크리스트: `plan/archive/m9-checklist.md`. 봇: 다섯 스테이지 클리어 4/5 이상(Stage 4는 스킬 구성, D-048)
 
@@ -78,6 +73,12 @@
 ## 반복 로그
 | 일시 | 마일스톤 | 한 일 | 증거 | 커밋 |
 |---|---|---|---|---|
+| 2026-10-01 | M11 | 리뷰 반영(첫 포커스 선택음 억제, one-shot pitch 인자 제거), GOAL D1~D9 체크, 최종 보고서, M11 종료 | Core 336 + EditMode 126 + PlayMode 22 통과, 빌드 성공(예상 밖 경고 0) | (이 커밋) |
+| 2026-10-01 | M11 | **결함 수정**: 커서 잠금이 메뉴에서 풀리지 않음(CursorPolicy), 일시정지 중 반복음. 경고·TODO 점검 | Core 336 + EditMode 126 + PlayMode 22 통과 | 9e2de7a |
+| 2026-10-01 | M11 | Unity 안 시나리오 봇 재생 스모크(다섯 스테이지, D6): Core ScenarioRunner.Pilot, SimulationDriver.CommandOverride, StageBootstrap 시드·구동기 훅, 테스트 메모리 세션 공용화, D-050 | Core 336 + EditMode 126 + PlayMode 20 통과 | cf86d7c |
+| 2026-10-01 | M11 | 성능 측정 도구(FrameStats·PerfRunner·Tools/perf.ps1)와 측정 보고서, **결함 수정**: AudioListener 없음(무음), 종료 시 오디오 NullReferenceException | Core 336 + EditMode 126 + PlayMode 15 통과, 빌드 성공, 플레이어 로그 오류 0 | 7b3609e |
+| 2026-10-01 | M11 | 전 흐름 PlayMode 테스트(D2): 키보드/마우스·게임패드로 Title → Stage 1~5 → Ending | Core 336 + EditMode 123 + PlayMode 14 통과 | c17f925 |
+| 2026-10-01 | M11 | spec 수용 기준 체크박스 동기화(D3): 146개 기준에 보관 체크리스트 증거 연결, spec/07·10 최신 캡처·셰이더 검사 증거 보완 | spec·asset-pipeline의 `- [ ]` 0개 | (이 커밋) |
 | 2026-10-01 | M10 | M10 종료: 체크리스트 보관, 빌드 확인(성공, 예상 밖 경고 0), M11 체크리스트 | Tools/build.ps1 result=Succeeded | (이 커밋) |
 | 2026-10-01 | M10 | CREDITS.md·파일 대조 검사, 후처리 Volume(Bloom·Color Grading), 모키 자체 밝기, 셰이더 컴파일 오류 검사, 진행 문서 정리(반복 로그 행 위치). **결함 수정**: 툰 셰이더 변수 중복(마젠타), 오디오 생성기 커밋 누락 | Core 336 + EditMode 123 + PlayMode 12 통과, 캡처 검토 | 78cf927 |
 | 2026-10-01 | M10 | 사운드 31종 합성(tools/gen_audio.py), AudioCatalog·AudioCues·AudioDirector·AudioOutput, UI 버튼음·메뉴 음악, 음악 볼륨 적용, D-049 | Core 336 + EditMode 118 + PlayMode 12 통과 | 1bc4b53 |

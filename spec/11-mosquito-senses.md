@@ -31,14 +31,14 @@
 - 시선 차단: Yellow Zone 안이지만 장애물에 가려진 상태이면 HUD 눈 아이콘에 "가려짐" 표시를 한다 (spec/08).
 
 ## 수용 기준
-- [ ] 스냅샷에 호흡 위상, 날숨 위치·세기, 바람 영역, 피부 목록·자국 여부, 은신처 목록, InShadow·PlayerVisibleToHuman이 포함된다 (Core).
-- [ ] 호흡 주기와 날숨 구간이 tuning 값을 따르고, 취한 타겟의 세기가 1.6배이다 (Core).
-- [ ] clearRange 안의 물체는 흐림이 0이고, fogFullRange 밖은 최대 흐림이다 (Unity: 셰이더 파라미터 검사 + 캡처).
-- [ ] CO₂ 흐름이 최대 흐림 거리 밖에서도 보인다 (캡처 검토: Stage 1 시작 위치 1장).
-- [ ] 바람 영역 안에서 CO₂ 흐름이 바람 방향으로 흩어진다 (캡처 검토: Stage 3).
-- [ ] 체온 표시가 heatRange 안에서만 나타나고, 자국 부위에 표시가 붙는다 (Unity).
-- [ ] 은신처 표시 강도가 어그로 상태에 따라 3단계로 바뀐다 (Unity).
-- [ ] 겹눈 각성 레벨에 따라 선명 범위가 늘어난다 (Unity).
+- [x] 스냅샷에 호흡 위상, 날숨 위치·세기, 바람 영역, 피부 목록·자국 여부, 은신처 목록, InShadow·PlayerVisibleToHuman이 포함된다 (Core). — 증거: `HumanModifierTests.Snapshot_ContainsSensesSourceData`
+- [x] 호흡 주기와 날숨 구간이 tuning 값을 따르고, 취한 타겟의 세기가 1.6배이다 (Core). — 증거: `HumanModifierTests.Breathing_PeriodAndExhaleFollowTuning_DrunkStrength16x`
+- [x] clearRange 안의 물체는 흐림이 0이고, fogFullRange 밖은 최대 흐림이다 (Unity: 셰이더 파라미터 검사 + 캡처). — 증거: EditMode `SensesFogTests.Amount_InsideClearRange_IsZero_BeyondFullRange_IsMax`, `ClearRange_InSteam_ScaledBySteamMultiplier`, `Apply_SetsGlobalShaderParameters_FromPlayerOrigin`, `PcRenderer_HasFogPassBeforeTransparents_WithCompilingShader`, 캡처 `Captures/2026-10-01_145312/Stage_stage01_start.png` (D-039)
+- [x] CO₂ 흐름이 최대 흐림 거리 밖에서도 보인다 (캡처 검토: Stage 1 시작 위치 1장). — 증거: `Captures/2026-10-01_150001/Stage_stage01_start.png`(머리 위 연기, 약 300u), EditMode `SensesViewTests.Co2_PuffsDuringExhale_VisibleBeyondFullFogUpToCo2Range`, `Co2Plume_RisesFadesAndExpires_StrongerBreathIsLarger` (D-040)
+- [x] 바람 영역 안에서 CO₂ 흐름이 바람 방향으로 흩어진다 (캡처 검토: Stage 3). — 증거: `Captures/2026-10-01_165113/Gas_co2_wind_stage03.png`(옅지만 바람 방향 +Z로 기울어 흩어짐), EditMode `SensesViewTests.Co2Plume_InWind_DriftsWithWindAndDispersesSooner`
+- [x] 체온 표시가 heatRange 안에서만 나타나고, 자국 부위에 표시가 붙는다 (Unity). — 증거: EditMode `SensesViewTests.Heat_OnlyInsideHeatRange_StrongerWhenCloser`, `BiteMark_DotOnlyOnMarkedSite_InsideHeatRange`, 캡처 `Stage_stage01_human_close.png`
+- [x] 은신처 표시 강도가 어그로 상태에 따라 3단계로 바뀐다 (Unity). — 증거: EditMode `SensesViewTests.ShadowCue_IntensityStepsWithAwarenessState_HiddenBeyondCueRange`
+- [x] 겹눈 각성 레벨에 따라 선명 범위가 늘어난다 (Unity). — 증거: EditMode `SensesFogTests.CompoundEyes_ExtendsClearRangePerLevel` (Stage는 스킬 반영 Tuning으로 SensesSettings를 만든다, D-043)
 
 ## 범위 외
 - 냄새(젖산 등) 별도 시각화, 색상 선호도 기반 타겟팅

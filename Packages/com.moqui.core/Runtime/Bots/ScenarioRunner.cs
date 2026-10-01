@@ -73,29 +73,67 @@ namespace Moqui.Core.Bots
         /// <param name="onTick">틱마다 부르는 관찰 콜백 (진단, Unity 봇 재생). 선택.</param>
         public ScenarioResult Run(LevelDefinition level, ScenarioDefinition scenario, ulong seed, Action<GameSimulation, string> onTick = null)
         {
-            _settings = GameSettings.FromTuning(Meta.SkillEffects.Apply(_tuning, scenario.Skills));
+            var pilot = CreatePilot(scenario);
             var simulation = new GameSimulation(_settings, level.CreateSetup(scenario.Skills, seed));
-            var state = new RunState(scenario);
             DeathCause? cause = null;
 
             while (simulation.Outcome == StageOutcome.InProgress && simulation.Tick < scenario.Expect.MaxTicks)
             {
-                simulation.Step(CompensateToxin(simulation, NextCommand(simulation, scenario, state)));
+                simulation.Step(pilot.Next(simulation));
                 var died = simulation.Events.OfType<PlayerDied>().FirstOrDefault();
                 if (died != null)
                 {
                     cause = died.Cause;
                 }
 
-                if (scenario.Flee && !state.Fleeing && ShouldFlee(simulation))
-                {
-                    state.StartFlee();
-                }
-
-                onTick?.Invoke(simulation, state.Describe(scenario));
+                pilot.Observe(simulation);
+                onTick?.Invoke(simulation, pilot.Describe());
             }
 
-            return new ScenarioResult(seed, simulation.Outcome, cause, simulation.Tick, simulation.Human?.FrenzyCount ?? 0, simulation.Human?.BiteMarkCount ?? 0, state.Flees);
+            return new ScenarioResult(seed, simulation.Outcome, cause, simulation.Tick, simulation.Human?.FrenzyCount ?? 0, simulation.Human?.BiteMarkCount ?? 0, pilot.Flees);
+        }
+
+        /// <summary>
+        /// 틱 단위로 봇을 조종한다 (Unity 안에서 시나리오를 재생할 때, verification §2 통합 스모크).
+        /// 시뮬레이션은 스킬 반영 tuning(`SkillEffects.Apply(tuning, scenario.Skills)`)과 `level.CreateSetup(scenario.Skills, seed)`로 만들어야 헤드리스 결과와 같다.
+        /// </summary>
+        public Pilot CreatePilot(ScenarioDefinition scenario)
+        {
+            _settings = GameSettings.FromTuning(Meta.SkillEffects.Apply(_tuning, scenario.Skills));
+            return new Pilot(this, scenario);
+        }
+
+        /// <summary>시나리오 하나의 진행 상태와 봇 판단. 틱마다 Next로 명령을 받고, Step 뒤 Observe를 부른다.</summary>
+        public sealed class Pilot
+        {
+            private readonly ScenarioRunner _runner;
+            private readonly ScenarioDefinition _scenario;
+            private readonly RunState _state;
+
+            internal Pilot(ScenarioRunner runner, ScenarioDefinition scenario)
+            {
+                _runner = runner;
+                _scenario = scenario;
+                _state = new RunState(scenario);
+            }
+
+            public int Flees => _state.Flees;
+
+            public PlayerCommand Next(GameSimulation simulation)
+            {
+                return _runner.CompensateToxin(simulation, _runner.NextCommand(simulation, _scenario, _state));
+            }
+
+            /// <summary>방금 진행한 틱의 결과를 보고 도망칠지 정한다.</summary>
+            public void Observe(GameSimulation simulation)
+            {
+                if (_scenario.Flee && !_state.Fleeing && ShouldFlee(simulation))
+                {
+                    _state.StartFlee();
+                }
+            }
+
+            public string Describe() => _state.Describe(_scenario);
         }
 
         /// <summary>

@@ -34,6 +34,12 @@ namespace Moqui.Unity.Presentation.Stage
         /// <summary>가지고 들어가는 스킬 (spec/09). 화면 흐름이 저장 데이터에서 정한다.</summary>
         public static SkillLoadout RequestedSkills { get; set; } = SkillLoadout.None;
 
+        /// <summary>난수 시드 재정의 (Unity 안 시나리오 재생용). null이면 레벨 데이터의 시드.</summary>
+        public static ulong? RequestedSeed { get; set; }
+
+        /// <summary>구동기를 만든 직후 부르는 훅 (Unity 안 시나리오 봇 재생이 첫 틱부터 명령을 넣는다). null이면 없음.</summary>
+        public static System.Action<SimulationDriver> RequestedDriverSetup { get; set; }
+
         public LevelDefinition Level { get; private set; }
 
         /// <summary>레벨에 튜토리얼 안내가 있으면 진행 판정기. 없으면 null.</summary>
@@ -44,19 +50,18 @@ namespace Moqui.Unity.Presentation.Stage
             // 스킬 수치 효과는 Tuning에 반영해 시뮬레이션·시점·감각 표현이 같은 값을 쓰게 한다 (D-043).
             var tuning = SkillEffects.Apply(SimulationRunner.LoadTuning(), RequestedSkills);
             Level = new LevelLoader(new UnityDataSource()).Load(RequestedLevelId);
-            var simulation = new GameSimulation(GameSettings.FromTuning(tuning), Level.CreateSetup(RequestedSkills));
+            var simulation = new GameSimulation(GameSettings.FromTuning(tuning), Level.CreateSetup(RequestedSkills, RequestedSeed));
             var visuals = LevelView.Build(Level, simulation.World, transform, _materials);
             var senses = new SensesSettings(tuning);
             _senses.Bind(simulation, senses, visuals, _materials);
             _gimmicks.Bind(simulation, senses, _materials);
             _runner.Begin(tuning, simulation);
+            RequestedDriverSetup?.Invoke(_runner.Driver);
             if (Level.Tutorial.Count > 0)
             {
                 Tutorial = new TutorialTracker(Level.Tutorial, new TutorialSettings(tuning));
                 _runner.Driver.TickCompleted += Tutorial.Observe;
             }
-
-            Cursor.lockState = CursorLockMode.Locked;
         }
     }
 }

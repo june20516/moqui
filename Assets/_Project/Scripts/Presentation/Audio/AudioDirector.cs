@@ -43,9 +43,10 @@ namespace Moqui.Unity.Presentation.Audio
 
             var simulation = _runner.Driver.Simulation;
             MokiPose pose = MokiPoses.From(simulation.Player, simulation.LastCommand.SuckHeld, simulation.Settings.Flight.Speed);
+            // 일시정지 중에는 상태 반복음을 끈다 (음악·환경음은 그대로).
             foreach (var loop in AudioCues.Loops(simulation, pose))
             {
-                _output.SetLoop(loop.Id, loop.Playing, loop.Pitch);
+                _output.SetLoop(loop.Id, loop.Playing && !_runner.Paused, loop.Pitch);
             }
         }
 
@@ -69,9 +70,15 @@ namespace Moqui.Unity.Presentation.Audio
 
         private void OnTick(GameSimulation simulation)
         {
+            // 파괴된 Unity 오브젝트는 C# `?.`로 걸러지지 않으므로 Unity 비교로 확인한다.
+            if (_output == null)
+            {
+                return;
+            }
+
             foreach (string id in _cues.OneShots(simulation))
             {
-                _output?.PlayOneShot(id);
+                _output.PlayOneShot(id);
             }
         }
 
@@ -83,7 +90,11 @@ namespace Moqui.Unity.Presentation.Audio
             }
 
             // 다음 화면으로 넘어가도 반복음이 남지 않게 끈다. 음악은 다음 화면이 바꾼다.
-            _output?.StopAllLoops();
+            // 앱 종료 때는 출구가 먼저 파괴될 수 있다.
+            if (_output != null)
+            {
+                _output.StopAllLoops();
+            }
         }
     }
 }

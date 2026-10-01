@@ -33,18 +33,18 @@
 - 플레이어 충돌 구가 카메라를 포함하므로 별도의 카메라 충돌 처리는 없다. 단, 시야가 벽에 파묻히지 않도록 `camera.fp.eyeOffset`은 충돌 구 반지름 안에 둔다.
 
 ## 수용 기준
-- [ ] 빈 테스트 씬에서 플레이어를 원점 기준 ±500u 범위 어디에 두어도 이동과 충돌이 정상 동작한다 (Core).
-- [ ] 3인칭 카메라 near clip이 `camera.nearClip`이고, 벽에 붙어도 카메라가 벽을 관통하지 않는다 (Unity: 벽 앞 이동 후 카메라와 벽 사이 레이캐스트에 걸리는 것이 없음).
-- [ ] pitch가 `camera.pitchLimit`를 넘지 않는다 (Unity: 입력 누적 테스트).
-- [ ] 낙하체가 1초 동안 `world.gravity`로 가속되어 490.5u(±1%) 떨어진다 (Core).
-- [ ] 게임 시작 시 기본 시점은 3인칭이다 (Unity, 저장 데이터 없음).
-- [ ] ToggleView 입력으로 3인칭 ↔ 1인칭이 전환되고, `camera.switchTime` 후 위치와 FOV가 목표값에 도달한다 (Unity).
-- [ ] 전환 전후의 yaw/pitch가 같다 (Unity).
-- [ ] 같은 입력 시퀀스를 두 시점에서 재생하면 플레이어 최종 위치가 같다 (Unity: 시점 독립성).
-- [ ] 1인칭에서 플레이어 메시의 렌더러가 Shadows Only이고, 3인칭으로 돌아오면 원래대로 복구된다 (Unity).
-- [ ] 1인칭 부착 상태에서 시선이 법선 기준 `camera.fp.attachedLookLimit`를 벗어나지 않는다 (Unity).
-- [ ] 1인칭에서 벽에 최대한 붙어도 화면에 벽 뒤가 보이지 않는다 (캡처 검토: 벽 접촉 포즈 1장).
-- [ ] 선택한 시점이 재시작 후에도 유지된다 (Unity).
+- [x] 빈 테스트 씬에서 플레이어를 원점 기준 ±500u 범위 어디에 두어도 이동과 충돌이 정상 동작한다 (Core). — 증거: `CollisionMovementTests.WorldRange_AnyPositionWithin500u_MovesAndCollides` (27개 위치), `FlyIntoWall_StopsBeforeSurfaceWithZeroNormalVelocity`, `DiagonalIntoWall_SlidesAlongSurface`, `VariedInputsInBox_NeverPenetrate`
+- [x] 3인칭 카메라 near clip이 `camera.nearClip`이고, 벽에 붙어도 카메라가 벽을 관통하지 않는다 (Unity: 벽 앞 이동 후 카메라와 벽 사이 레이캐스트에 걸리는 것이 없음). — 증거: `CameraTests.ThirdPerson_NearClipAndFov_MatchTuning`, `ThirdPerson_WallBehindPlayer_CameraDoesNotPassThroughWall` (D-027)
+- [x] pitch가 `camera.pitchLimit`를 넘지 않는다 (Unity: 입력 누적 테스트). — 증거: `CommandCollectorTests.MouseDelta_AccumulatedUpAndDown_PitchStaysWithinLimit`
+- [x] 낙하체가 1초 동안 `world.gravity`로 가속되어 490.5u(±1%) 떨어진다 (Core). — 증거: `ExternalForceTests.FallingBody_OneSecond_Falls4905u`
+- [x] 게임 시작 시 기본 시점은 3인칭이다 (Unity, 저장 데이터 없음). — 증거: `CameraTests.DefaultView_NoSavedData_IsThirdPerson`
+- [x] ToggleView 입력으로 3인칭 ↔ 1인칭이 전환되고, `camera.switchTime` 후 위치와 FOV가 목표값에 도달한다 (Unity). — 증거: `CameraTests.Toggle_AfterSwitchTime_ReachesFirstPersonTargetThenBack`, `CommandCollectorTests.ToggleViewAndPause_Gamepad_AreConsumedSeparately`
+- [x] 전환 전후의 yaw/pitch가 같다 (Unity). — 증거: `CameraTests.Toggle_BeforeAndAfter_YawPitchUnchanged`
+- [x] 같은 입력 시퀀스를 두 시점에서 재생하면 플레이어 최종 위치가 같다 (Unity: 시점 독립성). — 증거: `ViewIndependenceTests.SameInputSequence_ThirdVsFirstPerson_SameFinalPosition`
+- [x] 1인칭에서 플레이어 메시의 렌더러가 Shadows Only이고, 3인칭으로 돌아오면 원래대로 복구된다 (Unity). — 증거: `CameraTests.FirstPerson_PlayerRenderers_ShadowsOnlyThenRestored`
+- [x] 1인칭 부착 상태에서 시선이 법선 기준 `camera.fp.attachedLookLimit`를 벗어나지 않는다 (Unity). — 증거: `StealthPresentationTests.FirstPersonAttached_LookIntoWall_StaysWithinLimitOfNormal`(실제 부착 시뮬레이션, 240프레임 입력 누적), `ThirdPersonAttached_LookNotConstrained`
+- [x] 1인칭에서 벽에 최대한 붙어도 화면에 벽 뒤가 보이지 않는다 (캡처 검토: 벽 접촉 포즈 1장). — 증거: `Captures/2026-10-01_131326/Sandbox_Flight_fp_wall_contact.png`, `..._fp_wall_contact_angled.png` (시뮬레이션으로 앞 벽까지 비행 후 캡처, 캡처 검토 기록 참조)
+- [x] 선택한 시점이 재시작 후에도 유지된다 (Unity). — 증거: `CameraTests.SelectedView_PlayerPrefsStore_SurvivesRestart`, `SelectedView_NewControllerWithSameStore_IsRestored`
 
 ## 범위 외
 - 롤 회전, 카메라 흔들림 옵션, 1인칭 전용 뷰모델(팔/주둥이 모델)

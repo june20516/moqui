@@ -34,7 +34,8 @@ namespace Moqui.Unity.Presentation.Audio
                 return null;
             }
 
-            var go = new GameObject("AudioOutput");
+            // 모든 소리가 2D라 듣는 위치가 상관없으므로 리스너도 여기 하나만 둔다 (씬 카메라에는 없음).
+            var go = new GameObject("AudioOutput", typeof(AudioListener));
             DontDestroyOnLoad(go);
             Instance = go.AddComponent<AudioOutput>();
             Instance._catalog = catalog;
@@ -44,7 +45,7 @@ namespace Moqui.Unity.Presentation.Audio
             return Instance;
         }
 
-        public void PlayOneShot(string id, float pitch = 1f)
+        public void PlayOneShot(string id)
         {
             var entry = _catalog.Find(id);
             if (entry?.Clip == null)
@@ -52,7 +53,6 @@ namespace Moqui.Unity.Presentation.Audio
                 return;
             }
 
-            _oneShots.pitch = pitch;
             _oneShots.PlayOneShot(entry.Clip, entry.Volume * AudioVolumes.For(entry.Bus));
         }
 
@@ -99,7 +99,10 @@ namespace Moqui.Unity.Presentation.Audio
         {
             foreach (var source in _loops.Values)
             {
-                source.Stop();
+                if (source != null)
+                {
+                    source.Stop();
+                }
             }
 
             _activeLoops.Clear();

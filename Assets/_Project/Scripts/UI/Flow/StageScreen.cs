@@ -17,6 +17,8 @@ namespace Moqui.Unity.UI.Flow
         /// <summary>스테이지 음악은 AudioDirector가 튼다.</summary>
         protected override string MusicId => null;
 
+        protected override bool IsGameplay => true;
+
         [SerializeField]
         private SimulationRunner _runner;
 
@@ -79,6 +81,7 @@ namespace Moqui.Unity.UI.Flow
             _runner.Paused = true;
             Time.timeScale = 0f;
             PausePanel.SetActive(true);
+            CursorPolicy.ForMenu();
             UiFactory.Focus(ResumeButton);
         }
 
@@ -88,6 +91,7 @@ namespace Moqui.Unity.UI.Flow
             PausePanel.SetActive(false);
             Time.timeScale = 1f;
             _runner.Paused = false;
+            CursorPolicy.ForGameplay();
         }
 
         /// <summary>시뮬레이션이 끝났으면 기록하고 Result를 보여 준다.</summary>
@@ -106,6 +110,7 @@ namespace Moqui.Unity.UI.Flow
             ResultBody.text = cleared ? ClearText(Outcome) : $"사망 원인: {CauseText(Outcome.DeathCause)}\n시간 {Outcome.Seconds:0.0}초\n획득 혈액 포인트 0";
             EndingButton.gameObject.SetActive(Outcome.UnlocksEnding);
             ResultPanel.SetActive(true);
+            CursorPolicy.ForMenu();
             UiFactory.Focus(Outcome.UnlocksEnding ? EndingButton : RetryButton);
         }
 

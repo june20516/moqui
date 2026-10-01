@@ -66,28 +66,28 @@
 - 무작위 지점은 시드 고정 난수로 결정한다 (테스트 재현성).
 
 ## 수용 기준
-- [ ] 바람 원뿔 안에서 입력이 없으면 플레이어가 40u/s로 밀린다 (Core).
-- [ ] 부착 상태에서는 바람의 영향이 없다 (Core).
-- [ ] 선풍기가 8초 주기로 ±45° 회전한다 (Core).
-- [ ] 마스킹 반경 안에서 대시 소음 반경이 75u가 된다 (Core).
-- [ ] 거미줄 접촉 1.5초 후 Web 원인으로 사망한다 (Core).
-- [ ] 취한 타겟에게서 흡혈 속도 배율이 2.0이다 (Core).
-- [ ] 연무 반경이 1초에 걸쳐 25u→60u로 커지고 8초 뒤 사라진다 (Core).
-- [ ] 바람 영역 안의 연무가 20u/s로 떠밀린다 (Core).
-- [ ] 중독이 연무 안에서 30/s로 오르고 밖에서 15/s로 내린다 (Core).
-- [ ] 중독 30/55/80에서 끊김/반전/랜덤이 누적 적용되고, 같은 시드에서 재현된다 (Core).
-- [ ] 중독 100에서 Spray 원인으로 사망한다 (Core).
-- [ ] 광분 + canSpray + 사거리 안에서 보일 때만 인간이 분사하고, 쿨타임을 지킨다 (Core).
-- [ ] 자동 분사기가 12초마다 연무를 만든다 (Core).
-- [ ] 끊김 확률이 중독 30에서 0.1, 55에서 0.3이다 (Core).
-- [ ] 모기향 하한: 60u 이내 60, 400u 지점 30, 범위 밖 0이고, 바람·Shadow Zone 안에서 0.5배이다 (Core).
-- [ ] 모기향 20u 이내에서는 중독이 하한과 별개로 25/s 오른다 (Core).
-- [ ] 숨은 상태에서 중독이 2배 빠르게 줄어들되 하한 아래로는 내려가지 않는다 (Core).
-- [ ] 졸기 중에는 Red Zone에 들어가도 시각 감지와 박수 공격이 없다 (Core).
-- [ ] 졸음 주기가 tuning 범위를 따르고, 깨기 0.5초 전에 예고 이벤트가 나온다 (Core).
-- [ ] 경계 40 이상이면 완전히 깨고, 20 미만 5초 유지 후 다시 존다 (Core).
-- [ ] 졸음 수정자 아래의 광분 최소 유지 시간이 0.5배이다 (Core).
-- [ ] 무작위 휘두르기가 4~7초 간격으로, 같은 시드에서 같은 위치로 발생한다 (Core).
+- [x] 바람 원뿔 안에서 입력이 없으면 플레이어가 40u/s로 밀린다 (Core). — 증거: `GimmickTests.Fan_InsideCone_NoInput_Pushed40PerSecond`, `ExternalForceTests.Wind_*` (D-046)
+- [x] 부착 상태에서는 바람의 영향이 없다 (Core). — 증거: `GimmickTests.Fan_Attached_NotAffected` (D-046)
+- [x] 선풍기가 8초 주기로 ±45° 회전한다 (Core). — 증거: `GimmickTests.Fan_Oscillates45DegreesOver8SecondPeriod` (D-046)
+- [x] 마스킹 반경 안에서 대시 소음 반경이 75u가 된다 (Core). — 증거: `GimmickTests.Fan_NoiseMask_DashNoiseRadiusBecomes75` (D-046)
+- [x] 거미줄 접촉 1.5초 후 Web 원인으로 사망한다 (Core). — 증거: `GimmickTests.Web_Contact_DiesWithWebCauseAfter15Seconds_CannotMove` (D-046)
+- [x] 취한 타겟에게서 흡혈 속도 배율이 2.0이다 (Core). — 증거: `GimmickTests.Drunk_SuckRateMultiplierIs2` (D-046)
+- [x] 연무 반경이 1초에 걸쳐 25u→60u로 커지고 8초 뒤 사라진다 (Core). — 증거: `GimmickTests.SprayCloud_Expands25To60OverOneSecond_GoneAfter8Seconds` (D-046)
+- [x] 바람 영역 안의 연무가 20u/s로 떠밀린다 (Core). — 증거: `GimmickTests.SprayCloud_InWind_DriftsAt20PerSecond` (D-046)
+- [x] 중독이 연무 안에서 30/s로 오르고 밖에서 15/s로 내린다 (Core). — 증거: `GimmickTests.Toxin_RisesInCloud30PerSecond_Decays15PerSecondOutside` (D-046)
+- [x] 중독 30/55/80에서 끊김/반전/랜덤이 누적 적용되고, 같은 시드에서 재현된다 (Core). — 증거: `GimmickTests.Debuffs_StutterInvertRandom_StackByTier_ReproducibleWithSeed` (D-046)
+- [x] 중독 100에서 Spray 원인으로 사망한다 (Core). — 증거: `GimmickTests.Toxin_100_DiesWithSprayCause` (D-046)
+- [x] 광분 + canSpray + 사거리 안에서 보일 때만 인간이 분사하고, 쿨타임을 지킨다 (Core). — 증거: `GimmickTests.HumanSpray_OnlyInFrenzyWithCanSprayWhenVisibleInRange_RespectsCooldown` (D-046)
+- [x] 자동 분사기가 12초마다 연무를 만든다 (Core). — 증거: `GimmickTests.Dispenser_CreatesCloudEvery12Seconds` (D-046)
+- [x] 끊김 확률이 중독 30에서 0.1, 55에서 0.3이다 (Core). — 증거: `GimmickTests.StutterChance_Is01At30_03At55` (D-046)
+- [x] 모기향 하한: 60u 이내 60, 400u 지점 30, 범위 밖 0이고, 바람·Shadow Zone 안에서 0.5배이다 (Core). — 증거: `GimmickTests.CoilFloor_60Within60_30At400_0Beyond_HalvedInWindAndShadow` (D-046)
+- [x] 모기향 20u 이내에서는 중독이 하한과 별개로 25/s 오른다 (Core). — 증거: `GimmickTests.Coil_Within20_RisesExtra25PerSecond` (D-046)
+- [x] 숨은 상태에서 중독이 2배 빠르게 줄어들되 하한 아래로는 내려가지 않는다 (Core). — 증거: `GimmickTests.Hidden_ToxinDecaysTwiceAsFast_ButNotBelowCoilFloor` (D-046)
+- [x] 졸기 중에는 Red Zone에 들어가도 시각 감지와 박수 공격이 없다 (Core). — 증거: `HumanModifierTests.Doze_SleepingInRedZone_NoVisionAndNoClap`
+- [x] 졸음 주기가 tuning 범위를 따르고, 깨기 0.5초 전에 예고 이벤트가 나온다 (Core). — 증거: `HumanModifierTests.Doze_CycleFollowsTuningRanges_WakeTelegraph05SecondsBefore`(150초, 10회 이상 전환), `Doze_AwarenessAtSuspicion_FullyWakes_ThenResleepsAfter5CalmSeconds`, `Doze_Sleeping_HearingAndReactionsHalved`
+- [x] 경계 40 이상이면 완전히 깨고, 20 미만 5초 유지 후 다시 존다 (Core). — 증거: `HumanModifierTests.Doze_AwarenessAtSuspicion_FullyWakes_ThenResleepsAfter5CalmSeconds`
+- [x] 졸음 수정자 아래의 광분 최소 유지 시간이 0.5배이다 (Core). — 증거: `HumanModifierTests.Doze_FrenzyMinimumHalved_CalmsSoonerThanAwakeHuman`
+- [x] 무작위 휘두르기가 4~7초 간격으로, 같은 시드에서 같은 위치로 발생한다 (Core). — 증거: `GimmickTests.Drunk_RandomSwatsEvery4To7Seconds_ReproducibleWithSeed` (D-046)
 
 ## 범위 외
 - 잠자리 등 포식자 AI, 모기향, 전기 모기채
