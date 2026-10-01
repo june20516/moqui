@@ -79,6 +79,11 @@ namespace Moqui.Unity.Editor
             // MaterialPropertyBlock은 씬에 저장되지 않으므로 플레이어 색은 머티리얼 에셋으로 둔다.
             body.GetComponent<Renderer>().sharedMaterial = LoadOrCreateLitMaterial(PlayerMaterialPath, PlayerColor);
 
+            // Shadow Zone 비네트 (spec/03): 전역 Volume, 프로필은 실행 시 만든다.
+            var vignetteObject = new GameObject("ShadowVignette");
+            vignetteObject.AddComponent<UnityEngine.Rendering.Volume>();
+            SetReference(vignetteObject.AddComponent<ShadowVignette>(), "_runner", runner);
+
             var rig = new GameObject("CameraRig").AddComponent<CameraRig>();
             SetReference(rig, "_runner", runner);
             SetReference(rig, "_camera", camera);

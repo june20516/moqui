@@ -66,9 +66,8 @@ namespace Moqui.Core.Tests.Simulation
         [Test]
         public void Exhaustion_WhileHidden_RecoversTwiceAsFast()
         {
-            var simulation = Empty();
+            var simulation = WithWorld(ShadowWorld(Vector3.Zero), Vector3.Zero);
             simulation.Player.Stamina = Settings.Dash.StaminaCost;
-            simulation.Player.IsHidden = true;
 
             simulation.Step(DashUp);
             Run(simulation, PlayerCommand.None, SecondsToTicks(Settings.Stamina.ExhaustedDuration / Settings.Hiding.DebuffRecoveryMul));

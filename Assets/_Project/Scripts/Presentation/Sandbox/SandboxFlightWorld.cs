@@ -38,6 +38,9 @@ namespace Moqui.Unity.Presentation.Sandbox
             world.Add(CollisionShape.Box("table_leg_d", new Vector3(-25f, 35f, 75f), new Vector3(3f, 35f, 3f), Wall));
             world.Add(CollisionShape.Box("sofa", new Vector3(150f, 22f, 120f), new Vector3(80f, 22f, 40f), Quaternion.CreateFromAxisAngle(Vector3.UnitY, -0.3f), Wall));
             world.Add(CollisionShape.Sphere("lamp_shade", new Vector3(200f, 150f, -150f), 25f, Wall));
+
+            // 탁자 아래 Shadow Zone (spec/03). 장애물이 아닌 볼륨이므로 화이트박스에는 그리지 않는다.
+            world.Add(CollisionShape.Box("table_shadow", new Vector3(-80f, 34f, 40f), new Vector3(56f, 34f, 36f), ShapeFlags.ShadowZone));
             world.Add(CollisionShape.Capsule("lamp_pole", new Vector3(200f, 0f, -150f), new Vector3(200f, 125f, -150f), 2f, Wall));
             return world;
         }

@@ -55,9 +55,8 @@ namespace Moqui.Core.Tests.Simulation
         [Test]
         public void NoStimulus_PlayerHidden_UsesShadowDecayRate()
         {
-            var simulation = TestHumans.Simulation(TestHumans.FarBehind);
+            var simulation = TestHumans.Simulation(TestHumans.FarBehind, ShadowWorld(TestHumans.FarBehind, 20f));
             simulation.Human.Awareness = 50f;
-            simulation.Player.IsHidden = true;
 
             Run(simulation, PlayerCommand.None, SecondsToTicks(1f));
 

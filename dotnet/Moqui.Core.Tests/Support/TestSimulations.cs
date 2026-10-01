@@ -38,5 +38,13 @@ namespace Moqui.Core.Tests.Support
         }
 
         public static PlayerCommand Forward => new PlayerCommand { Move = new Vector2(0f, 1f) };
+
+        /// <summary>center를 감싸는 Shadow Zone 볼륨 하나가 있는 월드 (장애물 아님).</summary>
+        public static CollisionWorld ShadowWorld(Vector3 center, float halfSize = 100f)
+        {
+            var world = new CollisionWorld();
+            world.Add(CollisionShape.Box("shadow", center, new Vector3(halfSize), ShapeFlags.ShadowZone));
+            return world;
+        }
     }
 }
