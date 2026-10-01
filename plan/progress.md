@@ -3,8 +3,8 @@
 > 루프가 매 반복 끝에 갱신한다. 위에서부터 최신순으로 쓴다.
 
 ## 현재
-- 마일스톤: **M5 흡혈 세션 · 물린 자국 · 포만 · 승리** (진행 중)
-- 다음 할 일: 설계 검증 시나리오(긴 세션 2회 vs 짧은 세션 6회, 시드 20개)
+- 마일스톤: **M5 흡혈 세션 · 물린 자국 · 포만 · 승리** (종료 기준 충족 → main merge, `m5-done`)
+- 다음 할 일: M6 시작 — spec/05 수용 기준 + 이월(젖은 날개·습기 2배 회복 D-034, WaterImpact D-031)을 체크리스트로 복사
 - 브랜치: `milestone/m5-suck`
 
 ## 현재 마일스톤 체크리스트 (M5: spec/04 + 이월)
@@ -16,7 +16,7 @@
 - [x] 자국 수에 따른 증가·감소 배율, 하한, 반응 배율이 정확히 적용된다 (n = 0, 1, 3, 6) (Core). — 증거: `SuckTests.BiteMarks_ModifiersMatchFormula`(n=0,1,3,6), `BiteMarks_AppliedToAwarenessAndReactions`(n=0,1,3,6: 시각 증가·감소·하한·반응 배율을 시뮬레이션에서 측정)
 - [x] 포만 0%/50%/100%에서 속도 배율이 1.0/0.8/0.6, 대시 거리 배율이 1.0/0.875/0.75이다 (Core). — 증거: `SuckTests.Satiety_SpeedAndDashMultipliers`(0/50/100%)
 - [x] 게이지 100% 도달 시 Stage Clear 이벤트가 정확히 1회 발생한다 (Core). — 증거: `SuckTests.Gauge100_StageClearedExactlyOnce`, `Cleared_InputIgnoredWorldFrozen`
-- [ ] 설계 검증: 같은 스테이지에서 "긴 세션 2회" 시나리오가 "짧은 세션 6회" 시나리오보다 평균 경계가 낮고 클리어 시간이 짧다 (Core 시나리오 비교, 시드 20개 평균).
+- [x] 설계 검증: 같은 스테이지에서 "긴 세션 2회" 시나리오가 "짧은 세션 6회" 시나리오보다 평균 경계가 낮고 클리어 시간이 짧다 (Core 시나리오 비교, 시드 20개 평균). — 증거: `DesignValidationTests.LongSessions_VersusShortSessions_LowerAwarenessAndFasterClear` — 시드 20: 긴 세션 12/20 클리어·평균 경계 28.2·평균 280.6초, 짧은 세션 0/20·38.8·600초 (D-035)
 - [x] (M3 이월, D-033) 무작위 움직임이 흡혈 중에도 발생하고, 붙어 있는 모기가 부위를 따라 움직인다 (Core). — 증거: `SuckTests.RandomMotion_WhileSucking_SessionContinuesAndFollowsPart`, `HumanMotionTests.Actions_KeepHappeningWhilePlayerIsAttached`
 - [x] (M3 이월, D-033) 부위 속도가 dislodgeSpeed를 넘으면 모기가 튕겨 나가고 흡혈 세션이 끝나며, 사망하지 않는다 (Core). — 증거: `SuckTests.Dislodged_WhileSucking_SessionEndsWithoutDeath`, `HumanMotionTests.FastAction_PartFasterThanDislodgeSpeed_DislodgesWithoutDeath`
 
@@ -34,6 +34,9 @@
 | R-002 | .NET SDK 설치 | 시스템에는 런타임만 있음(9/30에 설치된 것은 .NET 10 런타임). Unity 번들 SDK 8.0.318로 대체 (D-021) | 적용 | 해결 |
 | R-003 | Unity 로그인 + 라이선스 활성화 | Unity Personal 활성화됨, 배치 모드 라이선스 초기화 확인 | - | 해결 |
 
+## 사람 검토 권장 (막힘 아님)
+- **밸런스(D-035):** 설계 검증 봇 기준으로 자국 5개(하한 40 = 의심 진입선)가 되면 인간이 영구 의심 상태로 몸 주변을 훑어 접근이 거의 불가능하다. 긴 세션 전략도 40%가 자국 5개에서 멈춘다. 수치(`biteMark.floorPerBite` 8, `floorMax` 45, 반응률)는 spec 제안값 그대로 두었으며, M7 버티컬 슬라이스 리포트에서 플레이 감각과 함께 검토를 요청한다.
+
 ## 막힘
 (없음)
 
@@ -45,7 +48,8 @@
 ## 반복 로그
 | 일시 | 마일스톤 | 한 일 | 증거 | 커밋 |
 |---|---|---|---|---|
-| 2026-10-01 | M5 | 브랜치·체크리스트, SuckSystem(세션 가속·가려움·자국·포만), 자국 경계 보정, StageOutcome·StageCleared, 스냅샷에 게이지·결과 추가 | Core 203/203 통과, Unity CS 이슈 0 | (이 커밋) |
+| 2026-10-01 | M5 | 설계 검증 시나리오(SessionStrategyBot, Shadow Zone 무대, 실패=제한 시간), D-035, 밸런스 검토 권장 기록 | Core 204 + EditMode 40 + PlayMode 3 통과, 빌드 성공. M5 종료 | (이 커밋) |
+| 2026-10-01 | M5 | 브랜치·체크리스트, SuckSystem(세션 가속·가려움·자국·포만), 자국 경계 보정, StageOutcome·StageCleared, 스냅샷에 게이지·결과 추가 | Core 203/203 통과, Unity CS 이슈 0 | fcb7377 |
 | 2026-10-01 | M4 | ShadowVignette(URP Volume), 1인칭 부착 시선 제한·카메라 up(D-028 해소), 샌드박스 탁자 밑 Shadow Zone, run-tests가 결과 없을 때도 컴파일 오류 출력. M4 종료 | Core 178 + EditMode 40 + PlayMode 3 통과, 빌드 성공 | f644e2f |
 | 2026-10-01 | M4 | 브랜치·체크리스트, D-034, Shadow Zone 판정(매 틱 IsHidden), 숨김 테스트를 실제 볼륨으로 전환, StealthTests | Core 178/178 통과 | cb64102 |
 | 2026-10-01 | M3 | 무작위 동작(HumanActionDefinition, HumanMotionSystem, 절차적 포즈), 동작이 플레이어 이동보다 먼저 실행, 튕겨남 검증, 샌드박스 인간 동작 4종, D-033. M3 종료 | Core 172 + EditMode 36 + PlayMode 3 통과, 빌드 성공 | 5581fec |
