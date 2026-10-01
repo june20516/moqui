@@ -1,0 +1,17 @@
+{
+    "name": "Moqui.Unity.Runtime",
+    "rootNamespace": "Moqui.Unity",
+    "references": [
+        "Moqui.Core",
+        "Unity.InputSystem"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

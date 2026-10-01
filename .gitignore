@@ -1,0 +1,41 @@
+# Unity
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+sysinfo.txt
+crashlytics-build.properties
+/[Aa]ssets/[Ss]treamingAssets/data/
+/[Aa]ssets/[Ss]treamingAssets/data.meta
+
+# IDE / generated
+.vs/
+.vscode/
+.idea/
+*.csproj
+!dotnet/**/*.csproj
+*.sln
+!dotnet/**/*.sln
+*.suo
+*.user
+*.userprefs
+*.unityproj
+
+# Build / capture outputs
+/[Bb]uilds/
+/[Cc]aptures/
+
+# dotnet
+dotnet/**/bin/
+dotnet/**/obj/
+dotnet/**/TestResults/
+
+# OS
+.DS_Store
+Thumbs.db

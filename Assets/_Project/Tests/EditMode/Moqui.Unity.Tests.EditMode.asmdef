@@ -1,0 +1,30 @@
+{
+    "name": "Moqui.Unity.Tests.EditMode",
+    "rootNamespace": "Moqui.Unity.Tests",
+    "references": [
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner",
+        "Moqui.Core",
+        "Moqui.Unity.Runtime",
+        "Moqui.Unity.Presentation",
+        "Moqui.Unity.UI",
+        "Moqui.Unity.Editor",
+        "Unity.InputSystem",
+        "Unity.InputSystem.TestFramework"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
