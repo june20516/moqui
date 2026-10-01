@@ -69,9 +69,15 @@ namespace Moqui.Unity.Presentation.Audio
 
         private void OnTick(GameSimulation simulation)
         {
+            // 파괴된 Unity 오브젝트는 C# `?.`로 걸러지지 않으므로 Unity 비교로 확인한다.
+            if (_output == null)
+            {
+                return;
+            }
+
             foreach (string id in _cues.OneShots(simulation))
             {
-                _output?.PlayOneShot(id);
+                _output.PlayOneShot(id);
             }
         }
 
@@ -83,7 +89,11 @@ namespace Moqui.Unity.Presentation.Audio
             }
 
             // 다음 화면으로 넘어가도 반복음이 남지 않게 끈다. 음악은 다음 화면이 바꾼다.
-            _output?.StopAllLoops();
+            // 앱 종료 때는 출구가 먼저 파괴될 수 있다.
+            if (_output != null)
+            {
+                _output.StopAllLoops();
+            }
         }
     }
 }

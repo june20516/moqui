@@ -49,6 +49,7 @@ namespace Moqui.Unity.Tests
                 // 소리 (spec/10): 스테이지 음악과 레벨 환경음이 켜지고, 음악 볼륨 설정이 바로 반영된다.
                 var output = AudioOutput.Instance;
                 Assert.That(output, Is.Not.Null, "audio output created");
+                Assert.That(Object.FindObjectsByType<AudioListener>().Length, Is.EqualTo(1), "exactly one audio listener (on the output)");
                 Assert.That(output.MusicId, Is.EqualTo(AudioIds.BgmStage));
                 Assert.That(output.IsLoopActive(AudioIds.AmbienceForLevel(levelId)), Is.True, "ambience");
                 Assert.That(output.IsLoopActive(AudioIds.WingLoop), Is.True, "wing loop while hovering");
