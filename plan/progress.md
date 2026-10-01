@@ -4,7 +4,7 @@
 
 ## 현재
 - 마일스톤: **M10 에셋 패스** (진행 중)
-- 다음 할 일: 인간 머리 회전·공격 3단계 애니메이션
+- 다음 할 일: 사운드 AudioCatalog(합성 생성)와 이벤트 연결, 음악 볼륨
 - 브랜치: `milestone/m10-assets`
 
 ## 현재 마일스톤 체크리스트 (M10)
@@ -12,7 +12,7 @@
 - [x] 모든 렌더러가 프로젝트 공통 툰 셰이더(또는 그 변형)를 사용한다 (Unity: 씬·프리팹 머티리얼 검사). — `Moqui/Toon`(셀 3단·남보라 그림자·월드 외곽선), `Moqui/ToonTransparent`(림), 기체 `SoftGas`·`VolumeFog`. PlayMode `StageSceneTests`가 5개 스테이지의 모든 렌더러 셰이더가 `Moqui/*`이고 지원됨을 검사
 - [x] 누락/오류 셰이더(마젠타)가 없다 (Unity 검사 + 캡처 검토). — `shader.isSupported` 검사 + `Captures/2026-10-01_165955` 검토: 마젠타 없음, 밤 실내 팔레트(라벤더·나무·청회색, 따뜻한 키 라이트·남색 환경광)
 - [x] 플레이어 캐릭터가 위 최소 애니메이션 7종을 가진다 (애니메이터 상태 검사). — `MokiBuilder`가 모키(2.5등신·반투명 날개 2장·지팡이 주둥이·리본)와 `Art/Generated/Moki` 클립 7종·컨트롤러를 생성, `MokiAnimator`가 Core 상태→State 파라미터, `PlayerView`가 이동 기울기. EditMode `MokiTests`(매핑·7상태·전이 조건·바인딩 경로) 통과, 캡처 `Captures/2026-10-01_170956/Moki_*.png`
-- [ ] 인간이 머리 회전과 공격 3단계 애니메이션을 가진다.
+- [x] 인간이 머리 회전과 공격 3단계 애니메이션을 가진다. — `HumanView`: 얼굴(눈·코) 피벗이 Core `HeadForward`를 따라 회전, 공격 팔(어깨→주먹)이 `HumanArmPose`로 예고(뒤로 치켜듦)→타격(목표로)→회복(복귀). EditMode `HumanArmPoseTests`, PlayMode `SandboxHumanSceneTests`(얼굴 방향) 통과, 캡처 `Captures/2026-10-01_171446/Sandbox_Human_attack_*.png`
 - [ ] 각 스테이지 캡처에서 플레이어가 배경과 구분된다 (캡처 검토, `plan/progress.md`에 소견 기록).
 
 ### 사운드 (spec/10)

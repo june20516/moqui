@@ -48,6 +48,8 @@ namespace Moqui.Unity.Editor
         private static readonly Vector3 MokiFrontOffset = new Vector3(1.2f, 0.5f, 2f);
         private static readonly Vector3 MokiBackOffset = new Vector3(0.6f, 0.8f, -2.2f);
         private const float MokiSampleFraction = 0.3f;
+        private const int AttackWaitSeconds = 3;
+        private const float AttackCameraDistance = 170f;
         private static readonly string[] StageLevelIds = { "stage01", "stage02", "stage03", "stage04", "stage05" };
 
         [MenuItem("Moqui/Capture All")]
@@ -114,7 +116,7 @@ namespace Moqui.Unity.Editor
             }
 
             Step(simulation, sensesView, Co2SettleSeconds);
-            humanView.Refresh();
+            humanView.Refresh(simulation.Tick);
             simulation.Human.SkinSites.First(site => site.PartId == "forearmR").HasBiteMark = true;
             for (int i = 0; i < SimulationTime.ToTicks(Co2SettleSeconds); i++)
             {
@@ -400,7 +402,7 @@ namespace Moqui.Unity.Editor
             var humanView = UnityEngine.Object.FindAnyObjectByType<HumanView>();
             humanView.Build(simulation.Human);
             Step(simulation, PlayerCommand.None, StageSettleSeconds);
-            humanView.Refresh();
+            humanView.Refresh(simulation.Tick);
 
             var player = simulation.Player;
             var human = simulation.Human;
@@ -548,12 +550,40 @@ namespace Moqui.Unity.Editor
             simulation.Human.HeadPitch = 0f;
             simulation.Human.Awareness = tuning.GetFloat("awareness.frenzyEnter");
             simulation.Human.LastStimulusTick = simulation.Tick;
-            for (int i = 0; i < GameSimulation.TickRate && simulation.Human.Attack.Phase != AttackPhase.Telegraph; i++)
+            StepUntilAttackPhase(simulation, humanView, AttackPhase.Telegraph);
+            CaptureHumanPose(camera, player, humanView, simulation, head + new Vector3(-120f, 40f, 160f), head, outputDirectory, "Sandbox_Human_frenzy_telegraph");
+
+            // 공격 팔 3단계 (spec/10): 각 단계의 중간을 옆에서 찍는다. 목표는 예고 시작에 고정되므로 플레이어는 비켜 둔다.
+            simulation.Player.Position = (head + new Vector3(-150f, 60f, 150f)).ToCore();
+            // 팔이 머리에 가리지 않도록 어깨→목표 방향에 수직인 쪽에서 본다.
+            Vector3 target = simulation.Human.Attack.Target.ToUnity();
+            Vector3 shoulder = simulation.Human.NearestShoulder(simulation.Human.Attack.Target).ToUnity();
+            Vector3 swing = Vector3.ProjectOnPlane(target - shoulder, Vector3.up).normalized;
+            Vector3 perpendicular = Vector3.Cross(Vector3.up, swing);
+            Vector3 swingCenter = (shoulder + target) * 0.5f + Vector3.up * 15f;
+            Vector3 side = swingCenter + (perpendicular * AttackCameraDistance) + (Vector3.up * 20f);
+            foreach (AttackPhase phase in new[] { AttackPhase.Telegraph, AttackPhase.Active, AttackPhase.Recovery })
+            {
+                StepUntilAttackPhase(simulation, humanView, phase);
+                int half = (HumanArmPose.PhaseEndTick(simulation.Human.Attack) - simulation.Tick) / 2;
+                for (int i = 0; i < half; i++)
+                {
+                    simulation.Step(PlayerCommand.None);
+                    humanView.Refresh(simulation.Tick);
+                }
+
+                CaptureHumanPose(camera, player, humanView, simulation, side, swingCenter, outputDirectory, $"Sandbox_Human_attack_{phase}");
+            }
+        }
+
+        /// <summary>뷰가 단계 시작 틱을 보도록 매 틱 갱신하면서 원하는 공격 단계까지 진행한다 (최대 몇 초).</summary>
+        private static void StepUntilAttackPhase(GameSimulation simulation, HumanView humanView, AttackPhase phase)
+        {
+            for (int i = 0; i < AttackWaitSeconds * GameSimulation.TickRate && simulation.Human.Attack.Phase != phase; i++)
             {
                 simulation.Step(PlayerCommand.None);
+                humanView.Refresh(simulation.Tick);
             }
-
-            CaptureHumanPose(camera, player, humanView, simulation, head + new Vector3(-120f, 40f, 160f), head, outputDirectory, "Sandbox_Human_frenzy_telegraph");
         }
 
         /// <summary>시뮬레이션과 감각 표현(CO₂ 흐름)을 함께 진행한다.</summary>
@@ -577,7 +607,7 @@ namespace Moqui.Unity.Editor
         private static void CaptureHumanPose(Camera camera, GameObject player, HumanView humanView, GameSimulation simulation, Vector3 cameraPosition, Vector3 lookAt, string outputDirectory, string name)
         {
             player.transform.position = simulation.Player.Position.ToUnity();
-            humanView.Refresh();
+            humanView.Refresh(simulation.Tick);
             var pose = new CameraPose(cameraPosition, Quaternion.LookRotation(lookAt - cameraPosition), camera.fieldOfView, camera.nearClipPlane);
             pose.ApplyTo(camera);
             CaptureCamera(camera, Path.Combine(outputDirectory, name + ".png"));
