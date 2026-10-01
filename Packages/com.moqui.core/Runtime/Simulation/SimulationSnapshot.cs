@@ -1,8 +1,12 @@
+using System.Collections.Generic;
 using System.Numerics;
 
 namespace Moqui.Core.Simulation
 {
-    /// <summary>렌더링·HUD용 읽기 전용 상태 (tech/architecture.md §4.3). 시스템이 늘어나면 필드를 추가한다.</summary>
+    /// <summary>
+    /// 렌더링·HUD용 읽기 전용 상태 (tech/architecture.md §4.3). 게이지·상태를 새로 만들면 반드시 여기에 추가한다:
+    /// 재시도 초기화 테스트(RetryTests)가 스냅샷 전체를 비교해 초기화 누락을 잡는다.
+    /// </summary>
     public sealed class SimulationSnapshot
     {
         public SimulationSnapshot(int tick, PlayerSnapshot player, HumanSnapshot human)
@@ -67,6 +71,14 @@ namespace Moqui.Core.Simulation
             AttackTarget = human.Attack.Target;
             AttackRadius = human.Attack.Radius;
             FrenzyCount = human.FrenzyCount;
+            BiteMarkCount = human.BiteMarkCount;
+            var sites = new List<SkinSiteSnapshot>();
+            foreach (var site in human.SkinSites)
+            {
+                sites.Add(new SkinSiteSnapshot(site));
+            }
+
+            SkinSites = sites;
         }
 
         public string Id { get; }
@@ -94,5 +106,28 @@ namespace Moqui.Core.Simulation
         public float AttackRadius { get; }
 
         public int FrenzyCount { get; }
+
+        public int BiteMarkCount { get; }
+
+        public IReadOnlyList<SkinSiteSnapshot> SkinSites { get; }
+    }
+
+    public sealed class SkinSiteSnapshot
+    {
+        public SkinSiteSnapshot(SkinSiteState site)
+        {
+            PartId = site.PartId;
+            Type = site.Type;
+            Itch = site.Itch;
+            HasBiteMark = site.HasBiteMark;
+        }
+
+        public string PartId { get; }
+
+        public SkinSiteType Type { get; }
+
+        public float Itch { get; }
+
+        public bool HasBiteMark { get; }
     }
 }

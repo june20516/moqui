@@ -160,6 +160,7 @@
 | suck.itchDecay | 5 /s | 흡혈하지 않을 때 감소 |
 | suck.itchThreshold | 100 | 도달 시 즉시 반응 |
 | suck.attachRange | 2u | 표면 부착 가능 거리 |
+| attach.detachOffset | 2u | 이탈 시 표면 법선 방향으로 떨어지는 거리 (spec/03, D-031) |
 
 ## site (부위 유형)
 | 키 | 민감도 | 혈액량 |

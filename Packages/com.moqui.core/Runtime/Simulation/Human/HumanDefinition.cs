@@ -19,17 +19,27 @@ namespace Moqui.Core.Simulation
         Foot,
     }
 
+    /// <summary>흡혈 가능한 피부 부위 유형 (spec/04 §1). tuning 키 site.<유형>.* 의 이름과 같다.</summary>
+    public enum SkinSiteType
+    {
+        Forearm,
+        Calf,
+        FootTop,
+        Neck,
+        Cheek,
+    }
+
     /// <summary>판정용 몸 캡슐 하나 (tech/architecture.md §4.6). 좌표는 인간 루트(위치, 정면 yaw) 기준 로컬이다.</summary>
     public sealed class BodyPartDefinition
     {
-        public BodyPartDefinition(string id, BodyPartKind kind, Vector3 localA, Vector3 localB, float radius, bool isSkin)
+        public BodyPartDefinition(string id, BodyPartKind kind, Vector3 localA, Vector3 localB, float radius, SkinSiteType? siteType)
         {
             Id = id ?? throw new ArgumentNullException(nameof(id));
             Kind = kind;
             LocalA = localA;
             LocalB = localB;
             Radius = radius;
-            IsSkin = isSkin;
+            SiteType = siteType;
         }
 
         public string Id { get; }
@@ -42,8 +52,10 @@ namespace Moqui.Core.Simulation
 
         public float Radius { get; }
 
-        /// <summary>노출된 피부라 흡혈할 수 있는 부위인가 (SkinSite).</summary>
-        public bool IsSkin { get; }
+        /// <summary>흡혈할 수 있는 노출 피부(SkinSite)이면 그 유형, 아니면 null.</summary>
+        public SkinSiteType? SiteType { get; }
+
+        public bool IsSkin => SiteType.HasValue;
     }
 
     /// <summary>

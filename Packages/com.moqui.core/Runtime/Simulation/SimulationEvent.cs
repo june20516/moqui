@@ -84,7 +84,7 @@ namespace Moqui.Core.Simulation
     {
         Attack,
         Web,
-        WaterDrop,
+        WaterImpact,
         Spray,
     }
 

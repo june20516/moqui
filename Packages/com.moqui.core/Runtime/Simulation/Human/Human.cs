@@ -23,6 +23,8 @@ namespace Moqui.Core.Simulation
         private const float DegreesToRadians = MathF.PI / 180f;
 
         private readonly Dictionary<string, CollisionShape> _shapes = new Dictionary<string, CollisionShape>();
+        private readonly Dictionary<CollisionShape, BodyPartDefinition> _parts = new Dictionary<CollisionShape, BodyPartDefinition>();
+        private readonly Dictionary<CollisionShape, SkinSiteState> _sites = new Dictionary<CollisionShape, SkinSiteState>();
 
         public Human(HumanDefinition definition, CollisionWorld world)
         {
@@ -34,6 +36,11 @@ namespace Moqui.Core.Simulation
                 var shape = CollisionShape.Capsule(ShapeId(part.Id), ToWorld(part.LocalA), ToWorld(part.LocalB), part.Radius, flags);
                 world.Add(shape);
                 _shapes.Add(part.Id, shape);
+                _parts.Add(shape, part);
+                if (part.SiteType.HasValue)
+                {
+                    _sites.Add(shape, new SkinSiteState(part.Id, part.SiteType.Value, shape));
+                }
             }
 
             HeadShape = _shapes[definition.HeadPartId];
@@ -48,6 +55,26 @@ namespace Moqui.Core.Simulation
         public CollisionShape HeadShape { get; }
 
         public IReadOnlyDictionary<string, CollisionShape> Shapes => _shapes;
+
+        public IReadOnlyCollection<SkinSiteState> SkinSites => _sites.Values;
+
+        /// <summary>인간의 물린 자국 수 n (spec/04 §4).</summary>
+        public int BiteMarkCount { get; set; }
+
+        public bool Owns(CollisionShape shape)
+        {
+            return _parts.ContainsKey(shape);
+        }
+
+        public bool TryGetSite(CollisionShape shape, out SkinSiteState site)
+        {
+            return _sites.TryGetValue(shape, out site);
+        }
+
+        public bool TryGetPart(CollisionShape shape, out BodyPartDefinition part)
+        {
+            return _parts.TryGetValue(shape, out part);
+        }
 
         public float HeadYaw { get; set; }
 

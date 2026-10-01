@@ -30,7 +30,8 @@ namespace Moqui.Core.Simulation
         public GameSimulation(GameSettings settings, SimulationSetup setup)
         {
             Settings = settings;
-            World = setup.World;
+            Setup = setup;
+            World = setup.CreateWorld();
             Seed = setup.Seed;
             Player = new Player(setup.PlayerSpawn, settings.Player.CollisionRadius, settings.Stamina.Max);
             _mover = new SphereMover(World);
@@ -46,6 +47,8 @@ namespace Moqui.Core.Simulation
         }
 
         public GameSettings Settings { get; }
+
+        public SimulationSetup Setup { get; }
 
         public CollisionWorld World { get; }
 
@@ -96,6 +99,12 @@ namespace Moqui.Core.Simulation
             }
 
             Tick++;
+        }
+
+        /// <summary>재시도: 같은 구성으로 처음부터 시작하는 새 시뮬레이션 (spec/04 §7).</summary>
+        public GameSimulation Retry()
+        {
+            return new GameSimulation(Settings, Setup);
         }
 
         public SimulationSnapshot CaptureSnapshot()

@@ -19,16 +19,16 @@ namespace Moqui.Core.Tests.Support
         {
             var parts = new[]
             {
-                new BodyPartDefinition("head", BodyPartKind.Head, new Vector3(0, HeadHeight - 3f, 0), new Vector3(0, HeadHeight + 3f, 0), HeadRadius, true),
-                new BodyPartDefinition("torso", BodyPartKind.Torso, new Vector3(0, 55, -5), new Vector3(0, 90, -5), 16f, false),
-                new BodyPartDefinition("upperArmL", BodyPartKind.UpperArm, new Vector3(-ShoulderHalfWidth, ShoulderHeight, -5), new Vector3(-24, 65, 0), 5f, false),
-                new BodyPartDefinition("forearmL", BodyPartKind.Forearm, new Vector3(-24, 65, 0), new Vector3(-20, 60, 28), 4f, true),
-                new BodyPartDefinition("upperArmR", BodyPartKind.UpperArm, new Vector3(ShoulderHalfWidth, ShoulderHeight, -5), new Vector3(24, 65, 0), 5f, false),
-                new BodyPartDefinition("forearmR", BodyPartKind.Forearm, new Vector3(24, 65, 0), new Vector3(20, 60, 28), 4f, true),
-                new BodyPartDefinition("thighL", BodyPartKind.Thigh, new Vector3(-10, 48, 0), new Vector3(-10, 48, 40), 7f, false),
-                new BodyPartDefinition("calfL", BodyPartKind.Calf, new Vector3(-10, 48, 40), new Vector3(-10, 5, 45), 5f, true),
-                new BodyPartDefinition("thighR", BodyPartKind.Thigh, new Vector3(10, 48, 0), new Vector3(10, 48, 40), 7f, false),
-                new BodyPartDefinition("calfR", BodyPartKind.Calf, new Vector3(10, 48, 40), new Vector3(10, 5, 45), 5f, true),
+                new BodyPartDefinition("head", BodyPartKind.Head, new Vector3(0, HeadHeight - 3f, 0), new Vector3(0, HeadHeight + 3f, 0), HeadRadius, SkinSiteType.Cheek),
+                new BodyPartDefinition("torso", BodyPartKind.Torso, new Vector3(0, 55, -5), new Vector3(0, 90, -5), 16f, null),
+                new BodyPartDefinition("upperArmL", BodyPartKind.UpperArm, new Vector3(-ShoulderHalfWidth, ShoulderHeight, -5), new Vector3(-24, 65, 0), 5f, null),
+                new BodyPartDefinition("forearmL", BodyPartKind.Forearm, new Vector3(-24, 65, 0), new Vector3(-20, 60, 28), 4f, SkinSiteType.Forearm),
+                new BodyPartDefinition("upperArmR", BodyPartKind.UpperArm, new Vector3(ShoulderHalfWidth, ShoulderHeight, -5), new Vector3(24, 65, 0), 5f, null),
+                new BodyPartDefinition("forearmR", BodyPartKind.Forearm, new Vector3(24, 65, 0), new Vector3(20, 60, 28), 4f, SkinSiteType.Forearm),
+                new BodyPartDefinition("thighL", BodyPartKind.Thigh, new Vector3(-10, 48, 0), new Vector3(-10, 48, 40), 7f, null),
+                new BodyPartDefinition("calfL", BodyPartKind.Calf, new Vector3(-10, 48, 40), new Vector3(-10, 5, 45), 5f, SkinSiteType.Calf),
+                new BodyPartDefinition("thighR", BodyPartKind.Thigh, new Vector3(10, 48, 0), new Vector3(10, 48, 40), 7f, null),
+                new BodyPartDefinition("calfR", BodyPartKind.Calf, new Vector3(10, 48, 40), new Vector3(10, 5, 45), 5f, SkinSiteType.Calf),
             };
             var shoulders = new[] { new Vector3(-ShoulderHalfWidth, ShoulderHeight, -5), new Vector3(ShoulderHalfWidth, ShoulderHeight, -5) };
             return new HumanDefinition("human", Vector3.Zero, facingYaw, parts, "head", shoulders, idleLookYaws ?? new[] { 0f });

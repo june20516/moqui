@@ -20,7 +20,22 @@ namespace Moqui.Core.Simulation
             Head = new HeadSettings(tuning);
             Frenzy = new FrenzySettings(tuning);
             Attack = new AttackSettings(tuning);
+            Sites = new SiteSettings(tuning);
+            Reaction = new ReactionSettings(tuning);
+            HumanMotion = new HumanMotionSettings(tuning);
+            Attach = new AttachSettings(tuning);
+            BiteMark = new BiteMarkSettings(tuning);
         }
+
+        public SiteSettings Sites { get; }
+
+        public ReactionSettings Reaction { get; }
+
+        public HumanMotionSettings HumanMotion { get; }
+
+        public AttachSettings Attach { get; }
+
+        public BiteMarkSettings BiteMark { get; }
 
         public NoiseSettings Noise { get; }
 
