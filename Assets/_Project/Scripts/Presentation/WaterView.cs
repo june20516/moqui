@@ -8,7 +8,7 @@ namespace Moqui.Unity.Presentation
     /// <summary>낙하 중인 물방울을 그린다 (spec/05). Core 스냅샷의 물방울 위치를 따라 구를 놓기만 한다.</summary>
     public sealed class WaterView : MonoBehaviour
     {
-        private static readonly Color DropColor = new Color(0.55f, 0.75f, 0.95f);
+        private static readonly Color DropColor = new Color(0.55f, 0.75f, 0.95f, 0.6f);
 
         [SerializeField]
         private SimulationRunner _runner;
@@ -22,10 +22,8 @@ namespace Moqui.Unity.Presentation
         {
             while (_pool.Count < drops.Count)
             {
-                var drop = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-                drop.name = $"Drop{_pool.Count}";
-                drop.transform.SetParent(transform, false);
-                DestroyImmediate(drop.GetComponent<Collider>());
+                // 물방울: 툰 반투명 변형 (굴절 느낌은 림으로 대신, spec/10).
+                var drop = Art.Primitives.Create(PrimitiveType.Sphere, $"Drop{_pool.Count}", transform, Art.ToonMaterials.Transparent);
                 WorldView.Tint(drop.GetComponent<Renderer>(), DropColor);
                 _pool.Add(drop.transform);
             }

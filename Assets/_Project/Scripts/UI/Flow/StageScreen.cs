@@ -14,6 +14,9 @@ namespace Moqui.Unity.UI.Flow
     /// </summary>
     public sealed class StageScreen : ScreenBase
     {
+        /// <summary>스테이지 음악은 AudioDirector가 튼다.</summary>
+        protected override string MusicId => null;
+
         [SerializeField]
         private SimulationRunner _runner;
 

@@ -154,14 +154,10 @@ namespace Moqui.Unity.Presentation.Gimmicks
 
         private Renderer Create(PrimitiveType primitive, string name, Material material)
         {
-            GameObject go = GameObject.CreatePrimitive(primitive);
-            go.name = name;
-            go.transform.SetParent(transform, false);
-            DestroyImmediate(go.GetComponent<Collider>());
+            GameObject go = Art.Primitives.Create(primitive, name, transform, material);
             var renderer = go.GetComponent<Renderer>();
             if (material != null)
             {
-                renderer.sharedMaterial = material;
                 renderer.shadowCastingMode = ShadowCastingMode.Off;
             }
 

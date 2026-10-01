@@ -1,3 +1,4 @@
+using Moqui.Unity.Presentation.Audio;
 using UnityEngine;
 
 namespace Moqui.Unity.UI.Flow
@@ -10,6 +11,9 @@ namespace Moqui.Unity.UI.Flow
         public ScreenFlow Flow { get; private set; }
 
         public bool IsBuilt => Flow != null;
+
+        /// <summary>이 화면에서 틀 음악 (null이면 바꾸지 않는다). 메뉴 화면은 타이틀 음악을 이어서 튼다.</summary>
+        protected virtual string MusicId => AudioIds.BgmTitle;
 
         public void Initialize(ScreenFlow flow)
         {
@@ -26,6 +30,10 @@ namespace Moqui.Unity.UI.Flow
         protected virtual void Awake()
         {
             Initialize(new ScreenFlow(GameSession.Ensure(), new SceneNavigator()));
+            if (MusicId != null)
+            {
+                AudioOutput.Ensure()?.PlayMusic(MusicId);
+            }
         }
 
         protected abstract void Build();

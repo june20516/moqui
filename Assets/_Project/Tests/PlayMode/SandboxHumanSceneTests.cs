@@ -36,6 +36,10 @@ namespace Moqui.Unity.Tests
             Transform head = humanView.transform.Find(human.HeadShape.Id);
             Assert.That(head, Is.Not.Null, "head capsule drawn");
             Assert.That(Vector3.Distance(head.position, human.HeadCenter.ToUnity()), Is.LessThan(0.01f));
+
+            // 머리 회전 (spec/10): 얼굴 앞이 Core 머리 방향과 같다.
+            Assert.That(Vector3.Angle(humanView.Face.forward, human.HeadForward.ToUnity()), Is.LessThan(1f), "face follows head direction");
+            Assert.That(humanView.Face.Find("EyeL"), Is.Not.Null);
         }
     }
 }
