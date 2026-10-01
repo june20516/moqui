@@ -1,5 +1,6 @@
 using Moqui.Unity.Presentation;
 using Moqui.Unity.Presentation.Sandbox;
+using Moqui.Unity.Presentation.Stage;
 using Moqui.Unity.Simulation;
 using UnityEditor;
 using UnityEditor.SceneManagement;
@@ -17,13 +18,20 @@ namespace Moqui.Unity.Editor
         public const string FlightScenePath = "Assets/_Project/Scenes/Sandbox_Flight.unity";
         public const string HumanScenePath = "Assets/_Project/Scenes/Sandbox_Human.unity";
         public const string WaterScenePath = "Assets/_Project/Scenes/Sandbox_Water.unity";
+        public const string StageScenePath = "Assets/_Project/Scenes/Stage.unity";
         public const string ControlsPath = "Assets/_Project/Input/MoquiControls.inputactions";
         public const string PlayerMaterialPath = "Assets/_Project/Materials/Whitebox_Player.mat";
 
+        private const string ShadowCueMaterialPath = "Assets/_Project/Materials/Level_ShadowCue.mat";
+        private const string SteamMaterialPath = "Assets/_Project/Materials/Level_Steam.mat";
+        private const string GlassMaterialPath = "Assets/_Project/Materials/Level_Glass.mat";
         private const float PlayerVisualDiameter = 1f;
         private const string LitShaderName = "Universal Render Pipeline/Lit";
         private const string BaseColorProperty = "_BaseColor";
         private static readonly Color PlayerColor = new Color(0.2f, 0.85f, 0.9f);
+        private static readonly Color ShadowCueColor = new Color(0.05f, 0.05f, 0.12f, 0.35f);
+        private static readonly Color SteamColor = new Color(0.9f, 0.95f, 1f, 0.25f);
+        private static readonly Color GlassColor = new Color(0.75f, 0.9f, 0.95f, 0.3f);
 
         [MenuItem("Moqui/Rebuild All Sandboxes")]
         public static void BuildAll()
@@ -31,6 +39,41 @@ namespace Moqui.Unity.Editor
             BuildFlightSandbox();
             BuildHumanSandbox();
             BuildWaterSandbox();
+            BuildStage();
+        }
+
+        /// <summary>레벨 데이터를 바꿔 끼우는 단일 Stage 씬 (tech/architecture.md §6). 빌드 설정에 포함한다.</summary>
+        [MenuItem("Moqui/Rebuild Stage")]
+        public static void BuildStage()
+        {
+            Scene scene = CreateScaffold(out SimulationRunner runner);
+            SetReference(new GameObject("HumanView").AddComponent<HumanView>(), "_runner", runner);
+            SetReference(new GameObject("WaterView").AddComponent<WaterView>(), "_runner", runner);
+
+            var materials = new GameObject("LevelMaterials").AddComponent<LevelMaterials>();
+            SetReference(materials, "_shadowCue", LoadOrCreateTransparentMaterial(ShadowCueMaterialPath, ShadowCueColor));
+            SetReference(materials, "_steam", LoadOrCreateTransparentMaterial(SteamMaterialPath, SteamColor));
+            SetReference(materials, "_glass", LoadOrCreateTransparentMaterial(GlassMaterialPath, GlassColor));
+
+            var bootstrap = new GameObject("StageBootstrap").AddComponent<StageBootstrap>();
+            SetReference(bootstrap, "_runner", runner);
+            SetReference(bootstrap, "_materials", materials);
+            Save(scene, StageScenePath);
+            AddToBuildSettings(StageScenePath);
+        }
+
+        private static void AddToBuildSettings(string path)
+        {
+            var scenes = EditorBuildSettings.scenes;
+            if (System.Array.Exists(scenes, scene => scene.path == path))
+            {
+                return;
+            }
+
+            var updated = new EditorBuildSettingsScene[scenes.Length + 1];
+            scenes.CopyTo(updated, 0);
+            updated[scenes.Length] = new EditorBuildSettingsScene(path, true);
+            EditorBuildSettings.scenes = updated;
         }
 
         [MenuItem("Moqui/Rebuild Sandbox_Flight")]
@@ -122,6 +165,23 @@ namespace Moqui.Unity.Editor
             }
 
             material.SetColor(BaseColorProperty, color);
+            EditorUtility.SetDirty(material);
+            AssetDatabase.SaveAssets();
+            return material;
+        }
+
+        /// <summary>URP Lit 반투명(알파 블렌드) 머티리얼. 은신처 표시·증기·유리처럼 뒤가 비쳐야 하는 볼륨에 쓴다.</summary>
+        private static Material LoadOrCreateTransparentMaterial(string path, Color color)
+        {
+            Material material = LoadOrCreateLitMaterial(path, color);
+            material.SetFloat("_Surface", 1f);
+            material.SetFloat("_Blend", 0f);
+            material.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            material.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            material.SetFloat("_ZWrite", 0f);
+            material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            material.SetOverrideTag("RenderType", "Transparent");
+            material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
             EditorUtility.SetDirty(material);
             AssetDatabase.SaveAssets();
             return material;

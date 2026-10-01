@@ -4,7 +4,7 @@
 
 ## 현재
 - 마일스톤: **M7 거실 버티컬 슬라이스 (Stage 1·2)** (진행 중)
-- 다음 할 일: Unity — 레벨 기반 Stage 씬(화이트박스 1:1), 인간 뷰, HUD, 튜토리얼, 감각 표현
+- 다음 할 일: Unity — 감각 표현(흐림·CO₂·체온·은신처 강도), HUD, 튜토리얼, 최종 캡처
 - 브랜치: `milestone/m7-living-room`
 
 ## 현재 마일스톤 체크리스트 (M7)
@@ -15,7 +15,7 @@
 - [x] 레벨·방 데이터가 `data/schema`의 JSON Schema를 만족한다 (Core, tech/verification §1). — 증거: `LevelDataTests.DataFiles_MatchJsonSchemas`, `Schema_RejectsInvalidLevel`
 - [x] (M4 이월, D-034) 레벨 데이터의 모든 가구 형상에 obstacle 플래그가 있다 (Core: 레벨 데이터 검사). — 증거: `LevelDataTests.Level_AllFurnitureHasObstacleFlag`(stage01·02), `Validator_FurnitureWithoutObstacleFlag_Reported`
 - [ ] (M6 이월, D-036) 모든 레벨의 DripSource가 착지면 기준 150u 이상이다 (Core: 레벨 데이터 검사). (Stage 1·2는 발생원 없음, Stage 3~5는 M9에서 같은 검사) — 진행: `LevelDataTests.Level_DripSourcesAreHighEnough`(stage01·02) + `LevelValidator` 포함. Stage 3~5 데이터가 생기는 M9에서 같은 테스트로 체크
-- [ ] Unity 씬의 시각 오브젝트가 레벨 데이터의 모든 형상 ID와 1:1로 대응한다 (Unity).
+- [x] Unity 씬의 시각 오브젝트가 레벨 데이터의 모든 형상 ID와 1:1로 대응한다 (Unity). — 증거: EditMode `LevelViewTests.Build_Level_OneVisualPerShapeIdWithMatchingPose`(stage01·02), PlayMode `StageSceneTests.Stage_Play_BuildsRequestedLevel`(stage01·02)
 
 ### 인간 수정자 · 행동 (spec/06, spec/07)
 - [x] 졸기 중에는 Red Zone에 들어가도 시각 감지와 박수 공격이 없다 (Core). — 증거: `HumanModifierTests.Doze_SleepingInRedZone_NoVisionAndNoClap`
@@ -68,6 +68,7 @@
 (없음)
 
 ## 캡처 검토 기록
+- 2026-10-01 M7(중간) `Captures/2026-10-01_144646/` Stage_stage01·02: 전경(거실 가구·커튼·책장·화분·에어컨·소파 위 캡슐 인간), 시작 위치 3인칭·1인칭, 인간 근접(오른 전완), Shadow Zone 내부(테이블 아래). 은신처 볼륨은 반투명 어두운 표시, 마젠타 없음. 감각 표현 적용 전이라 최종 검토는 감각·HUD 뒤에 다시 찍는다
 - 2026-10-01 M6 `Captures/2026-10-01_141811/` Sandbox_Water: 물방울(지름 3u)이 플레이어 위에서 낙하, 갇힌 플레이어가 물방울과 함께 세면대로 낙하(남은 높이 36.4u). 마젠타 없음. 첫 캡처에서 갇히지 않은 것은 물방울이 틱당 7u를 떨어지며 플레이어를 건너뛴 결함 → 선분 거리 판정으로 수정, 높이별 회귀 테스트 추가
 - 2026-10-01 M2 `Captures/2026-10-01_133118/` Sandbox_Human: 평온(머리 초록, 시선 패턴 yaw 11°), 대시 소음 뒤 의심(머리 노랑, 소리 쪽 뒤-오른쪽으로 돌아 yawLimit 100°에서 멈춤), 광분 손바닥 예고(머리 빨강, 플레이어 위치에 주황 예고 표시 반경 12u). 마젠타 없음. 캡슐 인간 비율·소파 배치 정상. 첫 캡처에서 광분 장면 예고가 안 뜬 것은 머리가 뒤를 보고 있어 시야 밖이었기 때문(정상 동작) → 캡처 시나리오에서 머리를 정면으로 되돌림
 - 2026-10-01 M1 `Captures/2026-10-01_131326/`, `2026-10-01_131432/` Sandbox_Flight: 3인칭 개요(가구·벽·플레이어 구 정상), 1인칭 벽 접촉 정면·비스듬히(벽면과 방 안쪽만 보임, 벽 뒤 노출 없음), 3인칭 벽 접촉(카메라가 벽 안쪽 유지). 마젠타 없음. 첫 캡처에서 플레이어 색이 빠진 문제(MaterialPropertyBlock 미저장) → 머티리얼 에셋 `Whitebox_Player.mat`으로 수정 후 재확인
@@ -76,7 +77,8 @@
 ## 반복 로그
 | 일시 | 마일스톤 | 한 일 | 증거 | 커밋 |
 |---|---|---|---|---|
-| 2026-10-01 | M7 | 시나리오 포맷·ScenarioRunner·BotPilot, Stage 1·2 클리어/발각 시나리오, D-038. 봇 결함 수정(도착 판정, 이웃 부위 부착), 경로를 머리 뒤로 | Core 256/256 통과, Unity CS 이슈 0 | (이 커밋) |
+| 2026-10-01 | M7 | 단일 Stage 씬(StageBootstrap·LevelView·LevelMaterials), 반투명 레벨 머티리얼, 빌드 설정 등록, Stage 포즈 캡처 | Core 256 + EditMode 42 + PlayMode 6 통과, 캡처 검토 | (이 커밋) |
+| 2026-10-01 | M7 | 시나리오 포맷·ScenarioRunner·BotPilot, Stage 1·2 클리어/발각 시나리오, D-038. 봇 결함 수정(도착 판정, 이웃 부위 부착), 경로를 머리 뒤로 | Core 256/256 통과, Unity CS 이슈 0 | 78d7216 |
 | 2026-10-01 | M7 | 졸음 수정자(DozeSystem), Stage 2 둘러보기(IdleGlance), 호흡(BreathSystem), 감각 스냅샷(호흡·부위 위치·은신처·바람 영역), HumanTraits | Core 251/251 통과, Unity CS 이슈 0 | adc0b05 |
 | 2026-10-01 | M7 | 브랜치·체크리스트, 레벨 데이터 계층(JsonAccess, Shape·Room·Level 정의, HumanDataParser, LevelLoader, LevelValidator), 거실·stage01·stage02 데이터, JSON Schema, glass(ShapeFlags.Solid), D-037 | Core 243/243 통과, Unity CS 이슈 0 | c0bb672 |
 | 2026-10-01 | M6 | 브랜치·체크리스트, D-036, WaterSystem(발생·Trapped·탈출·WaterImpact), HumiditySystem(습기·증기·젖은 날개), 대시 비용·회복 배율, LevelChecks, 스냅샷 확장, WaterView·Sandbox_Water·캡처. **결함 수정**: 물방울 포획 터널링(선분 판정). M6 종료 | Core 220 + EditMode 40 + PlayMode 4 통과, 빌드 성공, 캡처 검토 | 2613c44 |

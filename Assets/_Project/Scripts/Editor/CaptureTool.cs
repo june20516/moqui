@@ -7,6 +7,9 @@ using Moqui.Core.Simulation;
 using Moqui.Unity.Data;
 using Moqui.Unity.Presentation;
 using Moqui.Unity.Presentation.Sandbox;
+using Moqui.Unity.Presentation.Stage;
+using Moqui.Core.Collision;
+using Moqui.Core.Data.Levels;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -24,6 +27,12 @@ namespace Moqui.Unity.Editor
         private const int DepthBits = 24;
         private const string CapturesFolder = "Captures";
         private const float WallApproachSeconds = 3f;
+        private const float HumanCloseupDistance = 25f;
+        private const float StageSettleSeconds = 1f;
+        private const float OverviewBackOff = 60f;
+        private const float OverviewRise = 80f;
+        private const float OverviewWallMargin = 20f;
+        private static readonly string[] StageLevelIds = { "stage01", "stage02" };
 
         [MenuItem("Moqui/Capture All")]
         public static void CaptureAll()
@@ -39,7 +48,8 @@ namespace Moqui.Unity.Editor
                 DateTime.Now.ToString("yyyy-MM-dd_HHmmss", CultureInfo.InvariantCulture));
             Directory.CreateDirectory(outputDirectory);
 
-            foreach (string scenePath in EditorBuildSettings.scenes.Where(scene => scene.enabled).Select(scene => scene.path))
+            // Stage 씬은 Awake에서 레벨을 만들므로 편집 모드 개요 캡처 대신 CaptureStage가 포즈별로 찍는다.
+            foreach (string scenePath in EditorBuildSettings.scenes.Where(scene => scene.enabled && scene.path != SandboxSceneBuilder.StageScenePath).Select(scene => scene.path))
             {
                 EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
                 string fileName = Path.GetFileNameWithoutExtension(scenePath) + ".png";
@@ -49,7 +59,74 @@ namespace Moqui.Unity.Editor
             CaptureSandboxFlight(outputDirectory);
             CaptureSandboxHuman(outputDirectory);
             CaptureSandboxWater(outputDirectory);
+            foreach (string levelId in StageLevelIds)
+            {
+                CaptureStage(levelId, outputDirectory);
+            }
+
             Debug.Log($"[CaptureTool] Captures written to {outputDirectory}");
+        }
+
+        /// <summary>
+        /// 스테이지 대표 캡처 (spec/07): 전경, 시작 위치, 인간 근접, Shadow Zone 내부(3인칭) + 시작 위치 1인칭.
+        /// </summary>
+        public static void CaptureStage(string levelId, string outputDirectory)
+        {
+            EditorSceneManager.OpenScene(SandboxSceneBuilder.StageScenePath, OpenSceneMode.Single);
+            Camera camera = MainCameraOrThrow(SandboxSceneBuilder.StageScenePath);
+            Tuning tuning = TuningLoader.Load(new UnityDataSource());
+            LevelDefinition level = new LevelLoader(new UnityDataSource()).Load(levelId);
+            var simulation = new GameSimulation(GameSettings.FromTuning(tuning), level.CreateSetup());
+            LevelView.Build(level, simulation.World, null, UnityEngine.Object.FindAnyObjectByType<LevelMaterials>());
+            var humanView = UnityEngine.Object.FindAnyObjectByType<HumanView>();
+            humanView.Build(simulation.Human);
+            Step(simulation, PlayerCommand.None, StageSettleSeconds);
+            humanView.Refresh();
+
+            var solver = new CameraPoseSolver(new CameraSettings(tuning), simulation.World);
+            var player = GameObject.Find("Player");
+            var visibility = player.GetComponent<PlayerViewVisibility>();
+            Vector3 spawn = simulation.Player.Position.ToUnity();
+            Vector3 head = simulation.Human.HeadCenter.ToUnity();
+            string prefix = $"Stage_{levelId}_";
+
+            Vector3 overviewPosition = OverviewPoint(simulation.World, spawn, head);
+            var overview = new CameraPose(overviewPosition, Quaternion.LookRotation(head - overviewPosition), camera.fieldOfView, camera.nearClipPlane);
+            Capture(camera, player, visibility, spawn, overview, false, outputDirectory, prefix + "overview");
+
+            float yawToHead = YawTowards(spawn, head);
+            Capture(camera, player, visibility, spawn, solver.ThirdPerson(spawn, yawToHead, -10f), false, outputDirectory, prefix + "start");
+            Capture(camera, player, visibility, spawn, solver.FirstPerson(spawn, yawToHead, -5f), true, outputDirectory, prefix + "start_fp");
+
+            var site = simulation.Human.Shapes["forearmR"];
+            Vector3 siteCenter = site.Center.ToUnity();
+            Vector3 near = siteCenter + ((spawn - siteCenter).normalized * HumanCloseupDistance);
+            Capture(camera, player, visibility, near, solver.ThirdPerson(near, YawTowards(near, siteCenter), -15f), false, outputDirectory, prefix + "human_close");
+
+            var shadow = simulation.World.Shapes.First(shape => shape.Matches(ShapeFlags.ShadowZone));
+            Vector3 hidden = shadow.Center.ToUnity();
+            Capture(camera, player, visibility, hidden, solver.ThirdPerson(hidden, YawTowards(hidden, head), -5f), false, outputDirectory, prefix + "shadow_zone");
+            Debug.Log($"[CaptureTool] {prefix}: shapes={level.AllShapes().Count()}, shadow={shadow.Id}, human={simulation.Human.State}");
+        }
+
+        /// <summary>시작 위치와 인간 머리의 중간 위쪽에서, 벽·천장 안쪽으로 물러난 점.</summary>
+        private static Vector3 OverviewPoint(CollisionWorld world, Vector3 spawn, Vector3 head)
+        {
+            Vector3 middle = (spawn + head) * 0.5f;
+            Vector3 desired = spawn + ((spawn - head).normalized * OverviewBackOff) + (Vector3.up * OverviewRise);
+            Vector3 direction = desired - middle;
+            if (world.Raycast(middle.ToCore(), System.Numerics.Vector3.Normalize(direction.ToCore()), direction.magnitude, ShapeFlags.Solid, out var hit))
+            {
+                return middle + (direction.normalized * Mathf.Max(0f, hit.Distance - OverviewWallMargin));
+            }
+
+            return desired;
+        }
+
+        private static float YawTowards(Vector3 from, Vector3 to)
+        {
+            Vector3 flat = to - from;
+            return Mathf.Atan2(flat.x, flat.z) * Mathf.Rad2Deg;
         }
 
         /// <summary>물방울이 떨어지는 모습과, 물방울에 갇혀 함께 떨어지는 플레이어.</summary>
