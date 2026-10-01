@@ -59,6 +59,7 @@ namespace Moqui.Core.Bots
     {
         private const float CalmMargin = 1f;
         private const float ApproachGap = 1f;
+        private const float FleeMargin = 25f;
 
         private readonly Data.Tuning _tuning;
         private GameSettings _settings;
@@ -111,9 +112,15 @@ namespace Moqui.Core.Bots
             return command;
         }
 
+        /// <summary>
+        /// 자기 근처를 노리는 공격 예고이거나 보였으면 도망친다. 취한 인간의 무작위 휘두르기처럼 먼 곳을 노리는 예고는 무시한다.
+        /// </summary>
         private static bool ShouldFlee(GameSimulation simulation)
         {
-            return simulation.Events.OfType<AttackTelegraphStarted>().Any() || (simulation.Human != null && simulation.Human.PlayerVisible);
+            var player = simulation.Player.Position;
+            bool threatened = simulation.Events.OfType<AttackTelegraphStarted>()
+                .Any(telegraph => Vector3.Distance(telegraph.Target, player) <= telegraph.Radius + FleeMargin);
+            return threatened || (simulation.Human != null && simulation.Human.PlayerVisible);
         }
 
         private PlayerCommand NextCommand(GameSimulation simulation, ScenarioDefinition scenario, RunState state)

@@ -4,7 +4,7 @@
 
 ## 현재
 - 마일스톤: **M9 Stage 3 · 4 · 5와 기믹** (진행 중)
-- 다음 할 일: Stage 5(베란다) 데이터·검사·봇, 그다음 Unity 기믹 표현
+- 다음 할 일: Unity — Stage 3~5 씬 1:1 검사, 기믹 표현(선풍기·거미줄·연무·모기향 연기·분사기), 중독 게이지 HUD, CO₂ 바람 흩어짐, 대표 캡처
 - 브랜치: `milestone/m9-gimmicks`
 
 ## 현재 마일스톤 체크리스트 (M9)
@@ -34,10 +34,10 @@
 - [x] 무작위 휘두르기가 4~7초 간격으로, 같은 시드에서 같은 위치로 발생한다 (Core). — 증거: `GimmickTests.Drunk_RandomSwatsEvery4To7Seconds_ReproducibleWithSeed` (D-046)
 
 ### 레벨 (spec/07 Stage 3~5, spec/05 적용)
-- [ ] 다섯 스테이지 모두 공통 규칙의 레벨 데이터 검사를 통과한다 (Core).
-- [ ] (M6 이월) 모든 레벨의 DripSource가 착지면 기준 150u 이상이다 (Core).
+- [x] 다섯 스테이지 모두 공통 규칙의 레벨 데이터 검사를 통과한다 (Core). — 증거: `LevelDataTests.Level_PassesCommonLevelChecks`(stage01~05), `Level_AllFurnitureHasObstacleFlag`, `DataFiles_MatchJsonSchemas`
+- [x] (M6 이월) 모든 레벨의 DripSource가 착지면 기준 150u 이상이다 (Core). — 증거: `LevelDataTests.Level_DripSourcesAreHighEnough`(stage01~05, Stage 4의 샤워기·결로 4개)
 - [ ] Unity 씬의 시각 오브젝트가 레벨 데이터의 모든 형상 ID와 1:1로 대응한다 (Unity, Stage 3~5).
-- [ ] 각 스테이지의 클리어 봇이 성공한다 (Core 헤드리스 봇, 고정 시드 5개 중 4개 이상).
+- [x] 각 스테이지의 클리어 봇이 성공한다 (Core 헤드리스 봇, 고정 시드 5개 중 4개 이상). — 증거: `ScenarioTests` stage01 5/5, stage02 4/5, stage03 4/5, stage04 4/5(스킬 구성, D-048), stage05 5/5. 발각 봇 stage01~05 5/5
 - [ ] 각 스테이지의 대표 캡처 4장(전경, 시작 위치, 인간 근접, Shadow Zone 내부)이 생성된다.
 
 ### 표현 (spec/06, spec/08, spec/11)
@@ -74,7 +74,8 @@
 ## 사람 요청
 | ID | 요청 | 필요 사양 | 대체물 적용 여부 | 상태 |
 |---|---|---|---|---|
-| 2026-10-01 | M9 | 화장실 방·Stage 4(고개 숙인 인간, 샤워 부스 유리·물방울 4·습기 강/약), stage04_clear 4/5(스킬 구성)·stage04_detect 5/5, 시나리오 skills·precise, 봇 중독 반전 보정, D-048. **결함 수정**: 봇 러너가 레벨 기믹을 빠뜨림, Stage 4 몸통이 목을 덮음 | Core 시나리오 통과(stage03 4/5, stage04 4/5) | (이 커밋) |
+| 2026-10-01 | M9 | 베란다 방·Stage 5(취한 인간, canSpray, 선풍기, 거미줄 3, 모기향, 자동 분사기, 방충망 유리, 아이스박스 은신처), stage05_clear 5/5·stage05_detect 5/5, 봇은 자기 근처를 노린 예고에만 도망 | Core 336/336 통과(시나리오 10종) | (이 커밋) |
+| 2026-10-01 | M9 | 화장실 방·Stage 4(고개 숙인 인간, 샤워 부스 유리·물방울 4·습기 강/약), stage04_clear 4/5(스킬 구성)·stage04_detect 5/5, 시나리오 skills·precise, 봇 중독 반전 보정, D-048. **결함 수정**: 봇 러너가 레벨 기믹을 빠뜨림, Stage 4 몸통이 목을 덮음 | Core 시나리오 통과(stage03 4/5, stage04 4/5) | e5901b7 |
 | 2026-10-01 | M9 | 인간 자세(facingPitch·restPitch), 레벨 기믹 배열 파서·스키마, 침실 방·Stage 3(누운 인간, 선풍기, canSpray), stage03_clear 5/5·stage03_detect 5/5, 시나리오 hideRoutes, ScenarioDiagnostics, D-047 | Core 통과(시나리오 포함) | fd7f126 |
 | 2026-10-01 | M9 | 기믹 Core: FanSystem(바람·회전·소음 마스킹), 거미줄(Webbed→Web 사망), ToxinSystem(연무·자동 분사기·모기향 하한·디버프·Spray 사망), 인간 분사, 취한 타겟(흡혈·가려움·시각 배율, 무작위 휘두르기), 해독 체질 적용, 스냅샷 기믹 상태, D-046 | Core 319/319 통과 | f238329 |
 | 2026-10-01 | M8 | (사람 요청) CO₂·증기 기체형: SoftGas·VolumeFog 셰이더, GasNoise, 쿼드 빌보드 CO₂, 기체 캡처, D-045. M8 종료 | Core 300 + EditMode 82 + PlayMode 9 통과, 빌드 경고 0, 캡처 검토 | 3a66aef |

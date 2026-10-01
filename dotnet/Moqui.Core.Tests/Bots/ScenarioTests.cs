@@ -10,7 +10,7 @@ namespace Moqui.Core.Tests.Bots
     /// <summary>시나리오 봇 (tech/verification.md §3): data/scenarios/*.json을 재생하고 expect와 비교한다.</summary>
     public class ScenarioTests
     {
-        private static readonly string[] Scenarios = { "stage01_clear", "stage01_detect", "stage02_clear", "stage02_detect", "stage03_clear", "stage03_detect", "stage04_clear", "stage04_detect" };
+        private static readonly string[] Scenarios = { "stage01_clear", "stage01_detect", "stage02_clear", "stage02_detect", "stage03_clear", "stage03_detect", "stage04_clear", "stage04_detect", "stage05_clear", "stage05_detect" };
 
         [TestCaseSource(nameof(Scenarios))]
         public void Scenario_MeetsExpectationOnEnoughSeeds(string scenarioId)
