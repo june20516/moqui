@@ -13,6 +13,7 @@ namespace Moqui.Core.Simulation
         public const float DeltaTime = 1f / TickRate;
 
         private readonly FlightSystem _flight;
+        private readonly SphereMover _mover;
 
         public GameSimulation(GameSettings settings, CollisionWorld world, Vector3 playerSpawn)
         {
@@ -20,6 +21,7 @@ namespace Moqui.Core.Simulation
             World = world;
             Player = new Player(playerSpawn, settings.Player.CollisionRadius);
             _flight = new FlightSystem(settings.Flight);
+            _mover = new SphereMover(world);
         }
 
         public GameSettings Settings { get; }
@@ -41,7 +43,9 @@ namespace Moqui.Core.Simulation
 
             // 틱 안에서 속도가 선형으로 변한다고 보고 평균 속도로 적분한다 (가감속 구간의 거리 오차를 줄인다).
             Vector3 averageVelocity = (previousVelocity + Player.Velocity) * 0.5f;
-            Player.Position += averageVelocity * DeltaTime;
+            var move = _mover.Move(Player.Position, Player.CollisionRadius, averageVelocity * DeltaTime, Player.Velocity, ShapeFlags.Obstacle);
+            Player.Position = move.Position;
+            Player.Velocity = move.Velocity;
 
             Tick++;
         }
