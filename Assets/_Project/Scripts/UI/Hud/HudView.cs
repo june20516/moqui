@@ -31,10 +31,15 @@ namespace Moqui.Unity.UI.Hud
         private static readonly Color ActiveReadyColor = new Color(0.75f, 0.55f, 1f, 0.9f);
         private static readonly Color ActiveCoolingColor = new Color(0.35f, 0.32f, 0.4f, 0.8f);
         private static readonly Color ActiveInUseColor = new Color(1f, 0.85f, 0.4f, 0.95f);
+        private static readonly Color ToxinColor = new Color(0.45f, 0.85f, 0.35f);
+        private static readonly Color CoilFloorColor = new Color(0.85f, 0.85f, 0.75f);
+        private const float ToxinVignetteStep = 0.12f;
         private const float PulseSpeed = 6f;
         private const float PulseDepth = 0.35f;
 
         private readonly List<Image> _biteDots = new List<Image>();
+        private readonly List<RectTransform> _toxinTicks = new List<RectTransform>();
+        private readonly float[] _toxinTickFractions = new float[3];
         private bool _built;
 
         public Image BloodFill { get; private set; }
@@ -60,6 +65,19 @@ namespace Moqui.Unity.UI.Hud
         public RectTransform DashTick { get; private set; }
 
         public Text WetText { get; private set; }
+
+        public GameObject ToxinRoot { get; private set; }
+
+        public Image ToxinFill { get; private set; }
+
+        public RectTransform ToxinFloorMarker { get; private set; }
+
+        public Text ToxinTierText { get; private set; }
+
+        public Image ToxinVignette { get; private set; }
+
+        /// <summary>중독 게이지 눈금 (tier1·tier2·tier3).</summary>
+        public System.Collections.Generic.IReadOnlyList<RectTransform> ToxinTicks => _toxinTicks;
 
         public GameObject HumidityRoot { get; private set; }
 
@@ -123,6 +141,8 @@ namespace Moqui.Unity.UI.Hud
 
             Vignette = CreateImage("AwarenessVignette", Root, HudSprites.Vignette, Color.clear);
             Stretch(Vignette.rectTransform);
+            ToxinVignette = CreateImage("ToxinVignette", Root, HudSprites.Vignette, Color.clear);
+            Stretch(ToxinVignette.rectTransform);
 
             BuildTop();
             BuildEdges();
@@ -135,7 +155,7 @@ namespace Moqui.Unity.UI.Hud
             Build();
             ApplyTop(state, time);
             ApplyEdges(state, time);
-            ApplyBottom(state);
+            ApplyBottom(state, time);
             ApplyCenter(state);
         }
 
@@ -234,7 +254,31 @@ namespace Moqui.Unity.UI.Hud
             WetText = CreateText("WetText", stamina, 20, TextAnchor.MiddleLeft);
             Place(WetText.rectTransform, new Vector2(1f, 0.5f), new Vector2(100f, 0f), new Vector2(180f, 28f));
 
-            var humidity = CreateRect("Humidity", Root, new Vector2(0f, 0f), new Vector2(115f, 72f), new Vector2(150f, 12f));
+            var toxin = CreateRect("Toxin", Root, new Vector2(0f, 0f), new Vector2(200f, 74f), new Vector2(320f, 12f));
+            ToxinRoot = toxin.gameObject;
+            var toxinBack = CreateImage("ToxinBack", toxin, HudSprites.Square, BarBackColor);
+            Stretch(toxinBack.rectTransform);
+            ToxinFill = CreateImage("ToxinFill", toxin, HudSprites.Square, ToxinColor);
+            Stretch(ToxinFill.rectTransform);
+            ToxinFill.type = Image.Type.Filled;
+            ToxinFill.fillMethod = Image.FillMethod.Horizontal;
+            for (int i = 0; i < _toxinTickFractions.Length; i++)
+            {
+                var tick = CreateImage($"ToxinTick{i}", toxin, HudSprites.Square, new Color(1f, 1f, 1f, 0.7f)).rectTransform;
+                tick.anchorMin = new Vector2(0f, 0f);
+                tick.anchorMax = new Vector2(0f, 1f);
+                tick.sizeDelta = new Vector2(2f, 4f);
+                _toxinTicks.Add(tick);
+            }
+
+            ToxinFloorMarker = CreateImage("ToxinFloor", toxin, HudSprites.Square, CoilFloorColor).rectTransform;
+            ToxinFloorMarker.anchorMin = new Vector2(0f, 0f);
+            ToxinFloorMarker.anchorMax = new Vector2(0f, 1f);
+            ToxinFloorMarker.sizeDelta = new Vector2(4f, 10f);
+            ToxinTierText = CreateText("ToxinTier", toxin, 18, TextAnchor.MiddleLeft);
+            Place(ToxinTierText.rectTransform, new Vector2(0f, 1f), new Vector2(80f, 16f), new Vector2(160f, 24f));
+
+            var humidity = CreateRect("Humidity", Root, new Vector2(0f, 0f), new Vector2(470f, 74f), new Vector2(150f, 12f));
             HumidityRoot = humidity.gameObject;
             var humidityBack = CreateImage("HumidityBack", humidity, HudSprites.Square, BarBackColor);
             Stretch(humidityBack.rectTransform);
@@ -316,13 +360,14 @@ namespace Moqui.Unity.UI.Hud
             AttackWarning.GetComponent<Image>().color = Pulse(new Color(FrenzyColor.r, FrenzyColor.g, FrenzyColor.b, 0.6f), time);
         }
 
-        private void ApplyBottom(HudState state)
+        private void ApplyBottom(HudState state, float time)
         {
             StaminaFill.fillAmount = state.StaminaFraction;
             StaminaFill.color = state.Exhausted ? ExhaustedColor : StaminaColor;
             var tickParent = (RectTransform)DashTick.parent;
             DashTick.anchoredPosition = new Vector2(state.DashCostFraction * tickParent.rect.width, 0f);
             WetText.text = state.Wet ? $"젖은 날개 {state.WetRemaining:F1}s" : string.Empty;
+            ApplyToxin(state, time);
             HumidityRoot.SetActive(state.HumidityVisible);
             HumidityFill.fillAmount = state.HumidityFraction;
             PromptText.text = PromptLabel(state.Prompt, state.EscapePressesRemaining);
@@ -330,6 +375,51 @@ namespace Moqui.Unity.UI.Hud
             bool ready = state.ActiveSkillCooldown <= 0f;
             ActiveSkillIcon.color = state.ActiveSkillInUse ? ActiveInUseColor : ready ? ActiveReadyColor : ActiveCoolingColor;
             ActiveSkillText.text = ready ? (UseGamepadLabels ? "Y" : "Q") : $"{state.ActiveSkillCooldown:0.0}s";
+        }
+
+        /// <summary>중독 단계 눈금 위치를 정한다 (tier1·tier2·tier3, 게이지 최대 대비).</summary>
+        public void SetToxinTiers(float tier1, float tier2, float tier3)
+        {
+            Build();
+            _toxinTickFractions[0] = tier1;
+            _toxinTickFractions[1] = tier2;
+            _toxinTickFractions[2] = tier3;
+        }
+
+        public static string ToxinTierLabel(int tier)
+        {
+            switch (tier)
+            {
+                case 3:
+                    return "중독 · 랜덤";
+                case 2:
+                    return "중독 · 반전";
+                case 1:
+                    return "중독 · 끊김";
+                default:
+                    return "중독";
+            }
+        }
+
+        private void ApplyToxin(HudState state, float time)
+        {
+            ToxinRoot.SetActive(state.ToxinVisible);
+            var bar = (RectTransform)ToxinFill.transform.parent;
+            float width = bar.rect.width;
+            for (int i = 0; i < _toxinTicks.Count; i++)
+            {
+                _toxinTicks[i].anchoredPosition = new Vector2(_toxinTickFractions[i] * width, 0f);
+            }
+
+            ToxinFill.fillAmount = state.ToxinFraction;
+            ToxinFloorMarker.gameObject.SetActive(state.ToxinFloorFraction > 0f);
+            ToxinFloorMarker.anchoredPosition = new Vector2(state.ToxinFloorFraction * width, 0f);
+            ToxinTierText.text = ToxinTierLabel(state.ToxinTier);
+            ToxinTierText.color = state.StutterActive || state.RandomActive ? SatietyHighlightColor : Color.white;
+
+            // 단계별 화면 가장자리 녹색 일렁임 (spec/06). 반전·랜덤도 화면을 뒤집지 않고 아이콘·가장자리로만 알린다.
+            float strength = state.ToxinTier * ToxinVignetteStep;
+            ToxinVignette.color = state.ToxinTier > 0 ? Pulse(new Color(ToxinColor.r, ToxinColor.g, ToxinColor.b, strength), time) : Color.clear;
         }
 
         private void ApplyCenter(HudState state)

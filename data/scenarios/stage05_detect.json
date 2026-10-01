@@ -1,0 +1,11 @@
+{
+  "formatVersion": 1,
+  "id": "stage05_detect",
+  "level": "stage05",
+  "seeds": [1, 2, 3, 4, 5],
+  "minSuccesses": 5,
+  "steps": [
+    { "do": "hover", "point": [0, 70, -20], "seconds": 60 }
+  ],
+  "expect": { "outcome": "Died", "maxTicks": 3600 }
+}

@@ -8,6 +8,12 @@ namespace Moqui.Core.Simulation
         Slap,
         BlindSwat,
         ReactSlap,
+
+        /// <summary>모기약 분사 (spec/06). 판정 대신 연무를 만든다.</summary>
+        Spray,
+
+        /// <summary>취한 타겟의 무작위 휘두르기 (spec/06).</summary>
+        DrunkSwat,
     }
 
     public enum AttackPhase

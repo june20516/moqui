@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using Moqui.Core.Collision;
 using Moqui.Core.Meta;
+using Moqui.Core.Random;
 
 namespace Moqui.Core.Simulation
 {
@@ -50,6 +52,8 @@ namespace Moqui.Core.Simulation
             DiagonalDashUnlocked = SkillEffects.DiagonalDash(setup.Skills);
             _dash.ChainLevel = setup.Skills.Level(SkillCatalog.ChainVortex);
             Decoy = new DecoySystem(settings.Decoy, World, setup.Skills.ActiveLevel(SkillCatalog.DecoyCharm));
+            Fans = new FanSystem(settings.Fan, setup.Gimmicks.Fans);
+            Toxin = new ToxinSystem(settings.Toxin, Fans, setup.Gimmicks.Coils, setup.Gimmicks.SprayDispensers, SeedStreams.Create(setup.Seed, SeedStreams.Debuff));
             foreach (var shape in World.Shapes)
             {
                 if (shape.Matches(ShapeFlags.ShadowZone))
@@ -62,6 +66,12 @@ namespace Moqui.Core.Simulation
                 Human = new Human(setup.Human, World);
                 _humanSystem = new HumanSystem(settings, World, setup.Seed);
                 _humanSystem.Initialize(Human, 0);
+                if (Human.IsDrunk)
+                {
+                    // 취한 타겟 (spec/06): 흡혈 속도·가려움 배율.
+                    Suck.RateMultiplier *= settings.Drunk.SuckRateMul;
+                    Suck.ItchMultiplier *= settings.Drunk.ItchRateMul;
+                }
             }
         }
 
@@ -81,6 +91,12 @@ namespace Moqui.Core.Simulation
         public HumanSystem HumanSystem => _humanSystem;
 
         public SuckSystem Suck { get; }
+
+        /// <summary>선풍기 (spec/06).</summary>
+        public FanSystem Fans { get; }
+
+        /// <summary>모기약 연무·모기향·중독 (spec/06).</summary>
+        public ToxinSystem Toxin { get; }
 
         /// <summary>액티브 스킬 미끼 마법. 장착하지 않았으면 IsAvailable = false.</summary>
         public DecoySystem Decoy { get; }
@@ -137,9 +153,11 @@ namespace Moqui.Core.Simulation
 
             if (Player.State != PlayerState.Dead)
             {
-                StepPlayer(command);
+                // 중독 디버프는 입력 단계에서 건다 (spec/06, spec/01 입력 필터).
+                StepPlayer(Toxin.Filter(command, Player, Tick));
             }
 
+            UpdateWeb();
             Decoy.Step(Player, command, Tick, _events);
             UpdateHidden();
             Water.Step(Player, Tick, DeltaTime, _events);
@@ -156,6 +174,13 @@ namespace Moqui.Core.Simulation
                 _humanSystem.Step(Human, Player, Tick, DeltaTime, _events);
             }
 
+            foreach (var released in _events.OfType<SprayReleased>().ToList())
+            {
+                Toxin.Spawn(released.Position, Tick);
+            }
+
+            Toxin.StepClouds(Tick, DeltaTime);
+            Toxin.UpdateGauge(Player, Tick, DeltaTime, _events);
             Suck.Step(Player, Human, command, Tick, DeltaTime, _events);
             UpdateOutcome();
             Tick++;
@@ -177,7 +202,8 @@ namespace Moqui.Core.Simulation
 
             var human = Human != null ? new HumanSnapshot(Human) : null;
             var decoy = Decoy.IsAvailable ? new DecoySnapshot(Decoy.IsActive(Tick), Decoy.Position, Decoy.CooldownRemaining(Tick)) : null;
-            return new SimulationSnapshot(Tick, Outcome, new PlayerSnapshot(Player), human, drops, Water.TrappedHeightRemaining(Player), _shadowZones, Array.Empty<ZoneSnapshot>(), decoy);
+            var gimmicks = new GimmickSnapshot(Fans.Snapshot(Tick), Toxin.Snapshot(Tick), Toxin.Coils, Toxin.StutterActive(Tick), Toxin.RandomActive(Tick));
+            return new SimulationSnapshot(Tick, Outcome, new PlayerSnapshot(Player), human, drops, Water.TrappedHeightRemaining(Player), _shadowZones, Array.Empty<ZoneSnapshot>(), decoy, gimmicks);
         }
 
         private void StepPlayer(in PlayerCommand command)
@@ -188,6 +214,10 @@ namespace Moqui.Core.Simulation
             Player.DashDistanceMultiplier = Suck.DashMultiplier(Player.BloodGauge);
             Player.StaminaRegenMultiplier = 1f;
             Player.DashCostAdd = 0f;
+            Player.NoiseRadiusMultiplier = Fans.NoiseMultiplier(Player.Position);
+
+            // 바람은 입력과 별개의 외력이다 (관성 규칙 미적용, spec/06). 부착 중에는 받지 않는다.
+            Player.ExternalVelocity = Player.State == PlayerState.Attached ? Vector3.Zero : Fans.WindAt(Player.Position, Tick);
             Humidity.ApplyWetEffects(Player);
 
             switch (Player.State)
@@ -210,6 +240,8 @@ namespace Moqui.Core.Simulation
 
                     Player.State = PlayerState.Flying;
                     break;
+                case PlayerState.Webbed:
+                    return;
                 case PlayerState.Trapped:
                     // 이동 입력은 무시하고 탈출(Dash) 입력만 센다 (spec/05). 탈출하면 같은 틱에 위로 대시를 시작한다.
                     Water.StepTrapped(Player, command, Tick, _events);
@@ -255,6 +287,35 @@ namespace Moqui.Core.Simulation
                 int frenzyCount = Human?.FrenzyCount ?? 0;
                 int biteMarks = Human?.BiteMarkCount ?? 0;
                 _events.Add(new StageCleared(Tick, new StageResult(Tick + 1, frenzyCount, biteMarks)));
+            }
+        }
+
+        /// <summary>거미줄 (spec/06): 닿으면 움직이지 못하고 web.struggleTime 뒤 Web 원인으로 사망한다. 탈출할 수 없다.</summary>
+        private void UpdateWeb()
+        {
+            if (Player.State == PlayerState.Dead)
+            {
+                return;
+            }
+
+            if (Player.State == PlayerState.Webbed)
+            {
+                if (Tick - Player.WebbedTick >= SimulationTime.ToTicks(Settings.WebStruggleTime))
+                {
+                    Player.State = PlayerState.Dead;
+                    _events.Add(new PlayerDied(Tick, DeathCause.Web, Player.Position));
+                }
+
+                return;
+            }
+
+            if (Player.State != PlayerState.Attached && World.AnyOverlap(Player.Position, Player.CollisionRadius, ShapeFlags.Hazard))
+            {
+                Player.State = PlayerState.Webbed;
+                Player.WebbedTick = Tick;
+                Player.Velocity = Vector3.Zero;
+                Player.ExternalVelocity = Vector3.Zero;
+                _events.Add(new PlayerWebbed(Tick, Player.Position));
             }
         }
 

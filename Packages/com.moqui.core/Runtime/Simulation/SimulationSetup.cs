@@ -15,9 +15,10 @@ namespace Moqui.Core.Simulation
     {
         private readonly Func<CollisionWorld> _worldFactory;
 
-        public SimulationSetup(Func<CollisionWorld> worldFactory, Vector3 playerSpawn, HumanDefinition human = null, ulong seed = 0, IReadOnlyList<Vector3> dripSources = null, SkillLoadout skills = null)
+        public SimulationSetup(Func<CollisionWorld> worldFactory, Vector3 playerSpawn, HumanDefinition human = null, ulong seed = 0, IReadOnlyList<Vector3> dripSources = null, SkillLoadout skills = null, GimmickSetup gimmicks = null)
         {
             Skills = skills ?? SkillLoadout.None;
+            Gimmicks = gimmicks ?? GimmickSetup.None;
             _worldFactory = worldFactory ?? throw new ArgumentNullException(nameof(worldFactory));
             PlayerSpawn = playerSpawn;
             Human = human;
@@ -26,8 +27,8 @@ namespace Moqui.Core.Simulation
         }
 
         /// <summary>이미 만든 월드로 구성한다. 인간 캡슐이 월드에 등록되므로 이 구성은 한 번만 쓸 수 있다 (재시도 불가).</summary>
-        public SimulationSetup(CollisionWorld world, Vector3 playerSpawn, HumanDefinition human = null, ulong seed = 0, IReadOnlyList<Vector3> dripSources = null, SkillLoadout skills = null)
-            : this(SingleUse(world), playerSpawn, human, seed, dripSources, skills)
+        public SimulationSetup(CollisionWorld world, Vector3 playerSpawn, HumanDefinition human = null, ulong seed = 0, IReadOnlyList<Vector3> dripSources = null, SkillLoadout skills = null, GimmickSetup gimmicks = null)
+            : this(SingleUse(world), playerSpawn, human, seed, dripSources, skills, gimmicks)
         {
         }
 
@@ -38,6 +39,9 @@ namespace Moqui.Core.Simulation
         /// 시뮬레이션은 수치가 아닌 효과(대각선 대시, 연속 와류, 미끼)만 여기서 읽는다.
         /// </summary>
         public SkillLoadout Skills { get; }
+
+        /// <summary>선풍기·모기향·자동 분사기 (spec/06). 거미줄은 월드의 Hazard 형상.</summary>
+        public GimmickSetup Gimmicks { get; }
 
         public HumanDefinition Human { get; }
 

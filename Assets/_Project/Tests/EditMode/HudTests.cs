@@ -294,5 +294,32 @@ namespace Moqui.Unity.Tests
             Assert.That(state.ActiveSkillCooldown, Is.GreaterThan(0f));
             Assert.That(_view.ActiveSkillText.text, Does.EndWith("s"), "cooldown seconds");
         }
+    
+
+        [Test]
+        public void ToxinGauge_OnlyWhenPoisoned_TierIconMatches()
+        {
+            var toxin = _simulation.Settings.Toxin;
+            _view.SetToxinTiers(toxin.Tier1 / 100f, toxin.Tier2 / 100f, toxin.Tier3 / 100f);
+            Present();
+            Assert.That(_view.ToxinRoot.activeSelf, Is.False, "hidden at 0");
+
+            var cases = new[] { (toxin.Tier1 - 1f, "중독"), (toxin.Tier1, "중독 · 끊김"), (toxin.Tier2, "중독 · 반전"), (toxin.Tier3, "중독 · 랜덤") };
+            foreach (var (value, label) in cases)
+            {
+                _simulation.Player.Toxin = value;
+                var state = Present();
+                Assert.That(_view.ToxinRoot.activeSelf, Is.True, $"{value}");
+                Assert.That(_view.ToxinFill.fillAmount, Is.EqualTo(value / 100f).Within(1e-4f));
+                Assert.That(_view.ToxinTierText.text, Is.EqualTo(label), $"{value}");
+                Assert.That(_view.ToxinVignette.color.a > 0f, Is.EqualTo(state.ToxinTier > 0), "green edge only with a debuff");
+            }
+
+            Assert.That(_view.ToxinTicks, Has.Count.EqualTo(3));
+            Assert.That(_view.ToxinTicks[1].anchoredPosition.x, Is.GreaterThan(_view.ToxinTicks[0].anchoredPosition.x));
+            _simulation.Player.ToxinFloor = 40f;
+            Present();
+            Assert.That(_view.ToxinFloorMarker.gameObject.activeSelf, Is.True, "coil floor marker");
+        }
     }
 }

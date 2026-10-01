@@ -50,4 +50,30 @@ namespace Moqui.Core.Simulation
 
         public float DrunkCo2Mul { get; }
     }
+
+    /// <summary>취한 타겟 수정자 수치 (spec/tuning.md drunk, spec/06).</summary>
+    public sealed class DrunkSettings
+    {
+        public DrunkSettings(Tuning tuning)
+        {
+            SuckRateMul = tuning.GetFloat("drunk.suckRateMul");
+            ItchRateMul = tuning.GetFloat("drunk.itchRateMul");
+            VisionRateMul = tuning.GetFloat("drunk.visionRateMul");
+            RandomSwatInterval = tuning.GetRange("drunk.randomSwatInterval");
+            RandomSwatRadius = tuning.GetFloat("drunk.randomSwatRadius");
+            SlapTelegraph = tuning.GetFloat("drunk.slapTelegraph");
+        }
+
+        public float SuckRateMul { get; }
+
+        public float ItchRateMul { get; }
+
+        public float VisionRateMul { get; }
+
+        public FloatRange RandomSwatInterval { get; }
+
+        public float RandomSwatRadius { get; }
+
+        public float SlapTelegraph { get; }
+    }
 }

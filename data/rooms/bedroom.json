@@ -1,0 +1,30 @@
+{
+  "formatVersion": 1,
+  "id": "bedroom",
+  "size": [400, 250, 400],
+  "shapes": [
+    { "id": "floor", "type": "box", "center": [0, -5, 0], "size": [420, 10, 420], "flags": ["obstacle", "attachable"] },
+    { "id": "ceiling", "type": "box", "center": [0, 255, 0], "size": [420, 10, 420], "flags": ["obstacle", "attachable"] },
+    { "id": "wall_north", "type": "box", "center": [0, 125, 205], "size": [420, 250, 10], "flags": ["obstacle", "attachable"] },
+    { "id": "wall_south", "type": "box", "center": [0, 125, -205], "size": [420, 250, 10], "flags": ["obstacle", "attachable"] },
+    { "id": "wall_east", "type": "box", "center": [205, 125, 0], "size": [10, 250, 400], "flags": ["obstacle", "attachable"] },
+    { "id": "wall_west", "type": "box", "center": [-205, 125, 0], "size": [10, 250, 400], "flags": ["obstacle", "attachable"] },
+
+    { "id": "bed_mattress", "type": "box", "center": [0, 40, 100], "size": [160, 20, 190], "flags": ["obstacle", "attachable"] },
+    { "id": "bed_headboard", "type": "box", "center": [0, 75, 197], "size": [160, 50, 6], "flags": ["obstacle", "attachable"] },
+    { "id": "bed_leg_ne", "type": "box", "center": [76, 15, 191], "size": [6, 30, 6], "flags": ["obstacle", "attachable"] },
+    { "id": "bed_leg_nw", "type": "box", "center": [-76, 15, 191], "size": [6, 30, 6], "flags": ["obstacle", "attachable"] },
+    { "id": "bed_leg_se", "type": "box", "center": [76, 15, 9], "size": [6, 30, 6], "flags": ["obstacle", "attachable"] },
+    { "id": "bed_leg_sw", "type": "box", "center": [-76, 15, 9], "size": [6, 30, 6], "flags": ["obstacle", "attachable"] },
+    { "id": "shadow_under_bed", "type": "box", "center": [0, 15, 100], "size": [140, 28, 170], "flags": ["shadowZone"] },
+
+    { "id": "nightstand", "type": "box", "center": [115, 25, 170], "size": [40, 50, 40], "flags": ["obstacle", "attachable"] },
+    { "id": "spray_can", "type": "capsule", "a": [118, 52, 170], "b": [118, 68, 170], "radius": 3, "flags": ["obstacle", "attachable"] },
+
+    { "id": "wardrobe", "type": "box", "center": [-165, 100, -40], "size": [50, 200, 100], "flags": ["obstacle", "attachable"] },
+    { "id": "shadow_wardrobe", "type": "box", "center": [-195, 100, -40], "size": [8, 196, 96], "flags": ["shadowZone"] },
+
+    { "id": "ceiling_light", "type": "sphere", "center": [0, 232, 20], "radius": 14, "flags": ["obstacle", "attachable"] },
+    { "id": "door_frame", "type": "box", "center": [120, 210, -198], "size": [80, 6, 4], "flags": ["obstacle", "attachable"] }
+  ]
+}

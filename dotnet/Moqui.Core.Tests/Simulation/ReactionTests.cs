@@ -20,7 +20,7 @@ namespace Moqui.Core.Tests.Simulation
         private static ReactionSystem NewReactions(ulong seed)
         {
             var settings = Settings;
-            var attacks = new HumanAttackSystem(settings.Attack, settings.Frenzy, new SplitMix64Random(seed));
+            var attacks = new HumanAttackSystem(settings.Attack, settings.Frenzy, new SplitMix64Random(seed), settings.Toxin, settings.Drunk, new SplitMix64Random(seed));
             return new ReactionSystem(settings, attacks, new SplitMix64Random(seed));
         }
 

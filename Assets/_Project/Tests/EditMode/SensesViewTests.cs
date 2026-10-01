@@ -188,5 +188,30 @@ namespace Moqui.Unity.Tests
             Assert.That(view.DecoyMarker.enabled, Is.True);
             Assert.That(view.DecoyMarker.transform.position, Is.EqualTo(simulation.Decoy.Position.ToUnity()));
         }
+    
+
+        [Test]
+        public void Co2Plume_InWind_DriftsWithWindAndDispersesSooner()
+        {
+            var calm = new Co2Plume(_settings);
+            var windy = new Co2Plume(_settings);
+            var wind = new Vector3(40f, 0f, 0f);
+            calm.Update(FrameTime, true, Vector3.zero, Vector3.forward, 1f);
+            windy.Update(FrameTime, true, Vector3.zero, Vector3.forward, 1f, _ => wind);
+            var calmPuff = calm.Puffs[0];
+            var windyPuff = windy.Puffs[0];
+
+            float half = _settings.Co2PuffLifetime * 0.5f / Co2Plume.WindDispersal;
+            calm.Update(half, false, Vector3.zero, Vector3.forward, 1f);
+            windy.Update(half, false, Vector3.zero, Vector3.forward, 1f, _ => wind);
+
+            Assert.That(windyPuff.Position.x, Is.GreaterThan(calmPuff.Position.x + 1f), "carried along the wind");
+            Assert.That(windy.Opacity(windyPuff), Is.LessThan(calm.Opacity(calmPuff)), "fainter while dispersing");
+
+            windy.Update(half * 1.2f, false, Vector3.zero, Vector3.forward, 1f, _ => wind);
+            calm.Update(half * 1.2f, false, Vector3.zero, Vector3.forward, 1f);
+            Assert.That(windy.Puffs, Is.Empty, "wind disperses sooner");
+            Assert.That(calm.Puffs, Is.Not.Empty);
+        }
     }
 }

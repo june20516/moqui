@@ -18,7 +18,7 @@ namespace Moqui.Unity.Tests
         private const int WarmupFrames = 30;
 
         [UnityTest]
-        public IEnumerator Stage_Play_BuildsRequestedLevel([Values("stage01", "stage02")] string levelId)
+        public IEnumerator Stage_Play_BuildsRequestedLevel([Values("stage01", "stage02", "stage03", "stage04", "stage05")] string levelId)
         {
             StageBootstrap.RequestedLevelId = levelId;
             string previousHints = PlayerPrefs.GetString(TutorialHints.PreferenceKey, "1");
@@ -46,9 +46,17 @@ namespace Moqui.Unity.Tests
                 var hud = Object.FindAnyObjectByType<HudController>();
                 var hudView = hud.GetComponent<HudView>();
                 Assert.That(hud.LastState, Is.Not.Null, "HUD updates every frame");
-                Assert.That(bootstrap.Tutorial, Is.Not.Null);
-                Assert.That(bootstrap.Tutorial.CurrentStep, Is.EqualTo(bootstrap.Level.Tutorial[0]));
-                Assert.That(hudView.TutorialText.text, Is.Not.Empty, "first tutorial hint is shown");
+                if (bootstrap.Level.Tutorial.Count > 0)
+                {
+                    Assert.That(bootstrap.Tutorial, Is.Not.Null);
+                    Assert.That(bootstrap.Tutorial.CurrentStep, Is.EqualTo(bootstrap.Level.Tutorial[0]));
+                    Assert.That(hudView.TutorialText.text, Is.Not.Empty, "first tutorial hint is shown");
+                }
+                else
+                {
+                    Assert.That(bootstrap.Tutorial, Is.Null);
+                    Assert.That(hudView.TutorialText.text, Is.Empty, "no hint on stages without a tutorial");
+                }
             }
             finally
             {

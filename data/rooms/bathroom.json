@@ -1,0 +1,32 @@
+{
+  "formatVersion": 1,
+  "id": "bathroom",
+  "size": [220, 250, 260],
+  "shapes": [
+    { "id": "floor", "type": "box", "center": [0, -5, 0], "size": [240, 10, 280], "flags": ["obstacle", "attachable"] },
+    { "id": "ceiling", "type": "box", "center": [0, 255, 0], "size": [240, 10, 280], "flags": ["obstacle", "attachable"] },
+    { "id": "wall_north", "type": "box", "center": [0, 125, 135], "size": [240, 250, 10], "flags": ["obstacle", "attachable"] },
+    { "id": "wall_south", "type": "box", "center": [0, 125, -135], "size": [240, 250, 10], "flags": ["obstacle", "attachable"] },
+    { "id": "wall_east", "type": "box", "center": [115, 125, 0], "size": [10, 250, 260], "flags": ["obstacle", "attachable"] },
+    { "id": "wall_west", "type": "box", "center": [-115, 125, 0], "size": [10, 250, 260], "flags": ["obstacle", "attachable"] },
+
+    { "id": "toilet_bowl", "type": "box", "center": [0, 20, 98], "size": [36, 40, 44], "flags": ["obstacle", "attachable"] },
+    { "id": "toilet_tank", "type": "box", "center": [0, 58, 123], "size": [36, 30, 12], "flags": ["obstacle", "attachable"] },
+    { "id": "shadow_behind_toilet", "type": "box", "center": [-34, 50, 122], "size": [28, 96, 14], "flags": ["shadowZone"] },
+
+    { "id": "sink_pedestal", "type": "box", "center": [88, 40, -30], "size": [10, 80, 10], "flags": ["obstacle", "attachable"] },
+    { "id": "sink_basin", "type": "box", "center": [88, 86, -30], "size": [40, 12, 56], "flags": ["obstacle", "attachable"] },
+    { "id": "mirror_cabinet", "type": "box", "center": [101, 165, -30], "size": [18, 60, 56], "flags": ["obstacle", "attachable"] },
+    { "id": "shadow_under_sink", "type": "box", "center": [88, 38, -30], "size": [36, 72, 52], "flags": ["shadowZone"] },
+
+    { "id": "shower_glass_side", "type": "box", "center": [-40, 100, -85], "size": [4, 200, 90], "flags": ["glass", "attachable"] },
+    { "id": "shower_glass_front", "type": "box", "center": [-85, 100, -40], "size": [50, 200, 4], "flags": ["glass", "attachable"] },
+    { "id": "shower_head", "type": "box", "center": [-95, 194, -115], "size": [10, 6, 10], "flags": ["obstacle", "attachable"] },
+
+    { "id": "towel", "type": "box", "center": [-10, 110, -125], "size": [50, 60, 6], "flags": ["obstacle", "attachable"] },
+    { "id": "towel_bar", "type": "box", "center": [-10, 142, -126], "size": [60, 3, 3], "flags": ["obstacle", "attachable"] },
+    { "id": "shadow_behind_towel", "type": "box", "center": [-10, 110, -129], "size": [46, 56, 2], "flags": ["shadowZone"] },
+
+    { "id": "vent", "type": "box", "center": [60, 248, 100], "size": [30, 4, 30], "flags": ["obstacle", "attachable"] }
+  ]
+}

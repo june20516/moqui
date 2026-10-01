@@ -29,7 +29,11 @@ namespace Moqui.Core.Simulation
         public Human(HumanDefinition definition, CollisionWorld world)
         {
             Definition = definition;
-            BodyRotation = Quaternion.CreateFromAxisAngle(Vector3.UnitY, definition.FacingYaw * DegreesToRadians);
+            // 먼저 몸 로컬 X축으로 기울이고(정면 +Z가 위로 들림), 그다음 yaw로 돌린다.
+            var pitch = Quaternion.CreateFromAxisAngle(Vector3.UnitX, -definition.FacingPitch * DegreesToRadians);
+            var yaw = Quaternion.CreateFromAxisAngle(Vector3.UnitY, definition.FacingYaw * DegreesToRadians);
+            BodyRotation = Quaternion.Concatenate(pitch, yaw);
+            HeadPitch = definition.RestPitch;
             foreach (var part in definition.Parts)
             {
                 ShapeFlags flags = part.IsSkin ? BodyFlags | ShapeFlags.SkinSite : BodyFlags;
@@ -139,6 +143,14 @@ namespace Moqui.Core.Simulation
 
         public int NextBlindSwatTick { get; set; }
 
+        /// <summary>다음 모기약 분사가 가능한 틱 (spray.cooldown, spec/06).</summary>
+        public int NextSprayTick { get; set; }
+
+        /// <summary>취한 타겟의 다음 무작위 휘두르기 틱 (spec/06).</summary>
+        public int NextDrunkSwatTick { get; set; } = Player.NeverTick;
+
+        public bool IsDrunk => Definition.Traits.Has(HumanModifier.Drunk);
+
         public HumanAttack Attack { get; } = new HumanAttack();
 
         // ---- 졸음 (spec/06) ----
@@ -213,6 +225,25 @@ namespace Moqui.Core.Simulation
         public float DistanceToNearestEar(Vector3 point)
         {
             return MathF.Min(Vector3.Distance(point, LeftEar), Vector3.Distance(point, RightEar));
+        }
+
+        /// <summary>점에 가장 가까운 어깨(손 출발점)의 월드 위치.</summary>
+        public Vector3 NearestShoulder(Vector3 point)
+        {
+            Vector3 best = Definition.Position;
+            float bestDistance = float.MaxValue;
+            foreach (var local in Definition.ShoulderLocals)
+            {
+                Vector3 shoulder = ToWorld(local);
+                float distance = Vector3.Distance(point, shoulder);
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    best = shoulder;
+                }
+            }
+
+            return best;
         }
 
         public float DistanceToNearestShoulder(Vector3 point)

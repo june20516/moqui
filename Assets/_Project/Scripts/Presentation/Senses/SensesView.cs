@@ -115,7 +115,9 @@ namespace Moqui.Unity.Presentation.Senses
             }
 
             RenderHeat(human, viewer);
-            _plume.Update(deltaTime, human.IsExhaling, human.ExhalePosition.ToUnity(), human.HeadForward.ToUnity(), human.ExhaleStrength);
+            int tick = _simulation.Tick;
+            var fans = _simulation.Fans;
+            _plume.Update(deltaTime, human.IsExhaling, human.ExhalePosition.ToUnity(), human.HeadForward.ToUnity(), human.ExhaleStrength, position => fans.WindAt(position.ToCore(), tick).ToUnity());
             RenderCo2(viewer);
         }
 

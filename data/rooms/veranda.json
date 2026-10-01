@@ -1,0 +1,33 @@
+{
+  "formatVersion": 1,
+  "id": "veranda",
+  "size": [450, 250, 300],
+  "shapes": [
+    { "id": "floor", "type": "box", "center": [0, -5, 0], "size": [470, 10, 320], "flags": ["obstacle", "attachable"] },
+    { "id": "ceiling", "type": "box", "center": [0, 255, 0], "size": [470, 10, 320], "flags": ["obstacle", "attachable"] },
+    { "id": "wall_north", "type": "box", "center": [0, 125, 155], "size": [470, 250, 10], "flags": ["obstacle", "attachable"] },
+    { "id": "screen_window", "type": "box", "center": [0, 125, -155], "size": [470, 250, 10], "flags": ["glass", "attachable"] },
+    { "id": "wall_east", "type": "box", "center": [230, 125, 0], "size": [10, 250, 300], "flags": ["obstacle", "attachable"] },
+    { "id": "wall_west", "type": "box", "center": [-230, 125, 0], "size": [10, 250, 300], "flags": ["obstacle", "attachable"] },
+
+    { "id": "table_top", "type": "box", "center": [0, 38, 10], "size": [100, 4, 60], "flags": ["obstacle", "attachable"] },
+    { "id": "table_leg_ne", "type": "box", "center": [46, 18, 36], "size": [4, 36, 4], "flags": ["obstacle", "attachable"] },
+    { "id": "table_leg_nw", "type": "box", "center": [-46, 18, 36], "size": [4, 36, 4], "flags": ["obstacle", "attachable"] },
+    { "id": "table_leg_se", "type": "box", "center": [46, 18, -16], "size": [4, 36, 4], "flags": ["obstacle", "attachable"] },
+    { "id": "table_leg_sw", "type": "box", "center": [-46, 18, -16], "size": [4, 36, 4], "flags": ["obstacle", "attachable"] },
+    { "id": "beer_can", "type": "capsule", "a": [22, 42, 20], "b": [22, 54, 20], "radius": 3, "flags": ["obstacle", "attachable"] },
+    { "id": "snack_plate", "type": "box", "center": [-20, 41, 4], "size": [24, 2, 24], "flags": ["obstacle", "attachable"] },
+
+    { "id": "icebox", "type": "box", "center": [0, 25, 128], "size": [60, 50, 30], "flags": ["obstacle", "attachable"] },
+    { "id": "shadow_behind_icebox", "type": "box", "center": [0, 25, 146.5], "size": [56, 46, 5], "flags": ["shadowZone"] },
+
+    { "id": "plant_shelf", "type": "box", "center": [-195, 60, 60], "size": [50, 120, 30], "flags": ["obstacle", "attachable"] },
+    { "id": "shadow_behind_plants", "type": "box", "center": [-222.5, 60, 60], "size": [4, 116, 26], "flags": ["shadowZone"] },
+
+    { "id": "drying_rack", "type": "box", "center": [-80, 80, -70], "size": [90, 120, 6], "flags": ["obstacle", "attachable"] },
+
+    { "id": "ac_unit", "type": "box", "center": [180, 40, -110], "size": [70, 80, 50], "flags": ["obstacle", "attachable"] },
+    { "id": "shadow_behind_ac", "type": "box", "center": [220, 40, -110], "size": [8, 76, 46], "flags": ["shadowZone"] },
+    { "id": "spray_dispenser", "type": "box", "center": [180, 150, -147], "size": [16, 24, 6], "flags": ["obstacle", "attachable"] }
+  ]
+}

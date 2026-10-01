@@ -78,6 +78,11 @@ namespace Moqui.Unity.Presentation.Stage
                 return materials.Steam;
             }
 
+            if (shape.Matches(ShapeFlags.Hazard))
+            {
+                return materials.Web;
+            }
+
             return shape.Matches(ShapeFlags.Glass) ? materials.Glass : null;
         }
     }

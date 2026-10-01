@@ -63,6 +63,21 @@ namespace Moqui.Unity.UI.Hud
 
         public float HumidityFraction { get; private set; }
 
+        /// <summary>중독 게이지는 중독 > 0일 때만 (spec/08).</summary>
+        public bool ToxinVisible { get; private set; }
+
+        public float ToxinFraction { get; private set; }
+
+        /// <summary>모기향 하한 위치 (0이면 없음).</summary>
+        public float ToxinFloorFraction { get; private set; }
+
+        /// <summary>디버프 단계: 0 없음, 1 끊김, 2 반전, 3 랜덤 (spec/06).</summary>
+        public int ToxinTier { get; private set; }
+
+        public bool StutterActive { get; private set; }
+
+        public bool RandomActive { get; private set; }
+
         public HudPrompt Prompt { get; private set; }
 
         public int EscapePressesRemaining { get; private set; }
@@ -109,6 +124,13 @@ namespace Moqui.Unity.UI.Hud
             };
 
             state.Prompt = PromptFor(simulation);
+            var toxin = settings.Toxin;
+            state.ToxinVisible = player.Toxin > 0f;
+            state.ToxinFraction = player.Toxin / ToxinSystem.GaugeMax;
+            state.ToxinFloorFraction = player.ToxinFloor / ToxinSystem.GaugeMax;
+            state.ToxinTier = player.Toxin >= toxin.Tier3 ? 3 : player.Toxin >= toxin.Tier2 ? 2 : player.Toxin >= toxin.Tier1 ? 1 : 0;
+            state.StutterActive = simulation.Toxin.StutterActive(simulation.Tick);
+            state.RandomActive = simulation.Toxin.RandomActive(simulation.Tick);
             state.ActiveSkillVisible = simulation.Decoy.IsAvailable;
             state.ActiveSkillCooldown = simulation.Decoy.CooldownRemaining(simulation.Tick);
             state.ActiveSkillInUse = simulation.Decoy.IsActive(simulation.Tick);

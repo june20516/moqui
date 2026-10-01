@@ -36,6 +36,13 @@ namespace Moqui.Core.Meta
                 }
             }
 
+            // 해독 체질: 중독 증가(연무·모기향 핵심)와 모기향 하한에 곱한다 (spec/09).
+            int resistSpray = skills.Level(SkillCatalog.ResistSpray);
+            Multiply("spray.toxinRate", "skill.resistSpray.toxinMul", resistSpray);
+            Multiply("coil.coreRate", "skill.resistSpray.toxinMul", resistSpray);
+            Multiply("coil.nearFloor", "skill.resistSpray.toxinMul", resistSpray);
+            Multiply("coil.farFloor", "skill.resistSpray.toxinMul", resistSpray);
+
             int resistWet = skills.Level(SkillCatalog.ResistWet);
             Multiply("wetWings.duration", "skill.resistWet.durationMul", resistWet);
             Multiply("humid.gainStrong", "skill.resistWet.humidMul", resistWet);
@@ -87,9 +94,7 @@ namespace Moqui.Core.Meta
             return new Tuning(values);
         }
 
-        /// <summary>
-        /// 해독 체질: 중독 증가와 모기향 하한에 곱하는 배율 (spec/09). 중독·모기향 기믹(M9)이 이 값을 쓴다.
-        /// </summary>
+        /// <summary>해독 체질: 중독 증가와 모기향 하한에 곱하는 배율 (spec/09). Apply가 spray·coil 키에 이 값을 곱한다.</summary>
         public static float ToxinMultiplier(Tuning tuning, SkillLoadout skills)
         {
             return (float)Math.Pow(tuning.GetFloat("skill.resistSpray.toxinMul"), skills.Level(SkillCatalog.ResistSpray));

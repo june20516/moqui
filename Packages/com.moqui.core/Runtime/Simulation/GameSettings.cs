@@ -31,7 +31,20 @@ namespace Moqui.Core.Simulation
             Doze = new DozeSettings(tuning);
             Breath = new BreathSettings(tuning);
             Decoy = new DecoySettings(tuning);
+            Fan = new FanSettings(tuning);
+            Toxin = new ToxinSettings(tuning);
+            Drunk = new DrunkSettings(tuning);
+            WebStruggleTime = tuning.GetFloat("web.struggleTime");
         }
+
+        public FanSettings Fan { get; }
+
+        public ToxinSettings Toxin { get; }
+
+        public DrunkSettings Drunk { get; }
+
+        /// <summary>거미줄에 걸린 뒤 사망까지 (spec/06).</summary>
+        public float WebStruggleTime { get; }
 
         /// <summary>액티브 스킬 미끼 마법 (spec/09).</summary>
         public DecoySettings Decoy { get; }

@@ -14,12 +14,27 @@ namespace Moqui.Core.Simulation
         private readonly AttackSettings _attack;
         private readonly FrenzySettings _frenzy;
         private readonly IRandom _blindSwatRandom;
+        private readonly ToxinSettings _spray;
+        private readonly DrunkSettings _drunk;
+        private readonly IRandom _drunkRandom;
 
-        public HumanAttackSystem(AttackSettings attack, FrenzySettings frenzy, IRandom blindSwatRandom)
+        public HumanAttackSystem(AttackSettings attack, FrenzySettings frenzy, IRandom blindSwatRandom, ToxinSettings spray, DrunkSettings drunk, IRandom drunkRandom)
         {
             _attack = attack;
             _frenzy = frenzy;
             _blindSwatRandom = blindSwatRandom;
+            _spray = spray;
+            _drunk = drunk;
+            _drunkRandom = drunkRandom;
+        }
+
+        /// <summary>취한 타겟의 첫 무작위 휘두르기를 예약한다.</summary>
+        public void Initialize(Human human, int tick)
+        {
+            if (human.IsDrunk)
+            {
+                ScheduleDrunkSwat(human, tick);
+            }
         }
 
         public float FrenzyReach => _attack.Reach + _frenzy.ReachBonus;
@@ -31,9 +46,21 @@ namespace Moqui.Core.Simulation
             if (attack.Phase == AttackPhase.Telegraph && tick >= attack.TelegraphEndTick)
             {
                 attack.Phase = AttackPhase.Active;
+                if (attack.Kind == AttackKind.Spray)
+                {
+                    // 분사는 판정 대신 연무를 만든다 (spec/06). 연무는 ToxinSystem이 가진다.
+                    events.Add(new SprayReleased(tick, attack.Target));
+                }
             }
 
-            if (attack.Phase == AttackPhase.Active)
+            if (attack.Phase == AttackPhase.Active && attack.Kind == AttackKind.Spray)
+            {
+                if (tick >= attack.ActiveEndTick)
+                {
+                    attack.Phase = AttackPhase.Recovery;
+                }
+            }
+            else if (attack.Phase == AttackPhase.Active)
             {
                 if (tick >= attack.ActiveEndTick)
                 {
@@ -67,12 +94,36 @@ namespace Moqui.Core.Simulation
                 return;
             }
 
+            // 취한 타겟은 상태와 무관하게 몸 주변 무작위 지점을 친다 (spec/06).
+            if (human.IsDrunk && tick >= human.NextDrunkSwatTick)
+            {
+                Vector3 swatTarget = human.Definition.Position + _drunkRandom.InsideSphere(_drunk.RandomSwatRadius);
+                Start(human, AttackKind.DrunkSwat, swatTarget, _attack.SlapRadius, _drunk.SlapTelegraph, _attack.SlapActiveTime, _frenzy.SlapInterval, tick, events);
+                ScheduleDrunkSwat(human, tick);
+                return;
+            }
+
             if (human.State != AwarenessState.Frenzy)
             {
                 return;
             }
 
-            if (perception.PlayerSeen && human.DistanceToNearestShoulder(player.Position) <= FrenzyReach)
+            // 모기약 (spec/02 §4, spec/06): 광분 + canSpray + 보이는 플레이어가 손 사거리 밖 spray.useRange 안 + 쿨타임 (D-046).
+            float shoulderDistance = human.DistanceToNearestShoulder(player.Position);
+            if (human.Definition.Traits.CanSpray
+                && perception.PlayerSeen
+                && tick >= human.NextSprayTick
+                && shoulderDistance > FrenzyReach
+                && shoulderDistance <= _spray.UseRange)
+            {
+                Vector3 hand = human.NearestShoulder(player.Position);
+                Vector3 toward = Vector3.Normalize(player.Position - hand);
+                Start(human, AttackKind.Spray, hand + (toward * _spray.Travel), 0f, _spray.Telegraph, GameSimulation.DeltaTime, _frenzy.SlapInterval, tick, events);
+                human.NextSprayTick = tick + SimulationTime.ToTicks(_spray.Cooldown);
+                return;
+            }
+
+            if (perception.PlayerSeen && shoulderDistance <= FrenzyReach)
             {
                 Start(human, AttackKind.Slap, player.Position, _attack.SlapRadius, _frenzy.SlapTelegraph, _attack.SlapActiveTime, _frenzy.SlapInterval, tick, events);
                 return;
@@ -102,6 +153,12 @@ namespace Moqui.Core.Simulation
             attack.ActiveEndTick = attack.TelegraphEndTick + Math.Max(1, SimulationTime.ToTicks(activeTime));
             attack.RecoveryEndTick = attack.ActiveEndTick + SimulationTime.ToTicks(recovery);
             events.Add(new AttackTelegraphStarted(tick, human.Id, kind, target, radius, telegraphTicks));
+        }
+
+        private void ScheduleDrunkSwat(Human human, int tick)
+        {
+            float interval = _drunkRandom.Range(_drunk.RandomSwatInterval.Min, _drunk.RandomSwatInterval.Max);
+            human.NextDrunkSwatTick = tick + SimulationTime.ToTicks(interval);
         }
 
         private static void Kill(Player player, int tick, List<SimulationEvent> events)
