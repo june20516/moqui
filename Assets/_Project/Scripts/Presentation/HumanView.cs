@@ -106,11 +106,7 @@ namespace Moqui.Unity.Presentation
 
         private Transform CreateMarker(PrimitiveType primitive, string markerName)
         {
-            var marker = GameObject.CreatePrimitive(primitive);
-            marker.name = markerName;
-            marker.transform.SetParent(transform, false);
-            DestroyImmediate(marker.GetComponent<Collider>());
-            return marker.transform;
+            return Art.Primitives.Create(primitive, markerName, transform).transform;
         }
     }
 }

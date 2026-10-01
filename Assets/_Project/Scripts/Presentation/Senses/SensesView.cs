@@ -226,17 +226,10 @@ namespace Moqui.Unity.Presentation.Senses
 
         private Renderer CreateCue(PrimitiveType primitive, string name, Material material)
         {
-            GameObject cue = GameObject.CreatePrimitive(primitive);
-            cue.name = name;
-            cue.transform.SetParent(transform, false);
-            DestroyImmediate(cue.GetComponent<Collider>());
+            GameObject cue = Art.Primitives.Create(primitive, name, transform, material != null ? material : Art.ToonMaterials.Transparent);
             var renderer = cue.GetComponent<Renderer>();
             renderer.shadowCastingMode = ShadowCastingMode.Off;
             renderer.receiveShadows = false;
-            if (material != null)
-            {
-                renderer.sharedMaterial = material;
-            }
 
             renderer.enabled = false;
             return renderer;

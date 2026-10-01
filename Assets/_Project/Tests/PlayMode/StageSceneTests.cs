@@ -43,6 +43,8 @@ namespace Moqui.Unity.Tests
                 Assert.That(levelRoot, Is.Not.Null);
                 Assert.That(levelRoot.childCount, Is.EqualTo(bootstrap.Level.AllShapes().Count()));
 
+                AssertAllRenderersUseProjectShaders(levelId);
+
                 var hud = Object.FindAnyObjectByType<HudController>();
                 var hudView = hud.GetComponent<HudView>();
                 Assert.That(hud.LastState, Is.Not.Null, "HUD updates every frame");
@@ -62,6 +64,23 @@ namespace Moqui.Unity.Tests
             {
                 PlayerPrefs.SetString(TutorialHints.PreferenceKey, previousHints);
                 StageBootstrap.RequestedLevelId = StageBootstrap.DefaultLevelId;
+            }
+        }
+
+        /// <summary>화풍 통일 (spec/10): 모든 렌더러가 프로젝트 셰이더(Moqui/*)를 쓰고, 셰이더가 지원된다 (마젠타 없음).</summary>
+        private static void AssertAllRenderersUseProjectShaders(string levelId)
+        {
+            var renderers = Object.FindObjectsByType<Renderer>();
+            Assert.That(renderers, Is.Not.Empty);
+            foreach (var renderer in renderers)
+            {
+                foreach (var material in renderer.sharedMaterials)
+                {
+                    string label = $"{levelId}/{renderer.name}";
+                    Assert.That(material, Is.Not.Null, label);
+                    Assert.That(material.shader.name, Does.StartWith("Moqui/"), label);
+                    Assert.That(material.shader.isSupported, Is.True, label);
+                }
             }
         }
     }

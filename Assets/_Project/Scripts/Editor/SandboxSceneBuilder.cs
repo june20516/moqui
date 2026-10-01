@@ -51,9 +51,13 @@ namespace Moqui.Unity.Editor
         private const string VolumeFogShaderName = "Moqui/VolumeFog";
         private const string PcRendererPath = "Assets/Settings/PC_Renderer.asset";
         private const float PlayerVisualDiameter = 1f;
-        private const string LitShaderName = "Universal Render Pipeline/Lit";
         private const string BaseColorProperty = "_BaseColor";
-        private static readonly Color PlayerColor = new Color(0.2f, 0.85f, 0.9f);
+        /// <summary>플레이어는 흰색·연분홍 (어두운 배경에서 잘 보이게, spec/10).</summary>
+        private static readonly Color PlayerColor = new Color(1f, 0.86f, 0.92f);
+        private static readonly Color KeyLightColor = new Color(1f, 0.86f, 0.72f);
+        private static readonly Color AmbientColor = new Color(0.30f, 0.28f, 0.45f);
+        private const string ToonResourcePath = "Assets/_Project/Resources/Materials/Toon.mat";
+        private const string ToonTransparentResourcePath = "Assets/_Project/Resources/Materials/ToonTransparent.mat";
         private static readonly Color MenuBackground = new Color(0.1f, 0.08f, 0.15f);
         private static readonly Color ShadowCueColor = new Color(0.35f, 0.6f, 1f, 0.35f);
         private static readonly Color Co2Color = new Color(0.95f, 0.78f, 0.98f, 0.8f);
@@ -228,9 +232,13 @@ namespace Moqui.Unity.Editor
         {
             Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
 
+            EnsureToonMaterials();
             var light = new GameObject("Directional Light").AddComponent<Light>();
             light.type = LightType.Directional;
             light.shadows = LightShadows.Soft;
+            light.color = KeyLightColor;
+            RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
+            RenderSettings.ambientLight = AmbientColor;
             light.transform.rotation = Quaternion.Euler(50f, -30f, 0f);
 
             var camera = new GameObject("Main Camera").AddComponent<Camera>();
@@ -252,7 +260,7 @@ namespace Moqui.Unity.Editor
             Object.DestroyImmediate(body.GetComponent<Collider>());
 
             // MaterialPropertyBlock은 씬에 저장되지 않으므로 플레이어 색은 머티리얼 에셋으로 둔다.
-            body.GetComponent<Renderer>().sharedMaterial = LoadOrCreateLitMaterial(PlayerMaterialPath, PlayerColor);
+            body.GetComponent<Renderer>().sharedMaterial = LoadOrCreateShaderMaterial(PlayerMaterialPath, Moqui.Unity.Presentation.Art.ToonMaterials.OpaqueShader, PlayerColor);
 
             // Shadow Zone 비네트 (spec/03): 전역 Volume, 프로필은 실행 시 만든다.
             var vignetteObject = new GameObject("ShadowVignette");
@@ -270,23 +278,6 @@ namespace Moqui.Unity.Editor
         {
             EditorSceneManager.SaveScene(scene, path);
             Debug.Log($"[SandboxSceneBuilder] Saved {path}");
-        }
-
-        private static Material LoadOrCreateLitMaterial(string path, Color color)
-        {
-            var material = AssetDatabase.LoadAssetAtPath<Material>(path);
-            if (material == null)
-            {
-                Shader lit = Shader.Find(LitShaderName) ?? throw new System.InvalidOperationException($"Shader '{LitShaderName}' not found.");
-                material = new Material(lit);
-                System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(path));
-                AssetDatabase.CreateAsset(material, path);
-            }
-
-            material.SetColor(BaseColorProperty, color);
-            EditorUtility.SetDirty(material);
-            AssetDatabase.SaveAssets();
-            return material;
         }
 
         /// <summary>거미줄 격자 텍스처 (코드로 생성한 자체 제작물, asset-pipeline Generated/).</summary>
@@ -327,6 +318,7 @@ namespace Moqui.Unity.Editor
             if (material == null)
             {
                 material = new Material(shader);
+                System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(path));
                 AssetDatabase.CreateAsset(material, path);
             }
             else if (material.shader != shader)
@@ -340,24 +332,22 @@ namespace Moqui.Unity.Editor
             return material;
         }
 
-        /// <summary>URP Lit 반투명(알파 블렌드) 머티리얼. 은신처 표시·증기·유리처럼 뒤가 비쳐야 하는 볼륨에 쓴다.</summary>
-        /// <param name="doubleSided">볼륨 안에 들어가도 보이게 할지 (은신처·증기).</param>
+        /// <summary>툰 반투명 머티리얼 (Moqui/ToonTransparent). 은신처 표시·유리·거미줄·체온처럼 뒤가 비쳐야 하는 표시에 쓴다.</summary>
+        /// <param name="doubleSided">볼륨 안에 들어가도 보이게 할지 (은신처·거미줄).</param>
         private static Material LoadOrCreateTransparentMaterial(string path, Color color, bool doubleSided = false)
         {
-            Material material = LoadOrCreateLitMaterial(path, color);
+            Material material = LoadOrCreateShaderMaterial(path, Moqui.Unity.Presentation.Art.ToonMaterials.TransparentShader, color);
             material.SetFloat("_Cull", (float)(doubleSided ? UnityEngine.Rendering.CullMode.Off : UnityEngine.Rendering.CullMode.Back));
-            material.doubleSidedGI = doubleSided;
-            material.SetFloat("_Surface", 1f);
-            material.SetFloat("_Blend", 0f);
-            material.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
-            material.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-            material.SetFloat("_ZWrite", 0f);
-            material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
-            material.SetOverrideTag("RenderType", "Transparent");
-            material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
             EditorUtility.SetDirty(material);
             AssetDatabase.SaveAssets();
             return material;
+        }
+
+        /// <summary>코드로 만드는 오브젝트가 쓰는 공통 툰 머티리얼 (Resources, spec/10).</summary>
+        public static void EnsureToonMaterials()
+        {
+            LoadOrCreateShaderMaterial(ToonResourcePath, Moqui.Unity.Presentation.Art.ToonMaterials.OpaqueShader, Color.white);
+            LoadOrCreateShaderMaterial(ToonTransparentResourcePath, Moqui.Unity.Presentation.Art.ToonMaterials.TransparentShader, new Color(1f, 1f, 1f, 0.6f));
         }
 
         private static void SetReference(Object target, string field, Object value)

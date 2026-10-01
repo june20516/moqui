@@ -13,13 +13,14 @@ namespace Moqui.Unity.Presentation
         private const float UnityCapsuleHeight = 2f;
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
 
+        /// <summary>밤 실내 팔레트 (spec/10): 라벤더 벽, 따뜻한 나무, 청회색, 베이지, 청록 회색. 그림자는 툰 셰이더가 남보라로 물들인다.</summary>
         private static readonly Color[] Palette =
         {
-            new Color(0.78f, 0.74f, 0.68f),
-            new Color(0.55f, 0.42f, 0.32f),
-            new Color(0.62f, 0.66f, 0.70f),
-            new Color(0.70f, 0.60f, 0.45f),
-            new Color(0.45f, 0.52f, 0.47f),
+            new Color(0.66f, 0.62f, 0.76f),
+            new Color(0.58f, 0.42f, 0.33f),
+            new Color(0.50f, 0.55f, 0.70f),
+            new Color(0.76f, 0.62f, 0.50f),
+            new Color(0.45f, 0.55f, 0.58f),
         };
 
         public static Transform Build(CollisionWorld world, Transform parent, ShapeFlags visibleMask = ShapeFlags.Solid)
@@ -56,13 +57,9 @@ namespace Moqui.Unity.Presentation
                     throw new ArgumentOutOfRangeException(nameof(shape));
             }
 
-            GameObject visual = GameObject.CreatePrimitive(primitive);
-            visual.name = shape.Id;
-            visual.transform.SetParent(parent, false);
+            // 판정은 Core가 하므로 Unity 콜라이더는 쓰지 않는다. 화풍은 공통 툰 셰이더 (spec/10).
+            GameObject visual = Art.Primitives.Create(primitive, shape.Id, parent);
             ApplyPose(shape, visual.transform);
-
-            // 판정은 Core가 하므로 Unity 콜라이더는 쓰지 않는다.
-            UnityEngine.Object.DestroyImmediate(visual.GetComponent<Collider>());
             Tint(visual.GetComponent<Renderer>(), ColorFor(shape.Id));
             return visual;
         }
