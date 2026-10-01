@@ -45,7 +45,7 @@ namespace Moqui.Unity.Presentation.Audio
             return Instance;
         }
 
-        public void PlayOneShot(string id, float pitch = 1f)
+        public void PlayOneShot(string id)
         {
             var entry = _catalog.Find(id);
             if (entry?.Clip == null)
@@ -53,7 +53,6 @@ namespace Moqui.Unity.Presentation.Audio
                 return;
             }
 
-            _oneShots.pitch = pitch;
             _oneShots.PlayOneShot(entry.Clip, entry.Volume * AudioVolumes.For(entry.Bus));
         }
 

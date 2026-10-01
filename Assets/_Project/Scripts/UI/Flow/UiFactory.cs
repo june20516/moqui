@@ -178,7 +178,16 @@ namespace Moqui.Unity.UI.Flow
             var system = EnsureEventSystem();
             if (selectable != null)
             {
-                system.SetSelectedGameObject(selectable.gameObject);
+                // 화면이 여는 첫 포커스는 플레이어의 선택이 아니므로 선택음을 내지 않는다.
+                UiSelectSound.Suppressed = true;
+                try
+                {
+                    system.SetSelectedGameObject(selectable.gameObject);
+                }
+                finally
+                {
+                    UiSelectSound.Suppressed = false;
+                }
             }
         }
     }

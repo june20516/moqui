@@ -3,18 +3,12 @@
 > 루프가 매 반복 끝에 갱신한다. 위에서부터 최신순으로 쓴다.
 
 ## 현재
-- 마일스톤: **M11 폴리시 · 릴리스** (진행 중)
-- 다음 할 일: 버그 정리(경고·알려진 결함 점검), GOAL D1~D9 체크, final-report
-- 브랜치: `milestone/m11-release`
+- 마일스톤: **완료** (M0~M11, GOAL D1~D9 충족)
+- 다음 할 일: 없음 (사람 검토 항목은 `plan/final-report.md` §4)
+- 브랜치: `main` (태그 `m11-done`)
 
-## 현재 마일스톤 체크리스트 (M11)
-### 폴리시 · 릴리스 (plan/milestones.md, GOAL.md §2)
-- [x] 게임패드로 Title → StageSelect → Stage 1~5 → Ending 전 흐름 진행 확인 (D2, 키보드/마우스 포함) — 증거: PlayMode `FullFlowPlayModeTests.TitleThroughAllStagesToEnding(KeyboardMouse)`(Title 시작은 마우스 클릭, 메뉴는 방향키·Enter), `(Gamepad)`(D-pad·South). 메뉴는 장치 입력만으로 조작, 클리어는 흡혈 게이지 주입(실제 클리어 가능성은 Core 봇, D5), Stage 5 첫 클리어 → 엔딩 보기 → Ending, 다섯 스테이지 기록 저장
-- [x] 성능 측정: `perf.targetFps` 기준 프레임 타임 로그 기록 — 증거: `plan/perf-report.md`(빌드 실행 `-moquiPerf`, 1920×1080, RTX 3060 Ti·i5-12400F, VSync 끔): 다섯 스테이지 평균 0.98~1.28 ms, p99 ≤ 1.83 ms, 60fps 예산(16.67 ms) 초과 0.0%(stage05 단발 최대 17.9 ms 1회). EditMode `PerfTests`(통계·인자)
-- [x] spec/ 모든 문서 수용 기준 체크박스를 증거와 함께 체크 (D3, 보관 체크리스트에서 동기화) — spec/00~11 143개 + asset-pipeline 3개 = 146개 모두 `- [x] … — 증거: …`(보관 체크리스트 m0~m10의 증거를 문구 대조로 옮기고, 여러 마일스톤에 나뉜 4개는 증거를 합침). 남은 `- [ ]` 0개
-- [x] 봇 전체 플레이스루 동안 Error/Exception 로그 0건 (D6) — 증거: PlayMode `ScenarioSmokeTests.ClearScenario_InStageScene_MatchesHeadlessCore_NoErrorLogs`(stage01~05 클리어 봇을 Stage 씬 안에서 재생, 헤드리스 Core와 결과·틱·광분·자국 일치, Result까지 `LogAssert.NoUnexpectedReceived`, D-050), Core 시나리오 10종(`ScenarioTests`, 예외 시 실패), 빌드 성능 실행 플레이어 로그 Error/Exception 0건
-- [ ] 버그 정리 (알려진 결함·경고 점검) — 진행: **결함 수정** ① 씬에 AudioListener가 없어 소리가 들리지 않음 → AudioOutput에 리스너 1개(PlayMode `StageSceneTests` 리스너 1개 검사) ② 종료 시 AudioDirector가 파괴된 출구의 AudioSource를 멈추다 NullReferenceException → Unity null 검사(PlayMode `AudioPlayModeTests.OutputDestroyedFirst_StageTeardownDoesNotThrow`) ③ 스테이지에서 커서를 잠근 뒤 일시정지·결과·메뉴에서 풀지 않아 마우스로 버튼을 못 누름 → `CursorPolicy`(플레이 중에만 잠금, PlayMode `FlowPlayModeTests.Cursor_LockedOnlyWhilePlaying`) ④ 일시정지 중에도 날갯소리 등 반복음이 계속 남 → 일시정지 동안 상태 반복음 끔(`AudioPlayModeTests.Pause_SilencesStateLoops_KeepsMusicAndAmbience`). 컴파일 경고 0(Core·Unity), TODO/FIXME 0
-- [ ] GOAL D1~D9 체크와 `plan/final-report.md` (D9)
+## 현재 마일스톤 체크리스트
+(없음 — GOAL D1~D9 완료, 루프 종료. `plan/final-report.md` 참조)
 
 ## M7 버티컬 슬라이스 리포트 (2026-10-01, 사람 검토 권장)
 **할 수 있는 것:** Unity 에디터에서 `Assets/_Project/Scenes/Stage.unity`를 열고 Play하면 Stage 1(조는 인간)이 시작된다. `StageBootstrap.RequestedLevelId`로 stage02를 고를 수 있으며, 화면 흐름(타이틀·스테이지 선택)은 M8에서 붙인다. 빌드 실행 파일은 아직 Boot 씬만 연다.
@@ -42,6 +36,7 @@
 - **M6 물방울 QTE · 습기** — 태그 `m6-done` (2026-10-01). 체크리스트: `plan/archive/m6-checklist.md`. 이월: DripSource 레벨 적용 → M7
 - **M7 거실 버티컬 슬라이스 (Stage 1·2)** — 태그 `m7-done` (2026-10-01). 체크리스트: `plan/archive/m7-checklist.md`. 이월: DripSource 검사 Stage 3~5 적용·CO₂ 바람 흩어짐·중독 게이지 → M9, 액티브 스킬 HUD → M8
 - **M8 화면 흐름 · 스킬 트리 · 저장** — 태그 `m8-done` (2026-10-01). 체크리스트: `plan/archive/m8-checklist.md`. 이월: 해독 체질 적용 → M9, 음악 볼륨 → M10. 사람 요청(CO₂·증기 기체형) 반영 (D-045)
+- **M11 폴리시 · 릴리스** — 태그 `m11-done` (2026-10-01). 체크리스트: `plan/archive/m11-checklist.md`. 전 흐름 테스트(D2), spec 체크박스 동기화(D3), 성능 측정, Unity 안 봇 재생 스모크(D6), 결함 수정 6건, 최종 보고서
 - **M10 에셋 패스** — 태그 `m10-done` (2026-10-01). 체크리스트: `plan/archive/m10-checklist.md`. 툰 셰이더·팔레트·후처리, 모키(애니메이터 7상태), 인간 머리·공격 팔, 사운드 31종 합성·카탈로그, CREDITS(D-049). 빌드 성공(예상 밖 경고 0)
 - **M9 Stage 3 · 4 · 5와 기믹** — 태그 `m9-done` (2026-10-01). 체크리스트: `plan/archive/m9-checklist.md`. 봇: 다섯 스테이지 클리어 4/5 이상(Stage 4는 스킬 구성, D-048)
 
@@ -78,7 +73,8 @@
 ## 반복 로그
 | 일시 | 마일스톤 | 한 일 | 증거 | 커밋 |
 |---|---|---|---|---|
-| 2026-10-01 | M11 | **결함 수정**: 커서 잠금이 메뉴에서 풀리지 않음(CursorPolicy), 일시정지 중 반복음. 경고·TODO 점검 | Core 336 + EditMode 126 + PlayMode 22 통과 | (이 커밋) |
+| 2026-10-01 | M11 | 리뷰 반영(첫 포커스 선택음 억제, one-shot pitch 인자 제거), GOAL D1~D9 체크, 최종 보고서, M11 종료 | Core 336 + EditMode 126 + PlayMode 22 통과, 빌드 성공(예상 밖 경고 0) | (이 커밋) |
+| 2026-10-01 | M11 | **결함 수정**: 커서 잠금이 메뉴에서 풀리지 않음(CursorPolicy), 일시정지 중 반복음. 경고·TODO 점검 | Core 336 + EditMode 126 + PlayMode 22 통과 | 9e2de7a |
 | 2026-10-01 | M11 | Unity 안 시나리오 봇 재생 스모크(다섯 스테이지, D6): Core ScenarioRunner.Pilot, SimulationDriver.CommandOverride, StageBootstrap 시드·구동기 훅, 테스트 메모리 세션 공용화, D-050 | Core 336 + EditMode 126 + PlayMode 20 통과 | cf86d7c |
 | 2026-10-01 | M11 | 성능 측정 도구(FrameStats·PerfRunner·Tools/perf.ps1)와 측정 보고서, **결함 수정**: AudioListener 없음(무음), 종료 시 오디오 NullReferenceException | Core 336 + EditMode 126 + PlayMode 15 통과, 빌드 성공, 플레이어 로그 오류 0 | 7b3609e |
 | 2026-10-01 | M11 | 전 흐름 PlayMode 테스트(D2): 키보드/마우스·게임패드로 Title → Stage 1~5 → Ending | Core 336 + EditMode 123 + PlayMode 14 통과 | c17f925 |

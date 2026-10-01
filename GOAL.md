@@ -11,15 +11,15 @@
 ## 2. 완료 정의 (Definition of Done)
 아래 항목이 **모두** 증거와 함께 체크되면 루프를 종료한다.
 
-- [ ] D1. 빌드 스크립트(`tech/verification.md` §4)로 PC Standalone 빌드가 오류 없이 생성된다.
-- [ ] D2. Title → Stage Select → Stage 1 → 2 → 3 → 4 → 5 → Ending 흐름이 키보드/마우스와 게임패드 양쪽으로 진행 가능하다.
-- [ ] D3. `spec/` 모든 문서의 수용 기준 체크박스가 체크되어 있고, 각 항목에 검증 증거(테스트 이름 또는 캡처 경로)가 적혀 있다.
-- [ ] D4. Core 테스트(`dotnet test`)와 Unity 테스트(EditMode/PlayMode)가 전부 통과한다.
-- [ ] D5. 시나리오 봇이 각 스테이지를 클리어하고, "의도적 발각" 봇은 Game Over에 도달한다 (`tech/verification.md` §3).
-- [ ] D6. 봇 전체 플레이스루 동안 Error/Exception 로그가 0건이다.
-- [ ] D7. 에셋 패스 완료: 플레이스홀더가 아닌 모든 에셋이 `Assets/_Project/CREDITS.md`에 허용 라이선스로 기록되어 있고, 누락 머티리얼(마젠타)이 없다 (`tech/asset-pipeline.md`).
-- [ ] D8. 각 스테이지의 대표 캡처 스크린샷을 검토하고 `plan/progress.md`에 기록했다.
-- [ ] D9. `plan/final-report.md` 작성: 구현 요약, 미해결 이슈, 사람에게 넘길 항목.
+- [x] D1. 빌드 스크립트(`tech/verification.md` §4)로 PC Standalone 빌드가 오류 없이 생성된다. — 증거: `Tools/build.ps1` result=Succeeded, errors 0, 예상 밖 경고 0 (`Builds/Windows/Moqui.exe`)
+- [x] D2. Title → Stage Select → Stage 1 → 2 → 3 → 4 → 5 → Ending 흐름이 키보드/마우스와 게임패드 양쪽으로 진행 가능하다. — 증거: PlayMode `FullFlowPlayModeTests.TitleThroughAllStagesToEnding(KeyboardMouse)`, `(Gamepad)`
+- [x] D3. `spec/` 모든 문서의 수용 기준 체크박스가 체크되어 있고, 각 항목에 검증 증거(테스트 이름 또는 캡처 경로)가 적혀 있다. — 증거: spec/00~11 143개 + asset-pipeline 3개 모두 `- [x]` + 증거
+- [x] D4. Core 테스트(`dotnet test`)와 Unity 테스트(EditMode/PlayMode)가 전부 통과한다. — 증거: Core 336 / EditMode 126 / PlayMode 22 통과 (`Tools/run-tests.ps1`)
+- [x] D5. 시나리오 봇이 각 스테이지를 클리어하고, "의도적 발각" 봇은 Game Over에 도달한다 (`tech/verification.md` §3). — 증거: Core `ScenarioTests` 클리어 봇 5/5·4/5·5/5·4/5·5/5, 발각 봇 전 스테이지 5/5
+- [x] D6. 봇 전체 플레이스루 동안 Error/Exception 로그가 0건이다. — 증거: PlayMode `ScenarioSmokeTests`(다섯 클리어 봇 Unity 재생, Error/Exception 0), 빌드 플레이어 로그 오류 0
+- [x] D7. 에셋 패스 완료: 플레이스홀더가 아닌 모든 에셋이 `Assets/_Project/CREDITS.md`에 허용 라이선스로 기록되어 있고, 누락 머티리얼(마젠타)이 없다 (`tech/asset-pipeline.md`). — 증거: `Assets/_Project/CREDITS.md`·EditMode `CreditsTests`, 셰이더 컴파일·렌더러 셰이더 검사, 캡처 마젠타 없음
+- [x] D8. 각 스테이지의 대표 캡처 스크린샷을 검토하고 `plan/progress.md`에 기록했다. — 증거: `plan/progress.md` "캡처 검토 기록"(M7·M9·M10)
+- [x] D9. `plan/final-report.md` 작성: 구현 요약, 미해결 이슈, 사람에게 넘길 항목. — 증거: `plan/final-report.md`
 
 ## 3. 범위
 **포함:** `plan/milestones.md`의 M0~M11 전체.
