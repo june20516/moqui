@@ -52,19 +52,19 @@ Stage 5 첫 클리어 ─▶ Ending ─▶ Title
 - 1인칭에서는 자기 캐릭터가 보이지 않으므로 젖은 날개 상태를 화면 가장자리 물방울 오버레이로도 보여준다.
 
 ## 수용 기준
-- [ ] 위 흐름의 모든 전이가 동작한다 (Unity: UI 흐름 테스트 — 버튼 이벤트를 직접 호출).
-- [ ] 잠긴 스테이지는 선택할 수 없다 (Unity).
-- [ ] 게임패드만으로 Title부터 Stage 1 시작까지 갈 수 있다 (Unity: 가상 Gamepad).
-- [ ] HUD 요소가 각 모델 값의 변화에 반영된다 (Unity: 값 주입 후 UI 상태 확인).
-- [ ] 인간 머리가 화면 밖일 때만 방향 화살표가 보인다 (Unity).
-- [ ] 화면 밖 공격 예고 시 해당 방향 가장자리 경고와 경고음이 나온다 (Unity).
-- [ ] 중독 게이지는 중독 > 0일 때만 보이고 단계 아이콘이 맞다 (Unity).
-- [ ] 광분 중에만 은신처 방향 표시가 나온다 (Unity).
-- [ ] Skills 화면에서 구매와 액티브 장착이 동작하고 저장된다 (Unity).
-- [ ] 튜토리얼 안내가 행동 이벤트로 순서대로 진행되고, 설정으로 끌 수 있다 (Unity).
-- [ ] Pause 중에는 Core 시뮬레이션 틱이 진행되지 않고 입력 커맨드가 전달되지 않는다 (Unity).
-- [ ] 설정 값이 재시작 후에도 유지된다 (Unity).
-- [ ] 1920×1080, 1280×720, 2560×1440에서 HUD 요소가 화면 밖으로 나가거나 겹치지 않는다 (캡처 3장 검토).
+- [x] 위 흐름의 모든 전이가 동작한다 (Unity: UI 흐름 테스트 — 버튼 이벤트를 직접 호출). — 증거: 버튼 이벤트를 직접 호출). — 증거: EditMode `FlowTests.Title_ButtonsLeadToStageSelectSettingsResetAndQuit`, `StageSelect_LockedStagesCannotStart_UnlockAfterClear`, `Result_RecordsAndSaves_RetrySkillsStageSelectAndEnding`, `SceneIntegrityTests.BuildSettings_ScreenScenesInFlowOrder` (D-044)
+- [x] 잠긴 스테이지는 선택할 수 없다 (Unity). — 증거: `FlowTests.StageSelect_LockedStagesCannotStart_UnlockAfterClear`
+- [x] 게임패드만으로 Title부터 Stage 1 시작까지 갈 수 있다 (Unity: 가상 Gamepad). — 증거: PlayMode `FlowPlayModeTests.GamepadOnly_TitleToStage1`
+- [x] HUD 요소가 각 모델 값의 변화에 반영된다 (Unity: 값 주입 후 UI 상태 확인). — 증거: EditMode `HudTests.ModelValues_AreReflectedInHudElements`, `Satiety_HighlightedOnlyWhenSpeedMultiplierBelowThreshold`, `Prompts_FollowPlayerStateAndInputDevice`, Core `HudDataTests`(5개) (D-041)
+- [x] 인간 머리가 화면 밖일 때만 방향 화살표가 보인다 (Unity). — 증거: `HudTests.HeadArrow_VisibleOnlyWhenHeadOffscreen`, `EdgeMarkers_StayInsideSafeBandAvoidingTopAndBottomHud`
+- [x] 화면 밖 공격 예고 시 해당 방향 가장자리 경고와 경고음이 나온다 (Unity). — 증거: `HudTests.OffscreenTelegraph_EdgeWarningAndSoundOnStart`
+- [x] 중독 게이지는 중독 > 0일 때만 보이고 단계 아이콘이 맞다 (Unity). — 증거: EditMode `HudTests.ToxinGauge_OnlyWhenPoisoned_TierIconMatches`
+- [x] 광분 중에만 은신처 방향 표시가 나온다 (Unity). — 증거: `HudTests.HidingDirection_OnlyDuringFrenzy`
+- [x] Skills 화면에서 구매와 액티브 장착이 동작하고 저장된다 (Unity). — 증거: `FlowTests.Skills_PurchaseAndEquip_AreSaved_AndCarriedIntoStage`
+- [x] 튜토리얼 안내가 행동 이벤트로 순서대로 진행되고, 설정으로 끌 수 있다 (Unity). — 증거: Core `TutorialTests`(4개), EditMode `HudTests.TutorialHints_FollowTrackerSteps_AndCanBeTurnedOff`, `TutorialHints_SettingPersistsInStore_AndEveryLevelStepHasText`, PlayMode `StageSceneTests`(첫 안내 표시) (D-042)
+- [x] Pause 중에는 Core 시뮬레이션 틱이 진행되지 않고 입력 커맨드가 전달되지 않는다 (Unity). — 증거: PlayMode `FlowPlayModeTests.Pause_StopsTicksAndDropsInput`
+- [x] 설정 값이 재시작 후에도 유지된다 (Unity). — 증거: `FlowTests.Settings_ChangedThroughPanel_PersistInStore`, `Settings_SurvivePlayerPrefsRestart`
+- [x] 1920×1080, 1280×720, 2560×1440에서 HUD 요소가 화면 밖으로 나가거나 겹치지 않는다 (캡처 3장 검토). — 증거: `Captures/2026-10-01_152002/Hud_*.png`
 
 ## 범위 외
 - 키 리바인딩, 다국어, 자막

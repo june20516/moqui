@@ -93,12 +93,12 @@
 - 시작 위치: 방충망 찢어진 틈.
 
 ## 수용 기준
-- [ ] `livingRoom` 방 데이터가 위 표의 좌표/크기를 ±5u 안에서 따르고, Stage 1·2가 같은 방 데이터를 참조한다 (Core: 레벨 데이터 검사).
-- [ ] 다섯 스테이지 모두 공통 규칙의 레벨 데이터 검사를 통과한다 (Core).
-- [ ] `glass` 형상은 충돌은 하지만 시야를 막지 않는다 (Core).
-- [ ] Unity 씬의 시각 오브젝트가 레벨 데이터의 모든 형상 ID와 1:1로 대응한다 (Unity).
-- [ ] 각 스테이지의 클리어 봇이 성공한다 (Core 헤드리스 봇, `tech/verification.md` §3).
-- [ ] 각 스테이지의 대표 캡처 4장(전경, 시작 위치, 인간 근접, Shadow Zone 내부)이 생성된다.
+- [x] `livingRoom` 방 데이터가 위 표의 좌표/크기를 ±5u 안에서 따르고, Stage 1·2가 같은 방 데이터를 참조한다 (Core: 레벨 데이터 검사). — 증거: `LevelDataTests.LivingRoom_BoxFurniture_MatchesSpecTableWithin5u`(8개 가구), `LivingRoom_RoundFurniture_MatchesSpecTableWithin5u`, `LivingRoom_ShadowZones_UnderTableBehindShelfBehindCurtain`, `Stage1And2_ReferenceTheSameLivingRoom` (D-037 커튼 조정)
+- [x] 다섯 스테이지 모두 공통 규칙의 레벨 데이터 검사를 통과한다 (Core). — 증거: `LevelDataTests.Level_PassesCommonLevelChecks`(stage01~05), `Level_AllFurnitureHasObstacleFlag`, `DataFiles_MatchJsonSchemas`
+- [x] `glass` 형상은 충돌은 하지만 시야를 막지 않는다 (Core). — 증거: `LevelDataTests.Glass_BlocksMovementButNotLineOfSight`
+- [x] Unity 씬의 시각 오브젝트가 레벨 데이터의 모든 형상 ID와 1:1로 대응한다 (Unity). — 증거: EditMode `LevelViewTests.Build_Level_OneVisualPerShapeIdWithMatchingPose`(stage01·02), PlayMode `StageSceneTests.Stage_Play_BuildsRequestedLevel`(stage01·02)
+- [x] 각 스테이지의 클리어 봇이 성공한다 (Core 헤드리스 봇, `tech/verification.md` §3). — 증거: `ScenarioTests` stage01 5/5, stage02 4/5, stage03 4/5, stage04 4/5(스킬 구성, D-048), stage05 5/5. 발각 봇 stage01~05 5/5
+- [x] 각 스테이지의 대표 캡처 4장(전경, 시작 위치, 인간 근접, Shadow Zone 내부)이 생성된다. — 증거: `Captures/2026-10-01_152614/Stage_stage01·02_*.png`(M7), `Captures/2026-10-01_165113/Stage_stage03~05_*.png`, 에셋 적용 후 다섯 스테이지 `Captures/2026-10-01_173131/Stage_*.png`(각 4장 + 1인칭)
 
 ## 범위 외
 - 절차적 레벨 생성, 6번째 이후 스테이지

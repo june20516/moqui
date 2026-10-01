@@ -83,26 +83,26 @@
 - 공격 후 `recovery` 동안 다음 공격을 하지 않는다.
 
 ## 수용 기준
-- [ ] 상태 전이와 히스테리시스(40 진입 / 20 이탈)가 동작한다 (Core).
-- [ ] 자극이 없으면 2초 후부터 10/s로 감소한다 (Core).
-- [ ] Yellow Zone 안, 시야 확보 시 거리별 증가율이 25→8/s 선형이다 (Core).
-- [ ] 장애물이 시선을 막으면 시각 증가가 0이고, 스냅샷의 PlayerVisibleToHuman이 거짓이다 (Core).
-- [ ] Red Zone 진입 시 같은 틱에 박수 공격이 시작되고 광분이 된다 (Core).
-- [ ] 소리 거리는 가까운 귀 기준이다: 머리를 돌리면 같은 위치의 소음 증가율이 달라진다 (Core).
-- [ ] 비행 소음 증가율이 귀 거리 0에서 16/s, 반경 끝에서 4/s이다 (Core).
-- [ ] 귀 근접 구역에서 +30/s가 추가되고 귀 반응이 발생할 수 있다 (Core).
-- [ ] 대시 NoiseEvent가 반경 안의 인간 경계를 즉시 +40 한다 (Core).
-- [ ] 광분은 최소 8초 유지되고, 그 뒤 6초 연속 보지 못하면 경계 60, Suspicious가 된다 (Core).
-- [ ] 광분 중 다시 보이면 연속 미발견 시간이 초기화된다 (Core).
-- [ ] 광분 중 보이지 않아도 마지막 위치 주변에 맹목 휘두르기가 발생한다 (Core).
-- [ ] 착지 반응 확률이 민감도에 비례한다: 같은 시드 10,000회 시행에서 기대값 ±2%p (Core, 통계 테스트).
-- [ ] 부착 중 반응 위험률이 가려움 제곱에 비례해 증가하고, 가려움 100이면 즉시 반응한다 (Core).
-- [ ] 모든 공격과 반응의 목표가 예고 시작 시점의 위치로 고정된다: 예고 중 판정 밖으로 이동하면 생존하고, 머무르면 사망한다 (Core).
-- [ ] 무작위 움직임이 흡혈 중에도 발생하고, 붙어 있는 모기가 부위를 따라 움직인다 (Core).
-- [ ] 부위 속도가 dislodgeSpeed를 넘으면 모기가 튕겨 나가고 흡혈 세션이 끝나며, 사망하지 않는다 (Core).
-- [ ] 같은 시드와 같은 입력이면 인간의 움직임과 반응이 똑같이 재현된다 (Core).
-- [ ] 머리가 yawLimit를 넘어 회전하지 않는다 (Core).
-- [ ] 공격 중에는 새 공격이나 반응이 시작되지 않는다 (Core).
+- [x] 상태 전이와 히스테리시스(40 진입 / 20 이탈)가 동작한다 (Core). — 증거: `HumanAwarenessTests.StateTransitions_Hysteresis_Enter40Exit20`
+- [x] 자극이 없으면 2초 후부터 10/s로 감소한다 (Core). — 증거: `HumanAwarenessTests.NoStimulus_DecaysAfter2SecondsAt10PerSecond`, `NoStimulus_PlayerHidden_UsesShadowDecayRate`
+- [x] Yellow Zone 안, 시야 확보 시 거리별 증가율이 25→8/s 선형이다 (Core). — 증거: `HumanVisionTests.YellowZone_LineOfSight_RateIsLinearFrom25To8`(40/150/299u), `YellowZone_IntegratedOverOneSecond_AwarenessRisesByRate`
+- [x] 장애물이 시선을 막으면 시각 증가가 0이고, 스냅샷의 PlayerVisibleToHuman이 거짓이다 (Core). — 증거: `HumanVisionTests.Obstacle_BlocksLineOfSight_NoVisionGainAndNotVisible`, `Hidden_InYellowZone_NotVisibleAndNoGain`
+- [x] Red Zone 진입 시 같은 틱에 박수 공격이 시작되고 광분이 된다 (Core). — 증거: `HumanVisionTests.RedZone_EnteredWithLineOfSight_ClapAndFrenzySameTick`
+- [x] 소리 거리는 가까운 귀 기준이다: 머리를 돌리면 같은 위치의 소음 증가율이 달라진다 (Core). — 증거: `HumanHearingTests.FlightNoise_HeadTurned_SamePositionGivesDifferentRate`, `FlightNoise_InsideRadiusOutsideEarZone_UsesNearestEarDistance`
+- [x] 비행 소음 증가율이 귀 거리 0에서 16/s, 반경 끝에서 4/s이다 (Core). — 증거: `HumanHearingTests.FlightNoise_EarDistanceZero_Is16AndRadiusEdge_Is4`, `FlightNoise_Precision_HalvesRadius`
+- [x] 귀 근접 구역에서 +30/s가 추가되고 귀 반응이 발생할 수 있다 (Core). — 증거: `HumanHearingTests.EarZone_Inside_Adds30PerSecond`(+30/s), `ReactionTests.EarZone_Airborne_ProducesEarReactionsAtEarRate`(귀 반응)
+- [x] 대시 NoiseEvent가 반경 안의 인간 경계를 즉시 +40 한다 (Core). — 증거: `HumanHearingTests.DashNoise_EarInsideRadius_RaisesAwarenessBy40Immediately`, `DashNoise_EarOutsideRadius_NoChange`
+- [x] 광분은 최소 8초 유지되고, 그 뒤 6초 연속 보지 못하면 경계 60, Suspicious가 된다 (Core). — 증거: `FrenzyTests.Frenzy_NeverSeen_LastsMinimum8SecondsThenCalmsTo60`, `Frenzy_SeenUntil10Seconds_CalmsAfter6UnseenSeconds` (D-030)
+- [x] 광분 중 다시 보이면 연속 미발견 시간이 초기화된다 (Core). — 증거: `FrenzyTests.Frenzy_SeenAgainWhileHidden_ResetsUnseenTimer`
+- [x] 광분 중 보이지 않아도 마지막 위치 주변에 맹목 휘두르기가 발생한다 (Core). — 증거: `FrenzyTests.Frenzy_PlayerNotVisible_BlindSwatsAroundLastSeenPosition`
+- [x] 착지 반응 확률이 민감도에 비례한다: 같은 시드 10,000회 시행에서 기대값 ±2%p (Core, 통계 테스트). — 증거: `ReactionTests.LandingReaction_10000Trials_MatchesLandChanceTimesSensitivity`(5개 부위 유형), `LandingReaction_SameSeed_SameOutcomes`
+- [x] 부착 중 반응 위험률이 가려움 제곱에 비례해 증가하고, 가려움 100이면 즉시 반응한다 (Core). — 증거: `ReactionTests.AttachedHazard_GrowsWithItchSquared`, `AttachedHazard_PerTickRolls_MatchExponentialProbability`, `Attached_Itch100_ReactsImmediately`
+- [x] 모든 공격과 반응의 목표가 예고 시작 시점의 위치로 고정된다: 예고 중 판정 밖으로 이동하면 생존하고, 머무르면 사망한다 (Core). — 증거: `ReactionTests.ReactSlap_PlayerLeavesDuringTelegraph_Survives`, `ReactSlap_PlayerStays_DiesWithAttackCause`, `Clap_PlayerLeavesRedZoneDuringTelegraph_Survives`, `Clap_PlayerStays_Dies` (손바닥·맹목 휘두르기도 같은 `HumanAttackSystem.Start` 경로)
+- [x] 무작위 움직임이 흡혈 중에도 발생하고, 붙어 있는 모기가 부위를 따라 움직인다 (Core). — 증거: `SuckTests.RandomMotion_WhileSucking_SessionContinuesAndFollowsPart`, `HumanMotionTests.Actions_KeepHappeningWhilePlayerIsAttached`
+- [x] 부위 속도가 dislodgeSpeed를 넘으면 모기가 튕겨 나가고 흡혈 세션이 끝나며, 사망하지 않는다 (Core). — 증거: `SuckTests.Dislodged_WhileSucking_SessionEndsWithoutDeath`, `HumanMotionTests.FastAction_PartFasterThanDislodgeSpeed_DislodgesWithoutDeath`
+- [x] 같은 시드와 같은 입력이면 인간의 움직임과 반응이 똑같이 재현된다 (Core). — 증거: `FrenzyTests.SameSeedAndCommands_HumanBehaviourReplaysExactly` (다른 시드는 다른 결과)
+- [x] 머리가 yawLimit를 넘어 회전하지 않는다 (Core). — 증거: `HumanAwarenessTests.Head_StimulusBehind_NeverExceedsYawLimit`
+- [x] 공격 중에는 새 공격이나 반응이 시작되지 않는다 (Core). — 증거: `ReactionTests.AttackInProgress_NoNewAttackOrReactionUntilRecoveryEnds`
 
 ## 범위 외
 - 인간의 보행과 자리 이동, 파리채·전기 모기채 등 도구 공격 (스프레이 제외), 다수의 인간

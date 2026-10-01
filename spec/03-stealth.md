@@ -23,16 +23,16 @@
 - 부착 가능할 때 HUD에 프롬프트 "F: 착지"를 표시한다 (spec/08).
 
 ## 수용 기준
-- [ ] Shadow Zone 안에서는 Yellow Zone이어도 시각 증가가 0이다 (Core).
-- [ ] Shadow Zone 안에서 경계가 25/s로 감소한다 (Core).
-- [ ] Shadow Zone 안에서 대시하면 경계가 +40 오른다 (Core).
-- [ ] 진입 시 비네트가 0.3초에 걸쳐 0.4가 된다 (Unity).
-- [ ] Shadow Zone 안에서 중독·젖은 날개·습기·탈진이 2배 빠르게 회복된다 (Core).
-- [ ] 부착 상태에서는 비행 소음이 발생하지 않는다 (Core: 반경 안 인간 경계 증가 0).
-- [ ] 부착 상태의 시각 증가율이 비부착 대비 0.3배이다 (Core).
-- [ ] 2u보다 먼 표면에서는 부착되지 않는다 (Core).
-- [ ] 부착 시 캐릭터 up 벡터가 표면 법선과 5° 이내로 정렬된다 (Core).
-- [ ] 레벨 데이터의 모든 가구 형상에 obstacle 플래그가 있다 (Core: 레벨 데이터 검사).
+- [x] Shadow Zone 안에서는 Yellow Zone이어도 시각 증가가 0이다 (Core). — 증거: `StealthTests.ShadowZone_InsideYellowZone_NoVisionGainAndHidden`, `ShadowZone_LeaveZone_NoLongerHidden`, `HumanVisionTests.Hidden_InYellowZone_NotVisibleAndNoGain`
+- [x] Shadow Zone 안에서 경계가 25/s로 감소한다 (Core). — 증거: `StealthTests.ShadowZone_NoStimulus_AwarenessDecays25PerSecond`
+- [x] Shadow Zone 안에서 대시하면 경계가 +40 오른다 (Core). — 증거: `StealthTests.ShadowZone_DashInside_AwarenessPlus40`
+- [x] 진입 시 비네트가 0.3초에 걸쳐 0.4가 된다 (Unity). — 증거: `StealthPresentationTests.Vignette_EnterShadow_Reaches04In03Seconds`, `Vignette_Component_DrivesVolumeVignetteIntensity` (ShadowVignette, 샌드박스 씬에 전역 Volume)
+- [x] Shadow Zone 안에서 중독·젖은 날개·습기·탈진이 2배 빠르게 회복된다 (Core). — 증거: 탈진 `StaminaTests.Exhaustion_WhileHidden_RecoversTwiceAsFast`, 젖은 날개·습기 `WaterTests`(spec/05 "숨은 상태에서 젖은 날개 시간과 습기 게이지가 2배" 항목), 중독 `GimmickTests`(spec/06 "숨은 상태에서 중독이 2배" 항목)
+- [x] 부착 상태에서는 비행 소음이 발생하지 않는다 (Core: 반경 안 인간 경계 증가 0). — 증거: `StealthTests.Attached_NearEars_NoFlightNoise`
+- [x] 부착 상태의 시각 증가율이 비부착 대비 0.3배이다 (Core). — 증거: `StealthTests.Attached_InYellowZone_VisionRateIs03Times`
+- [x] 2u보다 먼 표면에서는 부착되지 않는다 (Core). — 증거: `AttachTests.Attach_SurfaceFartherThan2u_DoesNotAttach`, `Attach_NonAttachableSurface_DoesNotAttach`
+- [x] 부착 시 캐릭터 up 벡터가 표면 법선과 5° 이내로 정렬된다 (Core). — 증거: `AttachTests.Attach_WithinRange_AttachesAlignedToNormal`
+- [x] 레벨 데이터의 모든 가구 형상에 obstacle 플래그가 있다 (Core: 레벨 데이터 검사). — 증거: `LevelDataTests.Level_AllFurnitureHasObstacleFlag`(stage01·02), `Validator_FurnitureWithoutObstacleFlag_Reported`
 
 ## 범위 외
 - 빛의 밝기 기반 동적 은신 계산 (Shadow Zone은 수작업 볼륨으로만 처리)

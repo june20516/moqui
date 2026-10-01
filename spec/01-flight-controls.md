@@ -60,21 +60,21 @@ Attached ──(부위 급격한 움직임)──▶ Dislodged ──(경직 종
 ```
 
 ## 수용 기준
-- [ ] 최고 속도에서 입력을 놓으면 0.15초에 정지하고, 그동안 4.5u(±2%) 미끄러진다 (Core).
-- [ ] 정지 상태에서 1초 동안 W 입력 시 이동 거리가 56.4u(±1%)이다 (가속 0.12초 반영, Core, 장애물 없음).
-- [ ] 반대 방향 입력 시 속도가 가속 규칙에 따라 부드럽게 반전된다 (순간 반전 없음) (Core).
-- [ ] 대시 종료 직후 속도가 대시 방향 60u/s이고 이후 감속한다 (Core).
-- [ ] 바람 외력은 입력과 무관하게 즉시 더해진다 (Core).
-- [ ] 대각선 입력 속도가 단일 방향 속도와 같다 (Core).
-- [ ] 대시가 0.12초 동안 60u를 이동한다 (Core, ±1u).
-- [ ] 좌우·상하 입력이 없을 때 대시는 위쪽이다 (Core: DashDirectionResolver).
-- [ ] 스태미나 < 25이면 대시가 실행되지 않는다 (Core).
-- [ ] 쿨타임 안의 재입력은 무시된다 (Core).
-- [ ] 대시 시 NoiseEvent가 정확히 1회, 반경 150u로 발생한다 (Core).
-- [ ] 스태미나가 마지막 소모 1초 후부터 20/s로 회복한다 (Core).
-- [ ] 스태미나 0이면 2초간 속도 50%, 대시 불가 (Core).
-- [ ] 대시가 벽을 관통하지 않는다 (Core).
-- [ ] 위 입력 매핑이 Input Actions 에셋에 존재하고, 게임패드로도 동일하게 동작한다 (Unity: 가상 Gamepad 디바이스로 입력 주입).
+- [x] 최고 속도에서 입력을 놓으면 0.15초에 정지하고, 그동안 4.5u(±2%) 미끄러진다 (Core). — 증거: `FlightTests.Release_AtTopSpeed_StopsIn015SecondsAfterSliding45u`
+- [x] 정지 상태에서 1초 동안 W 입력 시 이동 거리가 56.4u(±1%)이다 (가속 0.12초 반영, Core, 장애물 없음). — 증거: `FlightTests.Forward_OneSecondFromRest_Travels564u`
+- [x] 반대 방향 입력 시 속도가 가속 규칙에 따라 부드럽게 반전된다 (순간 반전 없음) (Core). — 증거: `FlightTests.ReverseInput_AtTopSpeed_ReversesSmoothly`
+- [x] 대시 종료 직후 속도가 대시 방향 60u/s이고 이후 감속한다 (Core). — 증거: `DashTests.Dash_JustFinished_HasFlightSpeedAlongDashThenDecelerates`
+- [x] 바람 외력은 입력과 무관하게 즉시 더해진다 (Core). — 증거: `ExternalForceTests.Wind_NoInput_AddedImmediatelyWithoutInertia`, `Wind_WithInput_AddsToInputMovement`
+- [x] 대각선 입력 속도가 단일 방향 속도와 같다 (Core). — 증거: `FlightTests.DiagonalInput_TopSpeed_EqualsSingleDirectionSpeed`
+- [x] 대시가 0.12초 동안 60u를 이동한다 (Core, ±1u). — 증거: `DashTests.Dash_FromRest_Moves60uIn012Seconds` (7틱, D-026)
+- [x] 좌우·상하 입력이 없을 때 대시는 위쪽이다 (Core: DashDirectionResolver). — 증거: `DashTests.DashDirection_NoLateralOrVerticalInput_IsUp`, `DashDirection_LargestAxisWins`, `DashDirection_TieBetweenLateralAndVertical_PrefersLateral`
+- [x] 스태미나 < 25이면 대시가 실행되지 않는다 (Core). — 증거: `DashTests.Dash_StaminaBelowCost_DoesNotExecute`
+- [x] 쿨타임 안의 재입력은 무시된다 (Core). — 증거: `DashTests.Dash_PressedDuringCooldown_IsIgnored`
+- [x] 대시 시 NoiseEvent가 정확히 1회, 반경 150u로 발생한다 (Core). — 증거: `DashTests.Dash_Executed_EmitsSingleNoiseEventWith150uRadius`
+- [x] 스태미나가 마지막 소모 1초 후부터 20/s로 회복한다 (Core). — 증거: `StaminaTests.Stamina_AfterDash_RegeneratesFrom1SecondAt20PerSecond`
+- [x] 스태미나 0이면 2초간 속도 50%, 대시 불가 (Core). — 증거: `StaminaTests.Stamina_ReachesZero_Exhausted2SecondsWithHalfSpeedAndNoDash`, `Exhaustion_WhileHidden_RecoversTwiceAsFast`
+- [x] 대시가 벽을 관통하지 않는다 (Core). — 증거: `DashTests.Dash_IntoWall_StopsWithoutPenetrating`
+- [x] 위 입력 매핑이 Input Actions 에셋에 존재하고, 게임패드로도 동일하게 동작한다 (Unity: 가상 Gamepad 디바이스로 입력 주입). — 증거: `Assets/_Project/Input/MoquiControls.inputactions`(Gameplay 맵), `CommandCollectorTests.Asset_GameplayAction_HasKeyboardAndGamepadBindings`(11개 액션), `Gamepad_AllGameplayInputs_ProduceCommand`, `KeyboardMouse_AllGameplayInputs_ProduceCommand`, `ToggleViewAndPause_Gamepad_AreConsumedSeparately`, `GamepadStick_FullRightOneSecond_RotatesYawByLookSpeed`
 
 ## 범위 외
 - 롤, 대시 방향 8방향화, 공중 관성 옵션
