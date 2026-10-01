@@ -99,6 +99,36 @@ namespace Moqui.Unity.Tests
         }
     
 
+        /// <summary>마우스로 메뉴를 누를 수 있도록 플레이 중에만 커서를 잠근다 (M11 버그 수정).</summary>
+        [UnityTest]
+        public IEnumerator Cursor_LockedOnlyWhilePlaying()
+        {
+            StageBootstrap.RequestedLevelId = "stage01";
+            yield return SceneManager.LoadSceneAsync(ScreenId.Stage.ToString(), LoadSceneMode.Single);
+            yield return WaitForScene(ScreenId.Stage.ToString());
+            var screen = Object.FindAnyObjectByType<StageScreen>();
+            var runner = Object.FindAnyObjectByType<SimulationRunner>();
+            Assert.That(CursorPolicy.Requested, Is.EqualTo(CursorLockMode.Locked), "playing");
+
+            screen.Pause();
+            Assert.That(CursorPolicy.Requested, Is.EqualTo(CursorLockMode.None), "pause menu");
+            screen.Resume();
+            Assert.That(CursorPolicy.Requested, Is.EqualTo(CursorLockMode.Locked), "resumed");
+
+            runner.Driver.Simulation.Player.BloodGauge = 100f;
+            for (float waited = 0f; !screen.ResultPanel.activeSelf && waited < 5f; waited += Time.unscaledDeltaTime)
+            {
+                yield return null;
+            }
+
+            Assert.That(screen.ResultPanel.activeSelf, Is.True);
+            Assert.That(CursorPolicy.Requested, Is.EqualTo(CursorLockMode.None), "result menu");
+
+            screen.StageSelectButton.onClick.Invoke();
+            yield return WaitForScene(ScreenId.StageSelect.ToString());
+            Assert.That(CursorPolicy.Requested, Is.EqualTo(CursorLockMode.None), "stage select");
+        }
+
         [UnityTest]
         public IEnumerator Text_GlyphsAvailableAfterSceneChange()
         {

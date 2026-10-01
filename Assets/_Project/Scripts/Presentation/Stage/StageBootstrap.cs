@@ -62,8 +62,6 @@ namespace Moqui.Unity.Presentation.Stage
                 Tutorial = new TutorialTracker(Level.Tutorial, new TutorialSettings(tuning));
                 _runner.Driver.TickCompleted += Tutorial.Observe;
             }
-
-            Cursor.lockState = CursorLockMode.Locked;
         }
     }
 }
