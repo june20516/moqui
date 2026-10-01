@@ -34,6 +34,7 @@ namespace Moqui.Unity.Editor
         private const float HumanCloseupDistance = 25f;
         private const float StageSettleSeconds = 1f;
         private const float Co2SettleSeconds = 1.2f;
+        private const float ShadowSettleSeconds = 5f;
         private const float HudCaptureYawOffset = 100f;
         private static readonly Vector2Int[] HudResolutions = { new Vector2Int(1920, 1080), new Vector2Int(1280, 720), new Vector2Int(2560, 1440) };
         private const float OverviewBackOff = 60f;
@@ -134,7 +135,10 @@ namespace Moqui.Unity.Editor
 
             var shadow = simulation.World.Shapes.First(shape => shape.Matches(ShapeFlags.ShadowZone));
             Vector3 hidden = shadow.Center.ToUnity();
+            var vignette = UnityEngine.Object.FindAnyObjectByType<ShadowVignette>();
+            vignette.Tick(tuning, true, ShadowSettleSeconds);
             Shot(hidden, solver.ThirdPerson(hidden, YawTowards(hidden, head), -5f), false, "shadow_zone");
+            vignette.Tick(tuning, false, ShadowSettleSeconds);
             SensesFog.Disable();
             Debug.Log($"[CaptureTool] {prefix}: shapes={level.AllShapes().Count()}, shadow={shadow.Id}, human={simulation.Human.State}, co2Puffs={sensesView.Plume.Puffs.Count}");
         }

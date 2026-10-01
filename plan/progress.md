@@ -3,47 +3,25 @@
 > 루프가 매 반복 끝에 갱신한다. 위에서부터 최신순으로 쓴다.
 
 ## 현재
-- 마일스톤: **M7 거실 버티컬 슬라이스 (Stage 1·2)** (진행 중)
-- 다음 할 일: Stage 1·2 대표 캡처 최종 검토, 버티컬 슬라이스 리포트 → M7 종료
-- 브랜치: `milestone/m7-living-room`
+- 마일스톤: **M8 화면 흐름 · 스킬 트리 · 저장** (시작 전)
+- 다음 할 일: M8 브랜치 생성, spec/08(흐름·설정·Skills)·spec/09 수용 기준을 체크리스트로 복사
+- 브랜치: `milestone/m8-flow-skills` (생성 예정)
 
-## 현재 마일스톤 체크리스트 (M7)
-### 레벨 데이터 (spec/07, tech/architecture §5)
-- [x] `livingRoom` 방 데이터가 표의 좌표/크기를 ±5u 안에서 따르고, Stage 1·2가 같은 방 데이터를 참조한다 (Core: 레벨 데이터 검사). — 증거: `LevelDataTests.LivingRoom_BoxFurniture_MatchesSpecTableWithin5u`(8개 가구), `LivingRoom_RoundFurniture_MatchesSpecTableWithin5u`, `LivingRoom_ShadowZones_UnderTableBehindShelfBehindCurtain`, `Stage1And2_ReferenceTheSameLivingRoom` (D-037 커튼 조정)
-- [x] Stage 1·2가 공통 규칙의 레벨 데이터 검사를 통과한다 (Core). (Stage 3~5는 M9) — 증거: `LevelDataTests.Level_PassesCommonLevelChecks`(시작 위치·소음·DripSource·인간 데이터·도망칠 곳·가구 플래그), `Validator_SpawnInsideYellowZone_Reported`. 경로 규칙은 클리어 봇 `stage01_clear`·`stage02_clear`가 숨을 곳을 경유해 SkinSite에 도달해 증명
-- [x] `glass` 형상은 충돌은 하지만 시야를 막지 않는다 (Core). — 증거: `LevelDataTests.Glass_BlocksMovementButNotLineOfSight`
-- [x] 레벨·방 데이터가 `data/schema`의 JSON Schema를 만족한다 (Core, tech/verification §1). — 증거: `LevelDataTests.DataFiles_MatchJsonSchemas`, `Schema_RejectsInvalidLevel`
-- [x] (M4 이월, D-034) 레벨 데이터의 모든 가구 형상에 obstacle 플래그가 있다 (Core: 레벨 데이터 검사). — 증거: `LevelDataTests.Level_AllFurnitureHasObstacleFlag`(stage01·02), `Validator_FurnitureWithoutObstacleFlag_Reported`
-- [ ] (M6 이월, D-036) 모든 레벨의 DripSource가 착지면 기준 150u 이상이다 (Core: 레벨 데이터 검사). (Stage 1·2는 발생원 없음, Stage 3~5는 M9에서 같은 검사) — 진행: `LevelDataTests.Level_DripSourcesAreHighEnough`(stage01·02) + `LevelValidator` 포함. Stage 3~5 데이터가 생기는 M9에서 같은 테스트로 체크
-- [x] Unity 씬의 시각 오브젝트가 레벨 데이터의 모든 형상 ID와 1:1로 대응한다 (Unity). — 증거: EditMode `LevelViewTests.Build_Level_OneVisualPerShapeIdWithMatchingPose`(stage01·02), PlayMode `StageSceneTests.Stage_Play_BuildsRequestedLevel`(stage01·02)
+## M7 버티컬 슬라이스 리포트 (2026-10-01, 사람 검토 권장)
+**할 수 있는 것:** Unity 에디터에서 `Assets/_Project/Scenes/Stage.unity`를 열고 Play하면 Stage 1(조는 인간)이 시작된다. `StageBootstrap.RequestedLevelId`로 stage02를 고를 수 있으며, 화면 흐름(타이틀·스테이지 선택)은 M8에서 붙인다. 빌드 실행 파일은 아직 Boot 씬만 연다.
+- 비행·대시·정밀 비행·착지·흡혈·이탈·은신, 물방울, 인간 감지·광분·공격, 물린 자국·포만·승패가 Core 규칙대로 동작한다 (Core 265개 테스트).
+- 모기 감각: 플레이어 기준 흐린 시야(80u 선명 → 250u 최대 흐림, 실루엣 유지), 분홍빛 CO₂ 연기(450u까지 보임), 피부 체온 빛과 물린 자국 점, 은신처 푸른빛(경계 3단계 강도).
+- HUD: 흡혈 게이지·포만·자국, 경계 눈 아이콘(가려짐/은신, 광분 남은 시간·진정 링), 경계 비네트, 머리 방향 화살표, 화면 밖 공격 경고와 경고음, 광분 중 은신처 방향, 스태미나(대시 비용 눈금·탈진·젖은 날개), 습기, 가려움 링, 조준점, 상호작용 프롬프트(키보드/게임패드 표기), 튜토리얼 안내(설정으로 끄기).
 
-### 인간 수정자 · 행동 (spec/06, spec/07)
-- [x] 졸기 중에는 Red Zone에 들어가도 시각 감지와 박수 공격이 없다 (Core). — 증거: `HumanModifierTests.Doze_SleepingInRedZone_NoVisionAndNoClap`
-- [x] 졸음 주기가 tuning 범위를 따르고, 깨기 0.5초 전에 예고 이벤트가 나온다 (Core). — 증거: `HumanModifierTests.Doze_CycleFollowsTuningRanges_WakeTelegraph05SecondsBefore`(150초, 10회 이상 전환), `Doze_AwarenessAtSuspicion_FullyWakes_ThenResleepsAfter5CalmSeconds`, `Doze_Sleeping_HearingAndReactionsHalved`
-- [x] 졸음 수정자 아래의 광분 최소 유지 시간이 0.5배이다 (Core). — 증거: `HumanModifierTests.Doze_FrenzyMinimumHalved_CalmsSoonerThanAwakeHuman`
-- [x] Stage 2 인간이 Safe에서 6~10초마다 좌 또는 우로 60° 2초간 둘러본다 (Core). — 증거: `HumanModifierTests.Stage2_Safe_GlancesSideways60DegreesFor2SecondsEvery6To10Seconds`
+**봇 결과 (고정 시드 5개):** stage01_clear 5/5, stage02_clear 4/5, stage01_detect 5/5, stage02_detect 5/5 (D-038). 클리어 경로는 천장 아래로 머리 뒤에 접근해 오른 팔뚝을 2~3회 나눠 빠는 방식이다.
 
-### 모기 감각 (spec/11)
-- [x] 스냅샷에 호흡 위상, 날숨 위치·세기, 바람 영역, 피부 목록·자국 여부, 은신처 목록, InShadow·PlayerVisibleToHuman이 포함된다 (Core). — 증거: `HumanModifierTests.Snapshot_ContainsSensesSourceData`
-- [x] 호흡 주기와 날숨 구간이 tuning 값을 따르고, 취한 타겟의 세기가 1.6배이다 (Core). (취한 타겟 수정자는 M9, M7에서는 세기 배율 경로만) — 증거: `HumanModifierTests.Breathing_PeriodAndExhaleFollowTuning_DrunkStrength16x`
-- [x] clearRange 안의 물체는 흐림이 0이고, fogFullRange 밖은 최대 흐림이다 (Unity: 셰이더 파라미터 검사 + 캡처). — 증거: EditMode `SensesFogTests.Amount_InsideClearRange_IsZero_BeyondFullRange_IsMax`, `ClearRange_InSteam_ScaledBySteamMultiplier`, `Apply_SetsGlobalShaderParameters_FromPlayerOrigin`, `PcRenderer_HasFogPassBeforeTransparents_WithCompilingShader`, 캡처 `Captures/2026-10-01_145312/Stage_stage01_start.png` (D-039)
-- [x] CO₂ 흐름이 최대 흐림 거리 밖에서도 보인다 (캡처 검토: Stage 1 시작 위치 1장). — 증거: `Captures/2026-10-01_150001/Stage_stage01_start.png`(머리 위 연기, 약 300u), EditMode `SensesViewTests.Co2_PuffsDuringExhale_VisibleBeyondFullFogUpToCo2Range`, `Co2Plume_RisesFadesAndExpires_StrongerBreathIsLarger` (D-040)
-- [x] 체온 표시가 heatRange 안에서만 나타나고, 자국 부위에 표시가 붙는다 (Unity). — 증거: EditMode `SensesViewTests.Heat_OnlyInsideHeatRange_StrongerWhenCloser`, `BiteMark_DotOnlyOnMarkedSite_InsideHeatRange`, 캡처 `Stage_stage01_human_close.png`
-- [x] 은신처 표시 강도가 어그로 상태에 따라 3단계로 바뀐다 (Unity). — 증거: EditMode `SensesViewTests.ShadowCue_IntensityStepsWithAwarenessState_HiddenBeyondCueRange`
+**캡처:** `Captures/2026-10-01_152614/` (Stage 대표 캡처, HUD 3해상도는 `2026-10-01_152002/`).
 
-### HUD · 튜토리얼 (spec/08 중 HUD 부분)
-- [x] HUD 요소가 각 모델 값의 변화에 반영된다 (Unity: 값 주입 후 UI 상태 확인). — 증거: EditMode `HudTests.ModelValues_AreReflectedInHudElements`, `Satiety_HighlightedOnlyWhenSpeedMultiplierBelowThreshold`, `Prompts_FollowPlayerStateAndInputDevice`, Core `HudDataTests`(5개) (D-041)
-- [x] 인간 머리가 화면 밖일 때만 방향 화살표가 보인다 (Unity). — 증거: `HudTests.HeadArrow_VisibleOnlyWhenHeadOffscreen`, `EdgeMarkers_StayInsideSafeBandAvoidingTopAndBottomHud`
-- [x] 화면 밖 공격 예고 시 해당 방향 가장자리 경고와 경고음이 나온다 (Unity). — 증거: `HudTests.OffscreenTelegraph_EdgeWarningAndSoundOnStart`
-- [x] 광분 중에만 은신처 방향 표시가 나온다 (Unity). — 증거: `HudTests.HidingDirection_OnlyDuringFrenzy`
-- [x] 튜토리얼 안내가 행동 이벤트로 순서대로 진행되고, 설정으로 끌 수 있다 (Unity). — 증거: Core `TutorialTests`(4개), EditMode `HudTests.TutorialHints_FollowTrackerSteps_AndCanBeTurnedOff`, `TutorialHints_SettingPersistsInStore_AndEveryLevelStepHasText`, PlayMode `StageSceneTests`(첫 안내 표시) (D-042)
-- [x] 1920×1080, 1280×720, 2560×1440에서 HUD 요소가 화면 밖으로 나가거나 겹치지 않는다 (캡처 3장 검토). — 증거: `Captures/2026-10-01_152002/Hud_*.png`
-
-### 봇 · 캡처 · 리포트
-- [x] Stage 1·2 클리어 봇이 고정 시드 5개 중 4개 이상 성공한다 (Core, tech/verification §3). — 증거: `ScenarioTests.Scenario_MeetsExpectationOnEnoughSeeds("stage01_clear")` 5/5, `("stage02_clear")` 4/5 (D-038)
-- [x] Stage 1·2 발각 봇이 Red Zone → PlayerDied(Attack)에 도달한다 (Core). — 증거: `ScenarioTests.Scenario_MeetsExpectationOnEnoughSeeds("stage01_detect")` 5/5(졸다가 귀 소음으로 깨어 박수), `("stage02_detect")` 5/5
-- [ ] Stage 1·2 대표 캡처 4장(전경, 시작 위치, 인간 근접, Shadow Zone 내부)을 검토했다.
-- [ ] `plan/progress.md`에 버티컬 슬라이스 리포트를 작성했다 (사람 검토 권장 시점).
+**사람이 봐 주면 좋은 것:**
+1. 밸런스(D-035): 자국 5개면 인간이 의심 상태에서 내려오지 않아 사실상 막힌다. 봇도 자국 3개(하한 24 > 의심 이탈 20)를 피하려고 Stage 2를 2회 세션으로 끝낸다. 플레이 감각상 `biteMark.floorPerBite`(8)를 낮출지 판단이 필요하다.
+2. 흐린 시야 세기(`senses.fogMaxDensity` 0.75, 블러 3px)가 길 찾기에 충분한지.
+3. 한글 글꼴(D-041): OS 글꼴 사용 중. OFL 글꼴 허용 여부.
+4. 표현은 화이트박스(프리미티브·반투명 볼륨)이며 아트는 M10에서 교체한다.
 
 ## 완료 마일스톤
 - **M0 프로젝트 골격** — 태그 `m0-done` (2026-10-01). 체크리스트: `plan/archive/m0-checklist.md`
@@ -53,11 +31,14 @@
 - **M4 스텔스** — 태그 `m4-done` (2026-10-01). 체크리스트: `plan/archive/m4-checklist.md`. 이월: 젖은 날개·습기 2배 회복 → M6, 중독 → M9, 레벨 데이터 obstacle 검사 → M7 (D-034)
 - **M5 흡혈 세션 · 물린 자국 · 포만 · 승리** — 태그 `m5-done` (2026-10-01). 체크리스트: `plan/archive/m5-checklist.md`
 - **M6 물방울 QTE · 습기** — 태그 `m6-done` (2026-10-01). 체크리스트: `plan/archive/m6-checklist.md`. 이월: DripSource 레벨 적용 → M7
+- **M7 거실 버티컬 슬라이스 (Stage 1·2)** — 태그 `m7-done` (2026-10-01). 체크리스트: `plan/archive/m7-checklist.md`. 이월: DripSource 검사 Stage 3~5 적용·CO₂ 바람 흩어짐·중독 게이지 → M9, 액티브 스킬 HUD → M8
+- **M7 거실 버티컬 슬라이스 (Stage 1·2)** — 태그 `m7-done` (2026-10-01). 체크리스트: `plan/archive/m7-checklist.md`. 이월: DripSource 검사 Stage 3~5 적용·CO₂ 바람 흩어짐 → M9, 중독 게이지 → M9, 액티브 스킬 HUD → M8
 
 ## 사람 요청
 | ID | 요청 | 필요 사양 | 대체물 적용 여부 | 상태 |
 |---|---|---|---|---|
-| 2026-10-01 | M7 | HUD(HudState·HudView·HudPresenter·HudController, 절차 스프라이트·경고음, OS 한글 글꼴), 튜토리얼(Core TutorialTracker, TutorialHints·설정), HUD 3해상도 캡처, D-041·D-042. **결함 수정**: 가장자리 표시 겹침·해상도별 위치, 누락 스크립트 | Core 265 + EditMode 64 + PlayMode 6 통과, 빌드 경고 0, 캡처 검토 | (이 커밋) |
+| 2026-10-01 | M7 | 카메라 URP 후처리 켜기(은신 비네트 미표시 결함), 은신처·증기 양면 렌더링, 씬 무결성 테스트, 대표 캡처 검토, 버티컬 슬라이스 리포트. M7 종료 | Core 265 + EditMode 66 + PlayMode 6 통과, 빌드 경고 0, 캡처 검토 | (이 커밋) |
+| 2026-10-01 | M7 | HUD(HudState·HudView·HudPresenter·HudController, 절차 스프라이트·경고음, OS 한글 글꼴), 튜토리얼(Core TutorialTracker, TutorialHints·설정), HUD 3해상도 캡처, D-041·D-042. **결함 수정**: 가장자리 표시 겹침·해상도별 위치, 누락 스크립트 | Core 265 + EditMode 64 + PlayMode 6 통과, 빌드 경고 0, 캡처 검토 | 977d12b |
 | 2026-10-01 | M7 | HUD 원천 데이터(Core): PlayerOccluded(가려짐), FrenzyMinRemaining·CalmProgress, CanAttach, DashCost, 스냅샷 포함 | Core 261/261 통과 | 6833ed6 |
 | 2026-10-01 | M7 | 감각 큐: Co2Plume·SenseCueModel·SensesView(CO₂·체온·자국·은신처 강도), 머티리얼 3개, tuning 키 11개, 캡처에 감각 반영, D-040 | Core 256 + EditMode 51 + PlayMode 6 통과, 캡처 검토 | 6ecbce1 |
 | 2026-10-01 | M7 | 흐린 시야: SensesSettings·FogModel·SensesFog, 깊이 기반 안개+블러 셰이더, PC_Renderer 전체 화면 패스, tuning 키 2개, D-039 | Core 256 + EditMode 46 + PlayMode 6 통과, 캡처 검토 | 0159a69 |
@@ -73,6 +54,7 @@
 (없음)
 
 ## 캡처 검토 기록
+- 2026-10-01 M7 최종 `Captures/2026-10-01_152614/` Stage 1·2 대표: 전경(흐림 속 가구 실루엣·CO₂), 시작 위치 3인칭·1인칭, 인간 근접(체온 빛·자국 점), Shadow Zone 내부(푸른빛 + 은신 비네트). 마젠타 없음
 - 2026-10-01 M7 `Captures/2026-10-01_152002/` HUD 3해상도: 모든 요소를 동시에 켠 상태(광분 4.3초·진정 링, 가려짐, 흡혈 62%·포만 강조·자국 2, 가려움 링·조준점, 젖은 날개 3.4s, 습기, 머리 화살표, 은신처 방향, 공격 경고, 튜토리얼 문구). 세 해상도에서 같은 비율 배치, 화면 밖·겹침 없음, 한글 정상. **결함 수정**: 첫 캡처(`151725`)에서 가장자리 표시가 하단 스태미나 문구와 겹치고 해상도마다 위치가 달랐음 → 세로 0.25~0.75 띠 제한 + 뷰포트 앵커 배치. 빌드에서 `HudAudioSource` 누락 스크립트 경고(파일명 불일치) → 파일 분리 + 씬 누락 스크립트 검사 테스트 추가
 - 2026-10-01 M7 `Captures/2026-10-01_150001/` Stage 감각 큐: 시작 위치에서 최대 흐림 너머 머리 위 CO₂ 연기(분홍) 보임, 인간 근접에서 오른 전완 체온 빛과 붉은 자국 점, 종아리 체온 빛. 체온 빛이 희게 보여 색을 더 따뜻하게 조정. 마젠타 없음
 - 2026-10-01 M7 `Captures/2026-10-01_145312/` Stage 흐린 시야: 시작 위치에서 가까운 커튼은 선명, 소파·인간·책장은 흐림과 블러, 최대 흐림에서도 가구 실루엣 유지. 은신처 표시(투명)는 안개 뒤에 그려져 선명. 마젠타 없음

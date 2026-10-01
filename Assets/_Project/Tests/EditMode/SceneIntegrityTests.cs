@@ -3,6 +3,7 @@ using NUnit.Framework;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 namespace Moqui.Unity.Tests
 {
@@ -26,6 +27,15 @@ namespace Moqui.Unity.Tests
             }
 
             Assert.That(missing, Is.EqualTo(0), scenePath);
+        }
+
+        [TestCase(SandboxSceneBuilder.StageScenePath)]
+        [TestCase(SandboxSceneBuilder.FlightScenePath)]
+        public void MainCamera_RendersPostProcessing_ForShadowVignette(string scenePath)
+        {
+            EditorSceneManager.OpenScene(scenePath, OpenSceneMode.Single);
+
+            Assert.That(Camera.main.GetUniversalAdditionalCameraData().renderPostProcessing, Is.True, scenePath);
         }
     }
 }

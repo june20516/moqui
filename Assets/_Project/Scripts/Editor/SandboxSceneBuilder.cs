@@ -64,8 +64,8 @@ namespace Moqui.Unity.Editor
             SetReference(new GameObject("WaterView").AddComponent<WaterView>(), "_runner", runner);
 
             var materials = new GameObject("LevelMaterials").AddComponent<LevelMaterials>();
-            SetReference(materials, "_shadowCue", LoadOrCreateTransparentMaterial(ShadowCueMaterialPath, ShadowCueColor));
-            SetReference(materials, "_steam", LoadOrCreateTransparentMaterial(SteamMaterialPath, SteamColor));
+            SetReference(materials, "_shadowCue", LoadOrCreateTransparentMaterial(ShadowCueMaterialPath, ShadowCueColor, doubleSided: true));
+            SetReference(materials, "_steam", LoadOrCreateTransparentMaterial(SteamMaterialPath, SteamColor, doubleSided: true));
             SetReference(materials, "_glass", LoadOrCreateTransparentMaterial(GlassMaterialPath, GlassColor));
             SetReference(materials, "_co2", LoadOrCreateTransparentMaterial(Co2MaterialPath, Co2Color));
             SetReference(materials, "_heat", LoadOrCreateTransparentMaterial(HeatMaterialPath, HeatColor));
@@ -193,6 +193,9 @@ namespace Moqui.Unity.Editor
             var camera = new GameObject("Main Camera").AddComponent<Camera>();
             camera.tag = "MainCamera";
 
+            // 은신 비네트(Volume)가 화면에 나오려면 URP 후처리가 켜져 있어야 한다.
+            camera.GetUniversalAdditionalCameraData().renderPostProcessing = true;
+
             runner = new GameObject("SimulationRunner").AddComponent<SimulationRunner>();
             SetReference(runner, "_controls", AssetDatabase.LoadAssetAtPath<InputActionAsset>(ControlsPath));
 
@@ -244,9 +247,12 @@ namespace Moqui.Unity.Editor
         }
 
         /// <summary>URP Lit 반투명(알파 블렌드) 머티리얼. 은신처 표시·증기·유리처럼 뒤가 비쳐야 하는 볼륨에 쓴다.</summary>
-        private static Material LoadOrCreateTransparentMaterial(string path, Color color)
+        /// <param name="doubleSided">볼륨 안에 들어가도 보이게 할지 (은신처·증기).</param>
+        private static Material LoadOrCreateTransparentMaterial(string path, Color color, bool doubleSided = false)
         {
             Material material = LoadOrCreateLitMaterial(path, color);
+            material.SetFloat("_Cull", (float)(doubleSided ? UnityEngine.Rendering.CullMode.Off : UnityEngine.Rendering.CullMode.Back));
+            material.doubleSidedGI = doubleSided;
             material.SetFloat("_Surface", 1f);
             material.SetFloat("_Blend", 0f);
             material.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
