@@ -30,6 +30,9 @@ namespace Moqui.Unity.Simulation
 
         public CommandCollector Collector { get; }
 
+        /// <summary>설정하면 입력 대신 이 함수가 틱마다 명령을 낸다 (Unity 안 시나리오 봇 재생, verification §2).</summary>
+        public Func<GameSimulation, PlayerCommand> CommandOverride { get; set; }
+
         public Vector3 InterpolatedPlayerPosition => Vector3.Lerp(_previousPlayerPosition, _currentPlayerPosition, _clock.Alpha);
 
         /// <summary>한 프레임을 진행하고 실행한 틱 수를 돌려준다.</summary>
@@ -40,7 +43,8 @@ namespace Moqui.Unity.Simulation
             for (int i = 0; i < ticks; i++)
             {
                 _previousPlayerPosition = Simulation.Player.Position.ToUnity();
-                Simulation.Step(Collector.NextCommand());
+                PlayerCommand command = Collector.NextCommand();
+                Simulation.Step(CommandOverride != null ? CommandOverride(Simulation) : command);
                 _currentPlayerPosition = Simulation.Player.Position.ToUnity();
                 TickCompleted?.Invoke(Simulation);
             }

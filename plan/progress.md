@@ -4,7 +4,7 @@
 
 ## 현재
 - 마일스톤: **M11 폴리시 · 릴리스** (진행 중)
-- 다음 할 일: 봇 플레이스루 오류 로그 0건(D6), 버그 정리 계속
+- 다음 할 일: 버그 정리(경고·알려진 결함 점검), GOAL D1~D9 체크, final-report
 - 브랜치: `milestone/m11-release`
 
 ## 현재 마일스톤 체크리스트 (M11)
@@ -12,7 +12,7 @@
 - [x] 게임패드로 Title → StageSelect → Stage 1~5 → Ending 전 흐름 진행 확인 (D2, 키보드/마우스 포함) — 증거: PlayMode `FullFlowPlayModeTests.TitleThroughAllStagesToEnding(KeyboardMouse)`(Title 시작은 마우스 클릭, 메뉴는 방향키·Enter), `(Gamepad)`(D-pad·South). 메뉴는 장치 입력만으로 조작, 클리어는 흡혈 게이지 주입(실제 클리어 가능성은 Core 봇, D5), Stage 5 첫 클리어 → 엔딩 보기 → Ending, 다섯 스테이지 기록 저장
 - [x] 성능 측정: `perf.targetFps` 기준 프레임 타임 로그 기록 — 증거: `plan/perf-report.md`(빌드 실행 `-moquiPerf`, 1920×1080, RTX 3060 Ti·i5-12400F, VSync 끔): 다섯 스테이지 평균 0.98~1.28 ms, p99 ≤ 1.83 ms, 60fps 예산(16.67 ms) 초과 0.0%(stage05 단발 최대 17.9 ms 1회). EditMode `PerfTests`(통계·인자)
 - [x] spec/ 모든 문서 수용 기준 체크박스를 증거와 함께 체크 (D3, 보관 체크리스트에서 동기화) — spec/00~11 143개 + asset-pipeline 3개 = 146개 모두 `- [x] … — 증거: …`(보관 체크리스트 m0~m10의 증거를 문구 대조로 옮기고, 여러 마일스톤에 나뉜 4개는 증거를 합침). 남은 `- [ ]` 0개
-- [ ] 봇 전체 플레이스루 동안 Error/Exception 로그 0건 (D6)
+- [x] 봇 전체 플레이스루 동안 Error/Exception 로그 0건 (D6) — 증거: PlayMode `ScenarioSmokeTests.ClearScenario_InStageScene_MatchesHeadlessCore_NoErrorLogs`(stage01~05 클리어 봇을 Stage 씬 안에서 재생, 헤드리스 Core와 결과·틱·광분·자국 일치, Result까지 `LogAssert.NoUnexpectedReceived`, D-050), Core 시나리오 10종(`ScenarioTests`, 예외 시 실패), 빌드 성능 실행 플레이어 로그 Error/Exception 0건
 - [ ] 버그 정리 (알려진 결함·경고 점검) — 진행: **결함 수정** ① 씬에 AudioListener가 없어 소리가 들리지 않음 → AudioOutput에 리스너 1개(PlayMode `StageSceneTests` 리스너 1개 검사) ② 종료 시 AudioDirector가 파괴된 출구의 AudioSource를 멈추다 NullReferenceException → Unity null 검사(PlayMode `AudioPlayModeTests.OutputDestroyedFirst_StageTeardownDoesNotThrow`)
 - [ ] GOAL D1~D9 체크와 `plan/final-report.md` (D9)
 
@@ -78,7 +78,8 @@
 ## 반복 로그
 | 일시 | 마일스톤 | 한 일 | 증거 | 커밋 |
 |---|---|---|---|---|
-| 2026-10-01 | M11 | 성능 측정 도구(FrameStats·PerfRunner·Tools/perf.ps1)와 측정 보고서, **결함 수정**: AudioListener 없음(무음), 종료 시 오디오 NullReferenceException | Core 336 + EditMode 126 + PlayMode 15 통과, 빌드 성공, 플레이어 로그 오류 0 | (이 커밋) |
+| 2026-10-01 | M11 | Unity 안 시나리오 봇 재생 스모크(다섯 스테이지, D6): Core ScenarioRunner.Pilot, SimulationDriver.CommandOverride, StageBootstrap 시드·구동기 훅, 테스트 메모리 세션 공용화, D-050 | Core 336 + EditMode 126 + PlayMode 20 통과 | (이 커밋) |
+| 2026-10-01 | M11 | 성능 측정 도구(FrameStats·PerfRunner·Tools/perf.ps1)와 측정 보고서, **결함 수정**: AudioListener 없음(무음), 종료 시 오디오 NullReferenceException | Core 336 + EditMode 126 + PlayMode 15 통과, 빌드 성공, 플레이어 로그 오류 0 | 7b3609e |
 | 2026-10-01 | M11 | 전 흐름 PlayMode 테스트(D2): 키보드/마우스·게임패드로 Title → Stage 1~5 → Ending | Core 336 + EditMode 123 + PlayMode 14 통과 | c17f925 |
 | 2026-10-01 | M11 | spec 수용 기준 체크박스 동기화(D3): 146개 기준에 보관 체크리스트 증거 연결, spec/07·10 최신 캡처·셰이더 검사 증거 보완 | spec·asset-pipeline의 `- [ ]` 0개 | (이 커밋) |
 | 2026-10-01 | M10 | M10 종료: 체크리스트 보관, 빌드 확인(성공, 예상 밖 경고 0), M11 체크리스트 | Tools/build.ps1 result=Succeeded | (이 커밋) |

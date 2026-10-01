@@ -1,10 +1,6 @@
 using System.Collections;
-using System.Collections.Generic;
-using Moqui.Core.Data;
 using Moqui.Core.Meta;
-using Moqui.Unity.Data;
 using Moqui.Unity.Presentation.Stage;
-using Moqui.Unity.Settings;
 using Moqui.Unity.Simulation;
 using Moqui.Unity.UI;
 using Moqui.Unity.UI.Flow;
@@ -25,32 +21,13 @@ namespace Moqui.Unity.Tests
         /// <summary>프레임 수가 아니라 실제 시간으로 기다린다 (배치 모드 프레임은 틱 하나보다 짧을 수 있다).</summary>
         private const float WaitSeconds = 0.5f;
 
-        private sealed class MemoryStorage : ISaveStorage
-        {
-            private readonly Dictionary<string, string> _files = new Dictionary<string, string>();
-
-            public bool Exists(string fileName) => _files.ContainsKey(fileName);
-
-            public string Read(string fileName) => _files[fileName];
-
-            public void Write(string fileName, string text) => _files[fileName] = text;
-
-            public void Move(string fromFileName, string toFileName)
-            {
-                _files[toFileName] = _files[fromFileName];
-                _files.Remove(fromFileName);
-            }
-
-            public void Delete(string fileName) => _files.Remove(fileName);
-        }
 
         public override void Setup()
         {
             base.Setup();
 
             // 실제 save.json·PlayerPrefs를 건드리지 않도록 메모리 세션으로 바꾼다.
-            Tuning tuning = TuningLoader.Load(new UnityDataSource());
-            GameSession.Replace(new GameSession(tuning, new SaveStore(new MemoryStorage()), new MemoryPreferenceStore(), id => id == "stage01" || id == "stage02"));
+            TestSessions.UseMemorySession(id => id == "stage01" || id == "stage02");
         }
 
         public override void TearDown()
