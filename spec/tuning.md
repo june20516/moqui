@@ -108,7 +108,6 @@
 | frenzy.minDuration | 8s | 진입 후 최소 유지 |
 | frenzy.calmTime | 6s | 연속으로 보지 못해야 진정 |
 | frenzy.exitValue | 60 | 진정 시 경계 값 |
-| frenzy.reachBonus | +40u | 공격 사거리 증가 (몸을 일으킴) |
 | frenzy.slapInterval | 0.4s | 손바닥 공격 사이 대기 |
 | frenzy.slapTelegraph | 0.45s | 광분 중 손바닥·맹목 휘두르기 예고 |
 | frenzy.blindSwatRadius | 30u | 마지막 위치 주변 |
@@ -137,18 +136,33 @@
 ## attack
 | 키 | 값 | 설명 |
 |---|---|---|
-| attack.reach | 80u | 어깨 기준 최대 사거리 |
 | attack.clap.telegraph | 0.35s | Red Zone 즉사기 |
 | attack.clap.radius | 15u | `attack.clap.offset` 지점 중심 |
 | attack.clap.offset | 25u | 판정 중심: 얼굴 앞 거리 (spec/02 §7) |
-| attack.clap.activeTime | 0.1s | 판정 유지 시간 (D-029) |
 | attack.clap.recovery | 1.0s | |
-| attack.slap.radius | 12u | 예고 시작 시점의 플레이어 위치에 고정 |
-| attack.slap.activeTime | 0.1s | 판정 유지 시간 |
+| attack.slap.radius | 12u | 손바닥 판정 구 반경. 목표는 예고 시작 시점의 플레이어 위치에 고정 |
 | attack.slap.recovery | 1.5s | |
 | attack.selfSlap.telegraph | 0.5s | 반응 때리기 예고 |
 | attack.selfSlap.radius | 10u | 예고 시작 시점의 모기 위치 중심 |
 | attack.selfSlap.recovery | 1.0s | |
+| attack.handPeakSpeed.frenzy | 500u/s | 광분 손바닥·맹목 휘두르기·박수 손 최고 속도. 타격 시간 = 손 경로 ÷ (최고 속도 ÷ 1.5) (D-052, knowledge/human-arm-motion.md) |
+| attack.handPeakSpeed.reaction | 400u/s | 반사적 자기 몸 치기 |
+| attack.handPeakSpeed.drunk | 300u/s | 취한 사람 무작위 휘두르기 |
+| attack.minTelegraph | 0.2s | 예고 최소 시간(사람 반응 시간 하한). 자세 전환 시간 + 이 값보다 짧은 예고는 늘린다 |
+
+### 인간 몸 (D-052·D-053, knowledge/human-arm-motion.md)
+| 키 | 값 | 설명 |
+|---|---|---|
+| human.handReachExtra | 9u | 손목 → 손바닥 중심 (팔 길이 = 위팔 + 아래팔 + 이 값, 데이터 캡슐에서 계산) |
+| human.elbowFlexMax | 150° | 팔꿈치 최대 굽힘 (AAOS) |
+| human.shoulderExtensionMax | 60° | 어깨 폄 한계. 몸 뒤쪽은 늘어뜨린 팔에서 이 각도 안만 닿는다 |
+| posture.maxLeanAngle | 35° | 상체 최대 기울기 |
+| posture.maxTwist | 60° | 상체 최대 비틀기 |
+| posture.riseLift | 30u | 완전히 일어설 때 골반 상승 |
+| posture.riseForward | 15u | 완전히 일어설 때 골반 전진 |
+| posture.leanTime | 0.4s | 최대 기울기까지 |
+| posture.turnTime | 0.4s | 최대 비틀기까지 |
+| posture.riseTime | 1.2s | 완전히 일어서기까지 (급히 일어남) |
 
 ## suck (흡혈)
 | 키 | 값 | 설명 |

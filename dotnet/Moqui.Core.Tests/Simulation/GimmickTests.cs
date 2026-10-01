@@ -409,7 +409,8 @@ namespace Moqui.Core.Tests.Simulation
                 Assert.That(gap, Is.InRange(4f - GameSimulation.DeltaTime, 7f + GameSimulation.DeltaTime), $"gap {i}");
             }
 
-            Assert.That(swats.All(s => s.Target.Length() <= Settings.Drunk.RandomSwatRadius + 1e-3f), Is.True, "within the radius around the body");
+            var chest = new Vector3(0f, TestHumans.ShoulderHeight, -5f);
+            Assert.That(swats.All(s => Vector3.Distance(s.Target, chest) <= Settings.Drunk.RandomSwatRadius + 1e-3f), Is.True, "within the radius around the chest");
             Assert.That(DrunkSwats(11), Is.EqualTo(swats), "same seed, same swats");
             Assert.That(DrunkSwats(12), Is.Not.EqualTo(swats));
         }

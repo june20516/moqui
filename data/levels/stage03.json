@@ -9,6 +9,7 @@
     "position": [0, 66, 105],
     "facingYaw": 180,
     "facingPitch": 90,
+    "maxPosture": "turn",
     "head": "head",
     "shoulders": [[-20, 48, 0], [20, 48, 0]],
     "parts": [

@@ -64,7 +64,7 @@ namespace Moqui.Core.Simulation
             }
             if (setup.Human != null)
             {
-                Human = new Human(setup.Human, World);
+                Human = new Human(setup.Human, World, settings.Body);
                 _humanSystem = new HumanSystem(settings, World, setup.Seed);
                 _humanSystem.Initialize(Human, 0);
                 if (Human.IsDrunk)

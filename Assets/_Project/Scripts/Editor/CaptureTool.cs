@@ -565,7 +565,7 @@ namespace Moqui.Unity.Editor
             foreach (AttackPhase phase in new[] { AttackPhase.Telegraph, AttackPhase.Active, AttackPhase.Recovery })
             {
                 StepUntilAttackPhase(simulation, humanView, phase);
-                int half = (HumanArmPose.PhaseEndTick(simulation.Human.Attack) - simulation.Tick) / 2;
+                int half = (PhaseEndTick(simulation.Human.Attack) - simulation.Tick) / 2;
                 for (int i = 0; i < half; i++)
                 {
                     simulation.Step(PlayerCommand.None);
@@ -573,6 +573,19 @@ namespace Moqui.Unity.Editor
                 }
 
                 CaptureHumanPose(camera, player, humanView, simulation, side, swingCenter, outputDirectory, $"Sandbox_Human_attack_{phase}");
+            }
+        }
+
+        private static int PhaseEndTick(HumanAttack attack)
+        {
+            switch (attack.Phase)
+            {
+                case AttackPhase.Telegraph:
+                    return attack.TelegraphEndTick;
+                case AttackPhase.Active:
+                    return attack.ActiveEndTick;
+                default:
+                    return attack.RecoveryEndTick;
             }
         }
 

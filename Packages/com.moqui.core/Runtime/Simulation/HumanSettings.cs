@@ -135,7 +135,6 @@ namespace Moqui.Core.Simulation
             MinDuration = tuning.GetFloat("frenzy.minDuration");
             CalmTime = tuning.GetFloat("frenzy.calmTime");
             ExitValue = tuning.GetFloat("frenzy.exitValue");
-            ReachBonus = tuning.GetFloat("frenzy.reachBonus");
             SlapInterval = tuning.GetFloat("frenzy.slapInterval");
             SlapTelegraph = tuning.GetFloat("frenzy.slapTelegraph");
             BlindSwatRadius = tuning.GetFloat("frenzy.blindSwatRadius");
@@ -148,8 +147,6 @@ namespace Moqui.Core.Simulation
         public float CalmTime { get; }
 
         public float ExitValue { get; }
-
-        public float ReachBonus { get; }
 
         public float SlapInterval { get; }
 
@@ -166,22 +163,32 @@ namespace Moqui.Core.Simulation
     {
         public AttackSettings(Tuning tuning)
         {
-            Reach = tuning.GetFloat("attack.reach");
             ClapTelegraph = tuning.GetFloat("attack.clap.telegraph");
             ClapRadius = tuning.GetFloat("attack.clap.radius");
             ClapOffset = tuning.GetFloat("attack.clap.offset");
-            ClapActiveTime = tuning.GetFloat("attack.clap.activeTime");
             ClapRecovery = tuning.GetFloat("attack.clap.recovery");
             SlapRadius = tuning.GetFloat("attack.slap.radius");
-            SlapActiveTime = tuning.GetFloat("attack.slap.activeTime");
             SlapRecovery = tuning.GetFloat("attack.slap.recovery");
             SelfSlapTelegraph = tuning.GetFloat("attack.selfSlap.telegraph");
             SelfSlapRadius = tuning.GetFloat("attack.selfSlap.radius");
             SelfSlapRecovery = tuning.GetFloat("attack.selfSlap.recovery");
+            HandPeakSpeedFrenzy = tuning.GetFloat("attack.handPeakSpeed.frenzy");
+            HandPeakSpeedReaction = tuning.GetFloat("attack.handPeakSpeed.reaction");
+            HandPeakSpeedDrunk = tuning.GetFloat("attack.handPeakSpeed.drunk");
+            MinTelegraph = tuning.GetFloat("attack.minTelegraph");
         }
 
-        /// <summary>어깨 기준 최대 사거리.</summary>
-        public float Reach { get; }
+        /// <summary>광분 공격(손바닥·맹목 휘두르기·박수)의 손 최고 속도 (u/s).</summary>
+        public float HandPeakSpeedFrenzy { get; }
+
+        /// <summary>반사적으로 자기 몸을 칠 때의 손 최고 속도 (u/s).</summary>
+        public float HandPeakSpeedReaction { get; }
+
+        /// <summary>취한 사람의 무작위 휘두르기 손 최고 속도 (u/s).</summary>
+        public float HandPeakSpeedDrunk { get; }
+
+        /// <summary>예고(치켜듦) 최소 시간 = 사람 반응 시간 하한 (s).</summary>
+        public float MinTelegraph { get; }
 
         public float ClapTelegraph { get; }
 
@@ -189,13 +196,9 @@ namespace Moqui.Core.Simulation
 
         public float ClapOffset { get; }
 
-        public float ClapActiveTime { get; }
-
         public float ClapRecovery { get; }
 
         public float SlapRadius { get; }
-
-        public float SlapActiveTime { get; }
 
         public float SlapRecovery { get; }
 
@@ -204,5 +207,53 @@ namespace Moqui.Core.Simulation
         public float SelfSlapRadius { get; }
 
         public float SelfSlapRecovery { get; }
+    }
+
+    /// <summary>인간 몸 (knowledge/human-arm-motion.md): 손 길이, 관절 한계, 자세 전환 범위·시간.</summary>
+    public sealed class BodySettings
+    {
+        public BodySettings(Tuning tuning)
+        {
+            HandReachExtra = tuning.GetFloat("human.handReachExtra");
+            ElbowFlexMax = tuning.GetFloat("human.elbowFlexMax");
+            ShoulderExtensionMax = tuning.GetFloat("human.shoulderExtensionMax");
+            MaxLeanAngle = tuning.GetFloat("posture.maxLeanAngle");
+            MaxTwist = tuning.GetFloat("posture.maxTwist");
+            RiseLift = tuning.GetFloat("posture.riseLift");
+            RiseForward = tuning.GetFloat("posture.riseForward");
+            LeanTime = tuning.GetFloat("posture.leanTime");
+            TurnTime = tuning.GetFloat("posture.turnTime");
+            RiseTime = tuning.GetFloat("posture.riseTime");
+        }
+
+        /// <summary>손목 → 손바닥 중심 거리 (u).</summary>
+        public float HandReachExtra { get; }
+
+        /// <summary>팔꿈치 최대 굽힘 (도).</summary>
+        public float ElbowFlexMax { get; }
+
+        /// <summary>어깨 폄(뒤로) 한계 (도).</summary>
+        public float ShoulderExtensionMax { get; }
+
+        /// <summary>상체 최대 기울기 (도).</summary>
+        public float MaxLeanAngle { get; }
+
+        /// <summary>상체 최대 비틀기 (도).</summary>
+        public float MaxTwist { get; }
+
+        /// <summary>완전히 일어설 때 골반이 오르는 높이 (u).</summary>
+        public float RiseLift { get; }
+
+        /// <summary>완전히 일어설 때 골반이 앞으로 나오는 거리 (u).</summary>
+        public float RiseForward { get; }
+
+        /// <summary>최대 기울기까지 걸리는 시간 (s).</summary>
+        public float LeanTime { get; }
+
+        /// <summary>최대 비틀기까지 걸리는 시간 (s).</summary>
+        public float TurnTime { get; }
+
+        /// <summary>완전히 일어서는 시간 (s).</summary>
+        public float RiseTime { get; }
     }
 }

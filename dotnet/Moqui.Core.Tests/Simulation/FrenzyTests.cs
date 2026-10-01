@@ -72,7 +72,7 @@ namespace Moqui.Core.Tests.Simulation
         [Test]
         public void Frenzy_PlayerNotVisible_BlindSwatsAroundLastSeenPosition()
         {
-            Vector3 lastSeen = TestHumans.InFront(100f);
+            Vector3 lastSeen = TestHumans.InFront(60f);
             var simulation = TestHumans.Simulation(lastSeen);
             TestHumans.Provoke(simulation, 100f);
             simulation.Step(PlayerCommand.None);

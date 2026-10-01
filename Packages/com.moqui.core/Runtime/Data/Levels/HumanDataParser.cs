@@ -74,7 +74,8 @@ namespace Moqui.Core.Data.Levels
                     actions,
                     traits,
                     json.Has("facingPitch") ? json.Get("facingPitch").Float() : 0f,
-                    json.Has("restPitch") ? json.Get("restPitch").Float() : 0f);
+                    json.Has("restPitch") ? json.Get("restPitch").Float() : 0f,
+                    json.Has("maxPosture") ? json.Get("maxPosture").Enum<PostureLevel>() : PostureLevel.Rise);
             }
             catch (System.ArgumentException exception)
             {

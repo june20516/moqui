@@ -407,6 +407,10 @@
         "restPitch": {
           "type": "number",
           "description": "평소 머리 피치(도, − 아래)"
+        },
+        "maxPosture": {
+          "enum": ["arm", "lean", "turn", "rise"],
+          "description": "공격에 쓸 수 있는 가장 큰 몸동작 (기본 rise, D-053)"
         }
       }
     }
