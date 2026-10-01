@@ -9,7 +9,7 @@ namespace Moqui.Core.Simulation
     /// 착지 반응: SkinSite에 부착하는 순간 1회, 확률 landChance × 민감도 × 보정.
     /// 부착 중 반응: 위험률 λ = 민감도 × (baseRate + itchRate × (가려움/100)²) × 보정, 틱 확률 1 − e^(−λ·dt). 가려움 100이면 즉시.
     /// 귀 반응: 귀 근접 구역(공중)에 있는 동안 위험률 earRate × 보정.
-    /// 보정 = 광분 배율 × 자국 배율 × 스킬 배율 × 취함 배율. 반응은 예고 시작 시점의 모기 위치를 때리며, 공격 중이면 버린다.
+    /// 보정 = 광분 배율 × 졸기 배율 × 자국 배율 × 스킬 배율 × 취함 배율. 반응은 예고 시작 시점의 모기 위치를 때리며, 공격 중이면 버린다.
     /// </summary>
     public sealed class ReactionSystem
     {
@@ -23,6 +23,7 @@ namespace Moqui.Core.Simulation
         private readonly AttachSettings _attach;
         private readonly AttackSettings _attack;
         private readonly HumanAttackSystem _attacks;
+        private readonly DozeSettings _doze;
         private readonly IRandom _random;
 
         public ReactionSystem(GameSettings settings, HumanAttackSystem attacks, IRandom random)
@@ -34,6 +35,7 @@ namespace Moqui.Core.Simulation
             _attach = settings.Attach;
             _attack = settings.Attack;
             _attacks = attacks;
+            _doze = settings.Doze;
             _random = random;
         }
 
@@ -51,7 +53,8 @@ namespace Moqui.Core.Simulation
         public float Modifier(Human human)
         {
             float frenzy = human.State == AwarenessState.Frenzy ? _frenzy.ReactionMul : 1f;
-            return frenzy * _biteMarks.ReactionMultiplier(human.BiteMarkCount) * ExtraMultiplier;
+            float doze = human.IsAsleep ? _doze.ReactionMul : 1f;
+            return frenzy * doze * _biteMarks.ReactionMultiplier(human.BiteMarkCount) * ExtraMultiplier;
         }
 
         public float LandingChance(float sensitivity, float modifier)

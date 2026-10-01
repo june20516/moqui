@@ -120,6 +120,35 @@ namespace Moqui.Core.Simulation
         public Vector3 Direction { get; }
     }
 
+    public sealed class DozeStateChanged : SimulationEvent
+    {
+        public DozeStateChanged(int tick, string humanId, DozeState from, DozeState to)
+            : base(tick)
+        {
+            HumanId = humanId;
+            From = from;
+            To = to;
+        }
+
+        public string HumanId { get; }
+
+        public DozeState From { get; }
+
+        public DozeState To { get; }
+    }
+
+    /// <summary>졸던 인간이 깨기 doze.wakeTelegraph 전에 머리를 움찔한다 (spec/06).</summary>
+    public sealed class DozeWakeTelegraph : SimulationEvent
+    {
+        public DozeWakeTelegraph(int tick, string humanId)
+            : base(tick)
+        {
+            HumanId = humanId;
+        }
+
+        public string HumanId { get; }
+    }
+
     public sealed class PlayerTrapped : SimulationEvent
     {
         public PlayerTrapped(int tick, string dropId)

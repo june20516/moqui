@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Moqui.Core.Collision;
@@ -22,6 +23,7 @@ namespace Moqui.Core.Simulation
         private readonly HumanSystem _humanSystem;
         private readonly List<FallingBody> _bodies = new List<FallingBody>();
         private readonly List<SimulationEvent> _events = new List<SimulationEvent>();
+        private readonly List<ZoneSnapshot> _shadowZones = new List<ZoneSnapshot>();
 
         public GameSimulation(GameSettings settings, CollisionWorld world, Vector3 playerSpawn)
             : this(settings, new SimulationSetup(world, playerSpawn))
@@ -44,11 +46,18 @@ namespace Moqui.Core.Simulation
             Suck = new SuckSystem(settings.Suck, settings.Sites, settings.BiteMark);
             Water = new WaterSystem(settings.Water, World, _fallingBodies, _dash, setup.DripSources);
             Humidity = new HumiditySystem(settings.Humid, settings.Water, settings.Hiding, World, Water);
+            foreach (var shape in World.Shapes)
+            {
+                if (shape.Matches(ShapeFlags.ShadowZone))
+                {
+                    _shadowZones.Add(new ZoneSnapshot(shape));
+                }
+            }
             if (setup.Human != null)
             {
                 Human = new Human(setup.Human, World);
                 _humanSystem = new HumanSystem(settings, World, setup.Seed);
-                _humanSystem.Motion.Initialize(Human);
+                _humanSystem.Initialize(Human, 0);
             }
         }
 
@@ -149,7 +158,7 @@ namespace Moqui.Core.Simulation
             }
 
             var human = Human != null ? new HumanSnapshot(Human) : null;
-            return new SimulationSnapshot(Tick, Outcome, new PlayerSnapshot(Player), human, drops, Water.TrappedHeightRemaining(Player));
+            return new SimulationSnapshot(Tick, Outcome, new PlayerSnapshot(Player), human, drops, Water.TrappedHeightRemaining(Player), _shadowZones, Array.Empty<ZoneSnapshot>());
         }
 
         private void StepPlayer(in PlayerCommand command)

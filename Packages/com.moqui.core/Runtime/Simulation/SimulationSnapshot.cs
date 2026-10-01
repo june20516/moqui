@@ -9,8 +9,10 @@ namespace Moqui.Core.Simulation
     /// </summary>
     public sealed class SimulationSnapshot
     {
-        public SimulationSnapshot(int tick, StageOutcome outcome, PlayerSnapshot player, HumanSnapshot human, IReadOnlyList<Vector3> drops, float trappedHeightRemaining)
+        public SimulationSnapshot(int tick, StageOutcome outcome, PlayerSnapshot player, HumanSnapshot human, IReadOnlyList<Vector3> drops, float trappedHeightRemaining, IReadOnlyList<ZoneSnapshot> shadowZones, IReadOnlyList<ZoneSnapshot> windZones)
         {
+            ShadowZones = shadowZones;
+            WindZones = windZones;
             Tick = tick;
             Outcome = outcome;
             Drops = drops;
@@ -28,6 +30,12 @@ namespace Moqui.Core.Simulation
 
         /// <summary>Trapped 중 바닥까지 남은 거리 (QTE 높이 게이지).</summary>
         public float TrappedHeightRemaining { get; }
+
+        /// <summary>은신처(Shadow Zone) 목록 (spec/11 §4 은신처 표시).</summary>
+        public IReadOnlyList<ZoneSnapshot> ShadowZones { get; }
+
+        /// <summary>바람 영역 (선풍기 원뿔, spec/06·11). M9 전까지 비어 있다.</summary>
+        public IReadOnlyList<ZoneSnapshot> WindZones { get; }
 
         public PlayerSnapshot Player { get; }
 
@@ -105,6 +113,11 @@ namespace Moqui.Core.Simulation
             AttackRadius = human.Attack.Radius;
             FrenzyCount = human.FrenzyCount;
             BiteMarkCount = human.BiteMarkCount;
+            Doze = human.Doze;
+            BreathPhase = human.BreathPhase;
+            IsExhaling = human.IsExhaling;
+            ExhalePosition = human.ExhalePosition;
+            ExhaleStrength = human.ExhaleStrength;
             var sites = new List<SkinSiteSnapshot>();
             foreach (var site in human.SkinSites)
             {
@@ -142,6 +155,17 @@ namespace Moqui.Core.Simulation
 
         public int BiteMarkCount { get; }
 
+        public DozeState Doze { get; }
+
+        /// <summary>호흡 주기 위치 (0~1, spec/11 §2).</summary>
+        public float BreathPhase { get; }
+
+        public bool IsExhaling { get; }
+
+        public Vector3 ExhalePosition { get; }
+
+        public float ExhaleStrength { get; }
+
         public IReadOnlyList<SkinSiteSnapshot> SkinSites { get; }
     }
 
@@ -153,6 +177,8 @@ namespace Moqui.Core.Simulation
             Type = site.Type;
             Itch = site.Itch;
             HasBiteMark = site.HasBiteMark;
+            Position = site.Shape.Center;
+            Radius = site.Shape.Radius;
         }
 
         public string PartId { get; }
@@ -162,5 +188,33 @@ namespace Moqui.Core.Simulation
         public float Itch { get; }
 
         public bool HasBiteMark { get; }
+
+        /// <summary>부위 캡슐 중심 (체온 표시 위치, spec/11 §3).</summary>
+        public Vector3 Position { get; }
+
+        public float Radius { get; }
+    }
+}
+
+namespace Moqui.Core.Simulation
+{
+    /// <summary>볼륨 영역 하나 (은신처·바람). 박스는 중심·반크기·회전.</summary>
+    public sealed class ZoneSnapshot
+    {
+        public ZoneSnapshot(Moqui.Core.Collision.CollisionShape shape)
+        {
+            Id = shape.Id;
+            Center = shape.Center;
+            HalfExtents = shape.HalfExtents;
+            Rotation = shape.Rotation;
+        }
+
+        public string Id { get; }
+
+        public System.Numerics.Vector3 Center { get; }
+
+        public System.Numerics.Vector3 HalfExtents { get; }
+
+        public System.Numerics.Quaternion Rotation { get; }
     }
 }

@@ -28,7 +28,13 @@ namespace Moqui.Core.Simulation
             Suck = new SuckSettings(tuning);
             Water = new WaterSettings(tuning);
             Humid = new HumidSettings(tuning);
+            Doze = new DozeSettings(tuning);
+            Breath = new BreathSettings(tuning);
         }
+
+        public DozeSettings Doze { get; }
+
+        public BreathSettings Breath { get; }
 
         public WaterSettings Water { get; }
 
