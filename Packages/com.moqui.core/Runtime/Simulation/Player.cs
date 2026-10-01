@@ -65,6 +65,14 @@ namespace Moqui.Core.Simulation
 
         public int LastDashStartTick { get; set; } = NeverTick;
 
+        // ---- 흡혈 (spec/04) ----
+
+        /// <summary>흡혈 게이지 b (0~100%). 100이면 Stage Clear.</summary>
+        public float BloodGauge { get; set; }
+
+        /// <summary>진행 중인 흡혈 세션. 없으면 null.</summary>
+        public SuckSession SuckSession { get; set; }
+
         // ---- 부착 (spec/03) ----
 
         /// <summary>부착 중인 표면 점. 부착하지 않았으면 null.</summary>

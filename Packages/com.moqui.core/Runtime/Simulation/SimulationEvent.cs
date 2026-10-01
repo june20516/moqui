@@ -120,6 +120,54 @@ namespace Moqui.Core.Simulation
         public Vector3 Direction { get; }
     }
 
+    public sealed class SuckSessionEnded : SimulationEvent
+    {
+        public SuckSessionEnded(int tick, string partId, float amount, bool biteMark)
+            : base(tick)
+        {
+            PartId = partId;
+            Amount = amount;
+            BiteMark = biteMark;
+        }
+
+        public string PartId { get; }
+
+        /// <summary>이 세션에서 빤 양 (%).</summary>
+        public float Amount { get; }
+
+        public bool BiteMark { get; }
+    }
+
+    /// <summary>스테이지 결과 (spec/04 §6, spec/09 보상 계산 입력).</summary>
+    public sealed class StageResult
+    {
+        public StageResult(int clearTicks, int frenzyCount, int biteMarkCount)
+        {
+            ClearTicks = clearTicks;
+            FrenzyCount = frenzyCount;
+            BiteMarkCount = biteMarkCount;
+        }
+
+        public int ClearTicks { get; }
+
+        public float ClearSeconds => ClearTicks * GameSimulation.DeltaTime;
+
+        public int FrenzyCount { get; }
+
+        public int BiteMarkCount { get; }
+    }
+
+    public sealed class StageCleared : SimulationEvent
+    {
+        public StageCleared(int tick, StageResult result)
+            : base(tick)
+        {
+            Result = result;
+        }
+
+        public StageResult Result { get; }
+    }
+
     public enum DeathCause
     {
         Attack,

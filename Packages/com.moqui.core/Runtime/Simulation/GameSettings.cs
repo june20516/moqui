@@ -25,7 +25,10 @@ namespace Moqui.Core.Simulation
             HumanMotion = new HumanMotionSettings(tuning);
             Attach = new AttachSettings(tuning);
             BiteMark = new BiteMarkSettings(tuning);
+            Suck = new SuckSettings(tuning);
         }
+
+        public SuckSettings Suck { get; }
 
         public SiteSettings Sites { get; }
 

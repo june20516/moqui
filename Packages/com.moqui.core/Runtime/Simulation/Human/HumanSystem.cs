@@ -14,9 +14,11 @@ namespace Moqui.Core.Simulation
         private readonly HearingSensor _hearing;
         private readonly HumanBrain _brain;
         private readonly HumanAttackSystem _attacks;
+        private readonly BiteMarkSettings _biteMarks;
 
         public HumanSystem(GameSettings settings, CollisionWorld world, ulong seed)
         {
+            _biteMarks = settings.BiteMark;
             _vision = new VisionSensor(settings.Vision, world);
             _hearing = new HearingSensor(settings.Noise, settings.Hearing);
             Awareness = new AwarenessSystem(settings.Awareness);
@@ -47,6 +49,11 @@ namespace Moqui.Core.Simulation
             _vision.Sense(human, player, tick, ref perception);
             _hearing.Sense(human, player, events, ref perception);
             LastPerception = perception;
+
+            // 물린 자국 수 n에 따른 경계 보정 (spec/04 §4).
+            Awareness.GainMultiplier = _biteMarks.GainMultiplier(human.BiteMarkCount);
+            Awareness.DecayDivisor = _biteMarks.DecayDivisor(human.BiteMarkCount);
+            Awareness.Floor = _biteMarks.Floor(human.BiteMarkCount);
 
             Awareness.Apply(human, perception, player.IsHidden, tick, deltaTime);
             _brain.UpdateState(human, perception, player, tick, events);
