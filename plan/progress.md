@@ -3,8 +3,8 @@
 > 루프가 매 반복 끝에 갱신한다. 위에서부터 최신순으로 쓴다.
 
 ## 현재
-- 마일스톤: **M1 Core 충돌 월드 · 비행 · 카메라** (진행 중)
-- 다음 할 일: Sandbox_Flight 씬(화이트박스 방 + 플레이어 + 카메라 리그) + 1인칭 벽 접촉 캡처 검토
+- 마일스톤: **M1 Core 충돌 월드 · 비행 · 카메라** (종료 기준 충족 → main merge, `m1-done`. 부착 시선 기준 1개는 D-028로 M4에서 검증)
+- 다음 할 일: M2 시작 — spec/02 §1~4 수용 기준을 체크리스트로 복사
 - 브랜치: `milestone/m1-flight`
 
 ## 현재 마일스톤 체크리스트 (M1)
@@ -22,7 +22,7 @@
 - [x] 같은 입력 시퀀스를 두 시점에서 재생하면 플레이어 최종 위치가 같다 (Unity: 시점 독립성). — 증거: `ViewIndependenceTests.SameInputSequence_ThirdVsFirstPerson_SameFinalPosition`
 - [x] 1인칭에서 플레이어 메시의 렌더러가 Shadows Only이고, 3인칭으로 돌아오면 원래대로 복구된다 (Unity). — 증거: `CameraTests.FirstPerson_PlayerRenderers_ShadowsOnlyThenRestored`
 - [ ] 1인칭 부착 상태에서 시선이 법선 기준 `camera.fp.attachedLookLimit`를 벗어나지 않는다 (Unity). — 진행: `LookConstraint` + `CameraTests.AttachedLook_AnyInput_StaysWithinLimitOfNormal`. 부착 상태 연결 검증은 M4 (D-028)
-- [ ] 1인칭에서 벽에 최대한 붙어도 화면에 벽 뒤가 보이지 않는다 (캡처 검토: 벽 접촉 포즈 1장).
+- [x] 1인칭에서 벽에 최대한 붙어도 화면에 벽 뒤가 보이지 않는다 (캡처 검토: 벽 접촉 포즈 1장). — 증거: `Captures/2026-10-01_131326/Sandbox_Flight_fp_wall_contact.png`, `..._fp_wall_contact_angled.png` (시뮬레이션으로 앞 벽까지 비행 후 캡처, 캡처 검토 기록 참조)
 - [x] 선택한 시점이 재시작 후에도 유지된다 (Unity). — 증거: `CameraTests.SelectedView_PlayerPrefsStore_SurvivesRestart`, `SelectedView_NewControllerWithSameStore_IsRestored`
 
 ### spec/01 비행 · 대시 · 스태미나 · 입력
@@ -43,7 +43,7 @@
 - [x] 위 입력 매핑이 Input Actions 에셋에 존재하고, 게임패드로도 동일하게 동작한다 (Unity: 가상 Gamepad). — 증거: `Assets/_Project/Input/MoquiControls.inputactions`(Gameplay 맵), `CommandCollectorTests.Asset_GameplayAction_HasKeyboardAndGamepadBindings`(11개 액션), `Gamepad_AllGameplayInputs_ProduceCommand`, `KeyboardMouse_AllGameplayInputs_ProduceCommand`, `ToggleViewAndPause_Gamepad_AreConsumedSeparately`, `GamepadStick_FullRightOneSecond_RotatesYawByLookSpeed`
 
 ### 마일스톤 산출물
-- [ ] `Sandbox_Flight` 씬 (빌드 제외)
+- [x] `Sandbox_Flight` 씬 (빌드 제외) — 증거: `Assets/_Project/Scenes/Sandbox_Flight.unity` (`Tools/build-sandboxes.ps1`로 생성), `SandboxFlightSceneTests.SandboxFlight_Play_RunsSimulationAndPlacesCameraNearPlayer`, `WorldViewTests`
 
 ## 완료 마일스톤
 - **M0 프로젝트 골격** — 태그 `m0-done` (2026-10-01). 체크리스트와 증거는 태그 시점의 이 문서 참조.
@@ -70,12 +70,14 @@
 (없음)
 
 ## 캡처 검토 기록
+- 2026-10-01 M1 `Captures/2026-10-01_131326/`, `2026-10-01_131432/` Sandbox_Flight: 3인칭 개요(가구·벽·플레이어 구 정상), 1인칭 벽 접촉 정면·비스듬히(벽면과 방 안쪽만 보임, 벽 뒤 노출 없음), 3인칭 벽 접촉(카메라가 벽 안쪽 유지). 마젠타 없음. 첫 캡처에서 플레이어 색이 빠진 문제(MaterialPropertyBlock 미저장) → 머티리얼 에셋 `Whitebox_Player.mat`으로 수정 후 재확인
 - 2026-10-01 M0 `Captures/2026-10-01_123452/Boot.png`: 템플릿 빈 씬(하늘·바닥). 마젠타 없음, 템플릿 볼륨의 피사계 심도로 전체가 흐림 — 표현 작업(M1 이후)에서 볼륨 프로파일 정리 필요
 
 ## 반복 로그
 | 일시 | 마일스톤 | 한 일 | 증거 | 커밋 |
 |---|---|---|---|---|
-| 2026-10-01 | M1 | SimulationClock·SimulationDriver·SimulationRunner, 카메라(CameraPoseSolver·CameraController·CameraRig·LookConstraint·PlayerViewVisibility), 설정 저장 포트, D-027·D-028 | EditMode 34/34 통과 | (이 커밋) |
+| 2026-10-01 | M1 | WorldView(화이트박스), SandboxFlightWorld·Bootstrap, SandboxSceneBuilder·build-sandboxes, CaptureTool 샌드박스 포즈, PlayMode 씬 스모크. M1 종료 | Core 111 + EditMode 36 + PlayMode 2 통과, 빌드 성공(예상 외 경고 0), 캡처 검토 | (이 커밋) |
+| 2026-10-01 | M1 | SimulationClock·SimulationDriver·SimulationRunner, 카메라(CameraPoseSolver·CameraController·CameraRig·LookConstraint·PlayerViewVisibility), 설정 저장 포트, D-027·D-028 | EditMode 34/34 통과 | 2824119 |
 | 2026-10-01 | M1 | 입력 에셋 MoquiControls(Gameplay 맵, spec/01 표), LookState, CommandCollector(edge 래치, 마우스·스틱 분리) | EditMode 19/19 통과 | cdbf11d |
 | 2026-10-01 | M1 | 대시(DashSystem, DashDirectionResolver), 스태미나·탈진, 바람 외력, 낙하체 중력, D-026 | Core 111/111 통과, Unity CS 이슈 0 | f11b541 |
 | 2026-10-01 | M1 | SphereMover(sweep·미끄러짐·밀어내기)를 시뮬레이션 이동에 연결 | Core 94/94 통과, Unity CS 이슈 0 | a94441c |
