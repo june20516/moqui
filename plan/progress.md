@@ -5,7 +5,7 @@
 ## 현재
 - 마일스톤: **M8 화면 흐름 · 스킬 트리 · 저장** (시작 전)
 - 다음 할 일: M8 브랜치 생성, spec/08(흐름·설정·Skills)·spec/09 수용 기준을 체크리스트로 복사
-- 브랜치: `milestone/m8-flow-skills` (생성 예정)
+- 브랜치: `milestone/m8-flow-skills`
 
 ## M7 버티컬 슬라이스 리포트 (2026-10-01, 사람 검토 권장)
 **할 수 있는 것:** Unity 에디터에서 `Assets/_Project/Scenes/Stage.unity`를 열고 Play하면 Stage 1(조는 인간)이 시작된다. `StageBootstrap.RequestedLevelId`로 stage02를 고를 수 있으며, 화면 흐름(타이틀·스테이지 선택)은 M8에서 붙인다. 빌드 실행 파일은 아직 Boot 씬만 연다.
@@ -32,7 +32,6 @@
 - **M5 흡혈 세션 · 물린 자국 · 포만 · 승리** — 태그 `m5-done` (2026-10-01). 체크리스트: `plan/archive/m5-checklist.md`
 - **M6 물방울 QTE · 습기** — 태그 `m6-done` (2026-10-01). 체크리스트: `plan/archive/m6-checklist.md`. 이월: DripSource 레벨 적용 → M7
 - **M7 거실 버티컬 슬라이스 (Stage 1·2)** — 태그 `m7-done` (2026-10-01). 체크리스트: `plan/archive/m7-checklist.md`. 이월: DripSource 검사 Stage 3~5 적용·CO₂ 바람 흩어짐·중독 게이지 → M9, 액티브 스킬 HUD → M8
-- **M7 거실 버티컬 슬라이스 (Stage 1·2)** — 태그 `m7-done` (2026-10-01). 체크리스트: `plan/archive/m7-checklist.md`. 이월: DripSource 검사 Stage 3~5 적용·CO₂ 바람 흩어짐 → M9, 중독 게이지 → M9, 액티브 스킬 HUD → M8
 
 ## 사람 요청
 | ID | 요청 | 필요 사양 | 대체물 적용 여부 | 상태 |
