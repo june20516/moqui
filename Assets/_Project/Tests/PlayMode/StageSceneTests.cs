@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Linq;
 using Moqui.Unity.Presentation;
+using Moqui.Unity.Presentation.Audio;
 using Moqui.Unity.Presentation.Stage;
 using Moqui.Unity.Simulation;
 using Moqui.Unity.UI.Hud;
@@ -44,6 +45,19 @@ namespace Moqui.Unity.Tests
                 Assert.That(levelRoot.childCount, Is.EqualTo(bootstrap.Level.AllShapes().Count()));
 
                 AssertAllRenderersUseProjectShaders(levelId);
+
+                // 소리 (spec/10): 스테이지 음악과 레벨 환경음이 켜지고, 음악 볼륨 설정이 바로 반영된다.
+                var output = AudioOutput.Instance;
+                Assert.That(output, Is.Not.Null, "audio output created");
+                Assert.That(output.MusicId, Is.EqualTo(AudioIds.BgmStage));
+                Assert.That(output.IsLoopActive(AudioIds.AmbienceForLevel(levelId)), Is.True, "ambience");
+                Assert.That(output.IsLoopActive(AudioIds.WingLoop), Is.True, "wing loop while hovering");
+                float previousMusic = AudioVolumes.Music;
+                AudioVolumes.Music = 0.25f;
+                yield return null;
+                float expected = AudioCatalog.Load().Find(AudioIds.BgmStage).Volume * 0.25f;
+                Assert.That(output.MusicVolume, Is.EqualTo(expected).Within(1e-4f), "music volume setting");
+                AudioVolumes.Music = previousMusic;
 
                 var hud = Object.FindAnyObjectByType<HudController>();
                 var hudView = hud.GetComponent<HudView>();

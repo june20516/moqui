@@ -4,7 +4,7 @@
 
 ## 현재
 - 마일스톤: **M10 에셋 패스** (진행 중)
-- 다음 할 일: 사운드 AudioCatalog(합성 생성)와 이벤트 연결, 음악 볼륨
+- 다음 할 일: CREDITS.md와 파일 목록 대조 검사, 후처리(Bloom·Color Grading)
 - 브랜치: `milestone/m10-assets`
 
 ## 현재 마일스톤 체크리스트 (M10)
@@ -16,8 +16,8 @@
 - [ ] 각 스테이지 캡처에서 플레이어가 배경과 구분된다 (캡처 검토, `plan/progress.md`에 소견 기록).
 
 ### 사운드 (spec/10)
-- [ ] 위 사운드 ID가 모두 존재하고 이벤트에 연결되어 있다 (Unity: AudioCatalog 검사).
-- [ ] (M8 이월) 음악 볼륨 설정이 BGM에 적용된다 (Unity).
+- [x] 위 사운드 ID가 모두 존재하고 이벤트에 연결되어 있다 (Unity: AudioCatalog 검사). — 31종 `tools/gen_audio.py` 합성(D-049), `Resources/Audio/AudioCatalog`, `AudioCues`(이벤트·상태→ID)·`AudioDirector`(Stage)·`AudioOutput`, UI 버튼 select/confirm/cancel, 메뉴 bgm_title. EditMode `AudioTests`(카탈로그·스펙 목록·생성 폴더 일치·ID 참조·이벤트 매핑·대시·반복음), PlayMode `StageSceneTests`(음악·환경음·날갯소리) 통과
+- [x] (M8 이월) 음악 볼륨 설정이 BGM에 적용된다 (Unity). — `UserSettings.ApplyToEngine` → `AudioVolumes`, EditMode 검사 + PlayMode에서 음악 볼륨 변경이 다음 프레임 BGM 음량에 반영
 
 ### 에셋 파이프라인 (tech/asset-pipeline.md)
 - [ ] `CREDITS.md`의 모든 행이 허용 목록 라이선스이고 URL과 확인일이 있다.

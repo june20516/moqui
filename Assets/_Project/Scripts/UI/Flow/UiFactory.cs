@@ -102,6 +102,9 @@ namespace Moqui.Unity.UI.Flow
             return rect;
         }
 
+        /// <summary>이 이름의 버튼은 누를 때 취소음을 낸다 (뒤로·닫기·아니오).</summary>
+        public static readonly string[] CancelButtonNames = { "Back", "Close", "No" };
+
         public static Button CreateButton(string name, Transform parent, string label, Action onClick, float width = ButtonWidth, float height = ButtonHeight)
         {
             var go = new GameObject(name, typeof(RectTransform), typeof(Image), typeof(Button));
@@ -122,6 +125,10 @@ namespace Moqui.Unity.UI.Flow
             };
             var text = CreateText("Label", go.transform, label, 26, TextAnchor.MiddleCenter);
             Stretch(text.rectTransform);
+            // 버튼 소리 (spec/10 sfx_ui_*): 선택 시 select, 누르면 confirm, 뒤로 가기 버튼은 cancel.
+            go.AddComponent<UiSelectSound>();
+            string clickSound = Array.IndexOf(CancelButtonNames, name) >= 0 ? Presentation.Audio.AudioIds.UiCancel : Presentation.Audio.AudioIds.UiConfirm;
+            button.onClick.AddListener(() => Presentation.Audio.AudioOutput.Ensure()?.PlayOneShot(clickSound));
             if (onClick != null)
             {
                 button.onClick.AddListener(() => onClick());

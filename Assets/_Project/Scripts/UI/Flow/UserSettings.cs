@@ -95,6 +95,8 @@ namespace Moqui.Unity.UI.Flow
         public void ApplyToEngine()
         {
             AudioListener.volume = MasterVolume;
+            Presentation.Audio.AudioVolumes.Sfx = SfxVolume;
+            Presentation.Audio.AudioVolumes.Music = MusicVolume;
             if (!Application.isEditor)
             {
                 Screen.SetResolution(Resolution.x, Resolution.y, Fullscreen ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed);

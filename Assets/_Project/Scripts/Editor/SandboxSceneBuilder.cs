@@ -68,6 +68,7 @@ namespace Moqui.Unity.Editor
         [MenuItem("Moqui/Rebuild All Sandboxes")]
         public static void BuildAll()
         {
+            AudioCatalogBuilder.BuildCatalog();
             BuildFlightSandbox();
             BuildHumanSandbox();
             BuildWaterSandbox();
@@ -140,6 +141,10 @@ namespace Moqui.Unity.Editor
             SetReference(hudController, "_cameraRig", Object.FindAnyObjectByType<CameraRig>());
             SetReference(hudController, "_audio", hud.AddComponent<HudAudioSource>());
             SetReference(hudController, "_stage", bootstrap);
+
+            var audioDirector = new GameObject("AudioDirector").AddComponent<Moqui.Unity.Presentation.Audio.AudioDirector>();
+            SetReference(audioDirector, "_runner", runner);
+            SetReference(audioDirector, "_stage", bootstrap);
 
             var stageScreen = new GameObject("StageScreen").AddComponent<StageScreen>();
             SetReference(stageScreen, "_runner", runner);
