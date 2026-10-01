@@ -47,7 +47,65 @@ namespace Moqui.Unity.Editor
             }
 
             CaptureSandboxFlight(outputDirectory);
+            CaptureSandboxHuman(outputDirectory);
             Debug.Log($"[CaptureTool] Captures written to {outputDirectory}");
+        }
+
+        /// <summary>
+        /// 캡슐 인간의 세 상태: 평온, 대시 소음 뒤 의심(머리가 소리 쪽으로 돎), 광분 손바닥 예고(판정 위치 표시).
+        /// </summary>
+        public static void CaptureSandboxHuman(string outputDirectory)
+        {
+            EditorSceneManager.OpenScene(SandboxSceneBuilder.HumanScenePath, OpenSceneMode.Single);
+            Camera camera = MainCameraOrThrow(SandboxSceneBuilder.HumanScenePath);
+            Tuning tuning = TuningLoader.Load(new UnityDataSource());
+            var setup = SandboxHumanWorld.CreateSetup();
+            var simulation = new GameSimulation(GameSettings.FromTuning(tuning), setup);
+            WorldView.Build(setup.World, null);
+            var humanView = UnityEngine.Object.FindAnyObjectByType<HumanView>();
+            humanView.Build(simulation.Human);
+            var player = GameObject.Find("Player");
+            Vector3 head = simulation.Human.HeadCenter.ToUnity();
+            Vector3 overview = head + new Vector3(140f, 60f, 170f);
+
+            Step(simulation, PlayerCommand.None, 1f);
+            CaptureHumanPose(camera, player, humanView, simulation, overview, head, outputDirectory, "Sandbox_Human_safe");
+
+            simulation.Player.Position = (head + new Vector3(60f, 15f, -70f)).ToCore();
+            simulation.Step(new PlayerCommand { DashPressed = true });
+            Step(simulation, PlayerCommand.None, 1f);
+            CaptureHumanPose(camera, player, humanView, simulation, overview, head, outputDirectory, "Sandbox_Human_suspicious");
+
+            // 직전 장면에서 머리가 소리 쪽(뒤)을 보고 있으므로 정면으로 되돌린 뒤 시야 안에서 광분시킨다.
+            simulation.Player.Position = (head + new Vector3(30f, -5f, 80f)).ToCore();
+            simulation.Human.HeadYaw = 0f;
+            simulation.Human.HeadPitch = 0f;
+            simulation.Human.Awareness = tuning.GetFloat("awareness.frenzyEnter");
+            simulation.Human.LastStimulusTick = simulation.Tick;
+            for (int i = 0; i < GameSimulation.TickRate && simulation.Human.Attack.Phase != AttackPhase.Telegraph; i++)
+            {
+                simulation.Step(PlayerCommand.None);
+            }
+
+            CaptureHumanPose(camera, player, humanView, simulation, head + new Vector3(-120f, 40f, 160f), head, outputDirectory, "Sandbox_Human_frenzy_telegraph");
+        }
+
+        private static void Step(GameSimulation simulation, PlayerCommand command, float seconds)
+        {
+            for (int i = 0; i < Mathf.RoundToInt(seconds * GameSimulation.TickRate); i++)
+            {
+                simulation.Step(command);
+            }
+        }
+
+        private static void CaptureHumanPose(Camera camera, GameObject player, HumanView humanView, GameSimulation simulation, Vector3 cameraPosition, Vector3 lookAt, string outputDirectory, string name)
+        {
+            player.transform.position = simulation.Player.Position.ToUnity();
+            humanView.Refresh();
+            var pose = new CameraPose(cameraPosition, Quaternion.LookRotation(lookAt - cameraPosition), camera.fieldOfView, camera.nearClipPlane);
+            pose.ApplyTo(camera);
+            CaptureCamera(camera, Path.Combine(outputDirectory, name + ".png"));
+            Debug.Log($"[CaptureTool] {name}: state={simulation.Human.State}, awareness={simulation.Human.Awareness:F1}, headYaw={simulation.Human.HeadYaw:F1}, attack={simulation.Human.Attack.Phase}");
         }
 
         /// <summary>
