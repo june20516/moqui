@@ -144,6 +144,8 @@
 
     "senses.clearRange": 80,
     "senses.fogFullRange": 250,
+    "senses.fogMaxDensity": 0.75,
+    "senses.fogBlurPixels": 3,
     "senses.co2VisibleRange": 450,
     "senses.heatRange": 60,
     "hiding.cueRange": 120,

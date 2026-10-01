@@ -7,6 +7,7 @@ using Moqui.Core.Simulation;
 using Moqui.Unity.Data;
 using Moqui.Unity.Presentation;
 using Moqui.Unity.Presentation.Sandbox;
+using Moqui.Unity.Presentation.Senses;
 using Moqui.Unity.Presentation.Stage;
 using Moqui.Core.Collision;
 using Moqui.Core.Data.Levels;
@@ -90,22 +91,29 @@ namespace Moqui.Unity.Editor
             Vector3 head = simulation.Human.HeadCenter.ToUnity();
             string prefix = $"Stage_{levelId}_";
 
+            var senses = new SensesSettings(tuning);
+            void Shot(Vector3 playerPosition, CameraPose pose, bool firstPerson, string name)
+            {
+                SensesFog.Apply(senses, playerPosition, false);
+                Capture(camera, player, visibility, playerPosition, pose, firstPerson, outputDirectory, prefix + name);
+            }
+
             Vector3 overviewPosition = OverviewPoint(simulation.World, spawn, head);
-            var overview = new CameraPose(overviewPosition, Quaternion.LookRotation(head - overviewPosition), camera.fieldOfView, camera.nearClipPlane);
-            Capture(camera, player, visibility, spawn, overview, false, outputDirectory, prefix + "overview");
+            Shot(spawn, new CameraPose(overviewPosition, Quaternion.LookRotation(head - overviewPosition), camera.fieldOfView, camera.nearClipPlane), false, "overview");
 
             float yawToHead = YawTowards(spawn, head);
-            Capture(camera, player, visibility, spawn, solver.ThirdPerson(spawn, yawToHead, -10f), false, outputDirectory, prefix + "start");
-            Capture(camera, player, visibility, spawn, solver.FirstPerson(spawn, yawToHead, -5f), true, outputDirectory, prefix + "start_fp");
+            Shot(spawn, solver.ThirdPerson(spawn, yawToHead, -10f), false, "start");
+            Shot(spawn, solver.FirstPerson(spawn, yawToHead, -5f), true, "start_fp");
 
             var site = simulation.Human.Shapes["forearmR"];
             Vector3 siteCenter = site.Center.ToUnity();
             Vector3 near = siteCenter + ((spawn - siteCenter).normalized * HumanCloseupDistance);
-            Capture(camera, player, visibility, near, solver.ThirdPerson(near, YawTowards(near, siteCenter), -15f), false, outputDirectory, prefix + "human_close");
+            Shot(near, solver.ThirdPerson(near, YawTowards(near, siteCenter), -15f), false, "human_close");
 
             var shadow = simulation.World.Shapes.First(shape => shape.Matches(ShapeFlags.ShadowZone));
             Vector3 hidden = shadow.Center.ToUnity();
-            Capture(camera, player, visibility, hidden, solver.ThirdPerson(hidden, YawTowards(hidden, head), -5f), false, outputDirectory, prefix + "shadow_zone");
+            Shot(hidden, solver.ThirdPerson(hidden, YawTowards(hidden, head), -5f), false, "shadow_zone");
+            SensesFog.Disable();
             Debug.Log($"[CaptureTool] {prefix}: shapes={level.AllShapes().Count()}, shadow={shadow.Id}, human={simulation.Human.State}");
         }
 

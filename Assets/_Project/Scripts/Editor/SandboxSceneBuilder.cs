@@ -1,11 +1,13 @@
 using Moqui.Unity.Presentation;
 using Moqui.Unity.Presentation.Sandbox;
+using Moqui.Unity.Presentation.Senses;
 using Moqui.Unity.Presentation.Stage;
 using Moqui.Unity.Simulation;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering.Universal;
 using UnityEngine.SceneManagement;
 
 namespace Moqui.Unity.Editor
@@ -25,6 +27,10 @@ namespace Moqui.Unity.Editor
         private const string ShadowCueMaterialPath = "Assets/_Project/Materials/Level_ShadowCue.mat";
         private const string SteamMaterialPath = "Assets/_Project/Materials/Level_Steam.mat";
         private const string GlassMaterialPath = "Assets/_Project/Materials/Level_Glass.mat";
+        private const string SensesFogMaterialPath = "Assets/_Project/Materials/Senses_Fog.mat";
+        private const string SensesFogShaderName = "Moqui/SensesFog";
+        private const string SensesFogFeatureName = "SensesFog";
+        private const string PcRendererPath = "Assets/Settings/PC_Renderer.asset";
         private const float PlayerVisualDiameter = 1f;
         private const string LitShaderName = "Universal Render Pipeline/Lit";
         private const string BaseColorProperty = "_BaseColor";
@@ -55,11 +61,58 @@ namespace Moqui.Unity.Editor
             SetReference(materials, "_steam", LoadOrCreateTransparentMaterial(SteamMaterialPath, SteamColor));
             SetReference(materials, "_glass", LoadOrCreateTransparentMaterial(GlassMaterialPath, GlassColor));
 
+            EnsureSensesFogFeature();
+            SetReference(new GameObject("SensesFog").AddComponent<SensesFog>(), "_runner", runner);
+
             var bootstrap = new GameObject("StageBootstrap").AddComponent<StageBootstrap>();
             SetReference(bootstrap, "_runner", runner);
             SetReference(bootstrap, "_materials", materials);
             Save(scene, StageScenePath);
             AddToBuildSettings(StageScenePath);
+        }
+
+        /// <summary>
+        /// PC 렌더러에 흐린 시야 전체 화면 패스를 한 번만 추가한다 (투명 렌더링 전, 깊이 필요).
+        /// 전역 최대 흐림이 0인 씬(Sandbox)에서는 원본을 그대로 낸다.
+        /// </summary>
+        public static void EnsureSensesFogFeature()
+        {
+            var rendererData = AssetDatabase.LoadAssetAtPath<UniversalRendererData>(PcRendererPath)
+                ?? throw new System.InvalidOperationException($"Renderer data not found: {PcRendererPath}");
+            if (rendererData.rendererFeatures.Exists(feature => feature != null && feature.name == SensesFogFeatureName))
+            {
+                return;
+            }
+
+            var material = AssetDatabase.LoadAssetAtPath<Material>(SensesFogMaterialPath);
+            if (material == null)
+            {
+                Shader shader = Shader.Find(SensesFogShaderName) ?? throw new System.InvalidOperationException($"Shader '{SensesFogShaderName}' not found.");
+                material = new Material(shader);
+                AssetDatabase.CreateAsset(material, SensesFogMaterialPath);
+            }
+
+            var feature = ScriptableObject.CreateInstance<FullScreenPassRendererFeature>();
+            feature.name = SensesFogFeatureName;
+            feature.injectionPoint = FullScreenPassRendererFeature.InjectionPoint.BeforeRenderingTransparents;
+            feature.requirements = ScriptableRenderPassInput.Depth;
+            feature.fetchColorBuffer = true;
+            feature.passMaterial = material;
+            AssetDatabase.AddObjectToAsset(feature, rendererData);
+            AssetDatabase.TryGetGUIDAndLocalFileIdentifier(feature, out _, out long localId);
+
+            // 렌더러 데이터 인스펙터의 기능 추가와 같은 방식: 목록과 localId 맵을 함께 늘린다.
+            var serialized = new SerializedObject(rendererData);
+            var features = serialized.FindProperty("m_RendererFeatures");
+            var map = serialized.FindProperty("m_RendererFeatureMap");
+            features.arraySize++;
+            features.GetArrayElementAtIndex(features.arraySize - 1).objectReferenceValue = feature;
+            map.arraySize++;
+            map.GetArrayElementAtIndex(map.arraySize - 1).longValue = localId;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(rendererData);
+            AssetDatabase.SaveAssets();
+            Debug.Log($"[SandboxSceneBuilder] Added {SensesFogFeatureName} to {PcRendererPath}");
         }
 
         private static void AddToBuildSettings(string path)
