@@ -13,6 +13,11 @@ namespace Moqui.Unity.Presentation.Stage
     /// </summary>
     public static class LevelView
     {
+        /// <summary>약한 습기 영역의 증기 밀도 배율 (표현 전용, 강한 영역 = 1).</summary>
+        public const float WeakSteamDensityScale = 0.5f;
+
+        public static readonly int DensityScaleId = Shader.PropertyToID("_DensityScale");
+
         public static Dictionary<string, GameObject> Build(LevelDefinition level, CollisionWorld world, Transform parent, LevelMaterials materials)
         {
             var root = new GameObject($"Level_{level.Id}").transform;
@@ -49,6 +54,12 @@ namespace Moqui.Unity.Presentation.Stage
             // 화이트박스 색 PropertyBlock이 반투명 머티리얼의 알파를 덮지 않도록 지운다.
             renderer.SetPropertyBlock(null);
             renderer.sharedMaterial = material;
+            if (shape.Matches(ShapeFlags.HumidWeak) && !shape.Matches(ShapeFlags.HumidStrong))
+            {
+                var block = new MaterialPropertyBlock();
+                block.SetFloat(DensityScaleId, WeakSteamDensityScale);
+                renderer.SetPropertyBlock(block);
+            }
             if (!shape.Matches(ShapeFlags.Glass))
             {
                 renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;

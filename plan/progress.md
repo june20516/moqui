@@ -3,33 +3,9 @@
 > 루프가 매 반복 끝에 갱신한다. 위에서부터 최신순으로 쓴다.
 
 ## 현재
-- 마일스톤: **M8 화면 흐름 · 스킬 트리 · 저장** (진행 중)
-- 다음 할 일: CO₂·증기 기체형 교체(사람 요청) → M8 종료
-- 브랜치: `milestone/m8-flow-skills`
-
-## 현재 마일스톤 체크리스트 (M8)
-### 메타 성장 · 저장 (spec/09)
-- [x] 보상 계산: 기본/광분 0회/신중한 흡혈/기준시간 조합 8가지가 맞다 (Core). — 증거: `MetaTests.Reward_AllEightCombinations`(8케이스)
-- [x] 포인트가 부족하면 구매할 수 없고, 최대 레벨 이후 구매할 수 없다 (Core). — 증거: `MetaTests.Purchase_NeedsEnoughPoints_AndStopsAtMaxLevel`, `Costs_FollowTierTables`, `Equip_OnlyOwnedActiveSkills`
-- [x] 모든 패시브 스킬 효과가 레벨별로 정확히 적용된다 (스킬당 1개 테스트) (Core). — 증거: `SkillTests.ResistSpray_*`, `ResistWet_*`, `ResistSatiety_*`, `SilentWings_*`, `SwiftWings_*`, `Stamina_*`, `FeatherLanding_*`, `NumbingSaliva_*`, `ShadowBlend_*`, `MagicWand_*`, `CompoundEyes_*`, `VortexControl_*` (D-043). 해독 체질의 중독·모기향 적용은 M9에서 기믹과 함께 검증
-- [x] 와류 제어가 레벨당 가감속 시간을 0.8배로 줄이고, 3레벨에서만 대각선 대시가 가능하다 (Core). — 증거: `SkillTests.VortexControl_AccelTimesScaledPerLevel_DiagonalDashOnlyAtLevel3`
-- [x] 연속 와류: 창 안의 추가 대시가 쿨타임을 무시하고 체인당 1회만 허용되며, 2레벨에서 스태미나가 줄지 않는다 (Core). — 증거: `SkillTests.ChainVortex_ExtraDashInsideWindowIgnoresCooldown_OncePerChain`, `ChainVortex_Level1CostsStamina_Level2Free`
-- [x] 미끼가 지정 지점에서 지속시간 동안 NoiseEvent를 발생시키고, 인간의 마지막 자극 위치가 미끼로 바뀐다 (Core). — 증거: `SkillTests.Decoy_EmitsNoiseAtAimPointForDuration_LastStimulusMovesToDecoy`, `Decoy_NotEquipped_DoesNothing`
-- [x] 저장 → 로드 왕복 후 모든 필드가 같다 (Core). — 증거: `MetaTests.SaveLoad_RoundTrip_AllFieldsEqual`
-- [x] 손상된 save.json에서도 예외 없이 기본값으로 시작하고 손상 파일을 보존한다 (Core). — 증거: `MetaTests.CorruptSave_StartsWithDefaults_KeepsCorruptFile`(4케이스), `MissingSave_StartsWithDefaults_Reset_DeletesFile`
-- [x] (M7 이월) 겹눈 각성 레벨에 따라 선명 범위가 늘어난다 (Unity, spec/11). — 증거: EditMode `SensesFogTests.CompoundEyes_ExtendsClearRangePerLevel` (Stage는 스킬 반영 Tuning으로 SensesSettings를 만든다, D-043)
-
-### 화면 흐름 · 설정 (spec/08)
-- [x] 위 흐름의 모든 전이가 동작한다 (Unity: UI 흐름 테스트 — 버튼 이벤트를 직접 호출). — 증거: EditMode `FlowTests.Title_ButtonsLeadToStageSelectSettingsResetAndQuit`, `StageSelect_LockedStagesCannotStart_UnlockAfterClear`, `Result_RecordsAndSaves_RetrySkillsStageSelectAndEnding`, `SceneIntegrityTests.BuildSettings_ScreenScenesInFlowOrder` (D-044)
-- [x] 잠긴 스테이지는 선택할 수 없다 (Unity). — 증거: `FlowTests.StageSelect_LockedStagesCannotStart_UnlockAfterClear`
-- [x] 게임패드만으로 Title부터 Stage 1 시작까지 갈 수 있다 (Unity: 가상 Gamepad). — 증거: PlayMode `FlowPlayModeTests.GamepadOnly_TitleToStage1`
-- [x] Skills 화면에서 구매와 액티브 장착이 동작하고 저장된다 (Unity). — 증거: `FlowTests.Skills_PurchaseAndEquip_AreSaved_AndCarriedIntoStage`
-- [x] Pause 중에는 Core 시뮬레이션 틱이 진행되지 않고 입력 커맨드가 전달되지 않는다 (Unity). — 증거: PlayMode `FlowPlayModeTests.Pause_StopsTicksAndDropsInput`
-- [x] 설정 값이 재시작 후에도 유지된다 (Unity). — 증거: `FlowTests.Settings_ChangedThroughPanel_PersistInStore`, `Settings_SurvivePlayerPrefsRestart`
-- [x] (M7 이월) HUD 액티브 스킬 칸(아이콘 + 쿨타임) (Unity). — 증거: `HudTests.ActiveSkill_SlotShowsOnlyWhenEquipped_WithCooldown`, 미끼 월드 표시 `SensesViewTests.Decoy_MarkerShownAtDecoyWhileActive`
-
-### 사람 요청
-- [ ] CO₂·증기 표현을 기체형(소프트 파티클/볼륨 안개)으로 교체 (캡처 검토). M9 시작 전
+- 마일스톤: **M9 Stage 3 · 4 · 5와 기믹** (시작 전)
+- 다음 할 일: spec/05·06·07(Stage 3~5) 수용 기준을 체크리스트로 복사, 기믹 Core부터
+- 브랜치: `milestone/m9-gimmicks`
 
 ## M7 버티컬 슬라이스 리포트 (2026-10-01, 사람 검토 권장)
 **할 수 있는 것:** Unity 에디터에서 `Assets/_Project/Scenes/Stage.unity`를 열고 Play하면 Stage 1(조는 인간)이 시작된다. `StageBootstrap.RequestedLevelId`로 stage02를 고를 수 있으며, 화면 흐름(타이틀·스테이지 선택)은 M8에서 붙인다. 빌드 실행 파일은 아직 Boot 씬만 연다.
@@ -56,11 +32,13 @@
 - **M5 흡혈 세션 · 물린 자국 · 포만 · 승리** — 태그 `m5-done` (2026-10-01). 체크리스트: `plan/archive/m5-checklist.md`
 - **M6 물방울 QTE · 습기** — 태그 `m6-done` (2026-10-01). 체크리스트: `plan/archive/m6-checklist.md`. 이월: DripSource 레벨 적용 → M7
 - **M7 거실 버티컬 슬라이스 (Stage 1·2)** — 태그 `m7-done` (2026-10-01). 체크리스트: `plan/archive/m7-checklist.md`. 이월: DripSource 검사 Stage 3~5 적용·CO₂ 바람 흩어짐·중독 게이지 → M9, 액티브 스킬 HUD → M8
+- **M8 화면 흐름 · 스킬 트리 · 저장** — 태그 `m8-done` (2026-10-01). 체크리스트: `plan/archive/m8-checklist.md`. 이월: 해독 체질 적용 → M9, 음악 볼륨 → M10. 사람 요청(CO₂·증기 기체형) 반영 (D-045)
 
 ## 사람 요청
 | ID | 요청 | 필요 사양 | 대체물 적용 여부 | 상태 |
 |---|---|---|---|---|
-| 2026-10-01 | M8 | HUD 액티브 스킬 칸 테스트, 겹눈 선명 범위 테스트, 미끼 월드 표시 | Core 300 + EditMode 80 + PlayMode 9 통과 | (이 커밋) |
+| 2026-10-01 | M8 | (사람 요청) CO₂·증기 기체형: SoftGas·VolumeFog 셰이더, GasNoise, 쿼드 빌보드 CO₂, 기체 캡처, D-045. M8 종료 | Core 300 + EditMode 82 + PlayMode 9 통과, 빌드 경고 0, 캡처 검토 | (이 커밋) |
+| 2026-10-01 | M8 | HUD 액티브 스킬 칸 테스트, 겹눈 선명 범위 테스트, 미끼 월드 표시 | Core 300 + EditMode 80 + PlayMode 9 통과 | 18ced4e |
 | 2026-10-01 | M8 | 화면 흐름: GameSession·ScreenFlow·SceneNavigator, Title·StageSelect·Skills·Settings·Confirm·Stage(Pause/Result)·Ending·Boot, FileSaveStorage, UserSettings, Pause(틱·입력 정지), HUD 액티브 스킬 칸, 메뉴 캡처, D-044. **결함 수정**: 씬 생성기 메서드 손실 복구, 메뉴 글자 누락, 행 레이아웃 | Core 300 + EditMode 77 + PlayMode 9 통과, 빌드 경고 0, 캡처 검토 | 42912f0 |
 | 2026-10-01 | M8 | Core 메타: SkillCatalog·SkillLoadout·SkillEffects(스킬 반영 Tuning), 연속 와류, 미끼(DecoySystem), 보상, SaveData·직렬화·SaveStore·SkillShop, D-043 | Core 300/300 통과 | 16446af |
 | 2026-10-01 | M7 | 카메라 URP 후처리 켜기(은신 비네트 미표시 결함), 은신처·증기 양면 렌더링, 씬 무결성 테스트, 대표 캡처 검토, 버티컬 슬라이스 리포트. M7 종료 | Core 265 + EditMode 66 + PlayMode 6 통과, 빌드 경고 0, 캡처 검토 | (이 커밋) |
@@ -80,6 +58,7 @@
 (없음)
 
 ## 캡처 검토 기록
+- 2026-10-01 M8 `Captures/2026-10-01_160546/` 기체 표현: CO₂는 코에서 흩어지는 분홍 기체 줄기(노이즈로 일렁임, 소프트 파티클), 증기는 상자 윤곽 없는 뭉게 덩어리(가구 뒤 가리지 않음), 증기 안에서는 선명 시야가 줄어든 안개. 첫 시도(`160443`)에서 증기 윤곽이 상자 모양 → 가장자리 노이즈 침식으로 수정
 - 2026-10-01 M8 `Captures/2026-10-01_155910/` 메뉴: Title, Title+설정(9행), StageSelect(Stage 1 기록, 2 열림, 3~5 준비 중), Skills(능력치 탭, 비용·레벨), Ending. 한글·배치 정상. **결함 수정**: 첫 캡처에서 글자가 모두 빠짐(캔버스 평면이 근평면에 너무 가까움 + 씬을 다시 열면 동적 글꼴 텍스처가 비워짐), 행 높이가 기본값 100으로 잡혀 목록이 패널 밖으로 넘침 → 고정 크기 행·위쪽 기준 목록·씬별 글꼴
 - 2026-10-01 M7 최종 `Captures/2026-10-01_152614/` Stage 1·2 대표: 전경(흐림 속 가구 실루엣·CO₂), 시작 위치 3인칭·1인칭, 인간 근접(체온 빛·자국 점), Shadow Zone 내부(푸른빛 + 은신 비네트). 마젠타 없음
 - 2026-10-01 M7 `Captures/2026-10-01_152002/` HUD 3해상도: 모든 요소를 동시에 켠 상태(광분 4.3초·진정 링, 가려짐, 흡혈 62%·포만 강조·자국 2, 가려움 링·조준점, 젖은 날개 3.4s, 습기, 머리 화살표, 은신처 방향, 공격 경고, 튜토리얼 문구). 세 해상도에서 같은 비율 배치, 화면 밖·겹침 없음, 한글 정상. **결함 수정**: 첫 캡처(`151725`)에서 가장자리 표시가 하단 스태미나 문구와 겹치고 해상도마다 위치가 달랐음 → 세로 0.25~0.75 띠 제한 + 뷰포트 앵커 배치. 빌드에서 `HudAudioSource` 누락 스크립트 경고(파일명 불일치) → 파일 분리 + 씬 누락 스크립트 검사 테스트 추가

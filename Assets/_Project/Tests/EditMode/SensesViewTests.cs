@@ -135,6 +135,8 @@ namespace Moqui.Unity.Tests
             }
 
             Assert.That(_view.Plume.Puffs.Count, Is.GreaterThan(0));
+            var puffRenderer = _view.transform.Find("Co2_0").GetComponent<MeshFilter>();
+            Assert.That(puffRenderer.sharedMesh.name, Does.StartWith("Quad"), "gas puffs are billboard quads");
             Assert.That(_view.VisibleCo2Puffs, Is.EqualTo(_view.Plume.Puffs.Count), "visible beyond fogFullRange");
 
             _simulation.Player.Position = (mouth + (Vector3.down * (_settings.Co2VisibleRange + 50f))).ToCore();

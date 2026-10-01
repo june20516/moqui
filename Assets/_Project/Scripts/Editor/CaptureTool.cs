@@ -71,6 +71,7 @@ namespace Moqui.Unity.Editor
             }
 
             CaptureHud(outputDirectory);
+            CaptureGas(outputDirectory);
 
             Debug.Log($"[CaptureTool] Captures written to {outputDirectory}");
         }
@@ -233,6 +234,58 @@ namespace Moqui.Unity.Editor
             }
 
             Canvas.ForceUpdateCanvases();
+        }
+
+        /// <summary>
+        /// 기체 표현 검토 (D-045): 인간 머리 근처 CO₂ 소프트 파티클, TV 앞에 둔 시험용 증기 볼륨(밖에서·안에서).
+        /// Stage 1·2에는 습기 영역이 없으므로 캡처용 박스를 임시로 둔다(씬은 저장하지 않는다).
+        /// </summary>
+        public static void CaptureGas(string outputDirectory)
+        {
+            EditorSceneManager.OpenScene(SandboxSceneBuilder.StageScenePath, OpenSceneMode.Single);
+            Camera camera = MainCameraOrThrow(SandboxSceneBuilder.StageScenePath);
+            Tuning tuning = TuningLoader.Load(new UnityDataSource());
+            LevelDefinition level = new LevelLoader(new UnityDataSource()).Load(StageLevelIds[0]);
+            var simulation = new GameSimulation(GameSettings.FromTuning(tuning), level.CreateSetup());
+            var materials = UnityEngine.Object.FindAnyObjectByType<LevelMaterials>();
+            var visuals = LevelView.Build(level, simulation.World, null, materials);
+            UnityEngine.Object.FindAnyObjectByType<HumanView>().Build(simulation.Human);
+            var senses = new SensesSettings(tuning);
+            var sensesView = UnityEngine.Object.FindAnyObjectByType<SensesView>();
+            sensesView.Bind(simulation, senses, visuals, materials);
+            for (int i = 0; i < SimulationTime.ToTicks(simulation.Settings.Breath.Period) && !simulation.Human.IsExhaling; i++)
+            {
+                Step(simulation, sensesView, GameSimulation.DeltaTime);
+            }
+
+            Step(simulation, sensesView, Co2SettleSeconds);
+            var player = GameObject.Find("Player");
+            var visibility = player.GetComponent<PlayerViewVisibility>();
+            Vector3 head = simulation.Human.HeadCenter.ToUnity();
+            Vector3 viewer = head + new Vector3(-70f, 20f, -60f);
+            simulation.Player.Position = viewer.ToCore();
+            sensesView.Render(0f);
+            SensesFog.Apply(senses, viewer, false);
+            var closePose = new CameraPose(viewer, Quaternion.LookRotation((head + (Vector3.up * 20f)) - viewer), camera.fieldOfView, camera.nearClipPlane);
+            Capture(camera, player, visibility, viewer, closePose, true, outputDirectory, "Gas_co2_close");
+
+            var steam = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            UnityEngine.Object.DestroyImmediate(steam.GetComponent<Collider>());
+            steam.name = "CaptureSteam";
+            steam.transform.position = new Vector3(0f, 70f, -120f);
+            steam.transform.localScale = new Vector3(120f, 140f, 80f);
+            steam.GetComponent<Renderer>().sharedMaterial = materials.Steam;
+            Vector3 outside = new Vector3(60f, 110f, 60f);
+            SensesFog.Apply(senses, outside, false);
+            var outsidePose = new CameraPose(outside, Quaternion.LookRotation(steam.transform.position - outside), camera.fieldOfView, camera.nearClipPlane);
+            Capture(camera, player, visibility, outside, outsidePose, true, outputDirectory, "Gas_steam_outside");
+
+            Vector3 inside = steam.transform.position + new Vector3(0f, 10f, 20f);
+            SensesFog.Apply(senses, inside, true);
+            var insidePose = new CameraPose(inside, Quaternion.LookRotation(Vector3.forward), camera.fieldOfView, camera.nearClipPlane);
+            Capture(camera, player, visibility, inside, insidePose, true, outputDirectory, "Gas_steam_inside");
+            SensesFog.Disable();
+            Debug.Log($"[CaptureTool] Gas: co2Puffs={sensesView.Plume.Puffs.Count}");
         }
 
         /// <summary>

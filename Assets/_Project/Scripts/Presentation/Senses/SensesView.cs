@@ -215,7 +215,8 @@ namespace Moqui.Unity.Presentation.Senses
         {
             while (_co2Pool.Count <= index)
             {
-                _co2Pool.Add(CreateCue(PrimitiveType.Sphere, $"Co2_{_co2Pool.Count}", _materials != null ? _materials.Co2 : null));
+                // 기체형 표현: 셰이더(Moqui/SoftGas)가 카메라를 향하게 펴는 쿼드 (D-045).
+                _co2Pool.Add(CreateCue(PrimitiveType.Quad, $"Co2_{_co2Pool.Count}", _materials != null ? _materials.Co2 : null));
             }
 
             return _co2Pool[index];

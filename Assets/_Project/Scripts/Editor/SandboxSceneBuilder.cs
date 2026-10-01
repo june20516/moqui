@@ -40,6 +40,8 @@ namespace Moqui.Unity.Editor
         private const string SensesFogMaterialPath = "Assets/_Project/Materials/Senses_Fog.mat";
         private const string SensesFogShaderName = "Moqui/SensesFog";
         private const string SensesFogFeatureName = "SensesFog";
+        private const string SoftGasShaderName = "Moqui/SoftGas";
+        private const string VolumeFogShaderName = "Moqui/VolumeFog";
         private const string PcRendererPath = "Assets/Settings/PC_Renderer.asset";
         private const float PlayerVisualDiameter = 1f;
         private const string LitShaderName = "Universal Render Pipeline/Lit";
@@ -47,10 +49,10 @@ namespace Moqui.Unity.Editor
         private static readonly Color PlayerColor = new Color(0.2f, 0.85f, 0.9f);
         private static readonly Color MenuBackground = new Color(0.1f, 0.08f, 0.15f);
         private static readonly Color ShadowCueColor = new Color(0.35f, 0.6f, 1f, 0.35f);
-        private static readonly Color Co2Color = new Color(0.95f, 0.78f, 0.98f, 0.5f);
+        private static readonly Color Co2Color = new Color(0.95f, 0.78f, 0.98f, 0.8f);
         private static readonly Color HeatColor = new Color(1f, 0.42f, 0.12f, 0.5f);
         private static readonly Color BiteMarkColor = new Color(0.9f, 0.1f, 0.15f, 0.95f);
-        private static readonly Color SteamColor = new Color(0.9f, 0.95f, 1f, 0.25f);
+        private static readonly Color SteamColor = new Color(0.9f, 0.95f, 1f, 0.85f);
         private static readonly Color GlassColor = new Color(0.75f, 0.9f, 0.95f, 0.3f);
 
         [MenuItem("Moqui/Rebuild All Sandboxes")]
@@ -97,9 +99,9 @@ namespace Moqui.Unity.Editor
 
             var materials = new GameObject("LevelMaterials").AddComponent<LevelMaterials>();
             SetReference(materials, "_shadowCue", LoadOrCreateTransparentMaterial(ShadowCueMaterialPath, ShadowCueColor, doubleSided: true));
-            SetReference(materials, "_steam", LoadOrCreateTransparentMaterial(SteamMaterialPath, SteamColor, doubleSided: true));
+            SetReference(materials, "_steam", LoadOrCreateShaderMaterial(SteamMaterialPath, VolumeFogShaderName, SteamColor));
             SetReference(materials, "_glass", LoadOrCreateTransparentMaterial(GlassMaterialPath, GlassColor));
-            SetReference(materials, "_co2", LoadOrCreateTransparentMaterial(Co2MaterialPath, Co2Color));
+            SetReference(materials, "_co2", LoadOrCreateShaderMaterial(Co2MaterialPath, SoftGasShaderName, Co2Color));
             SetReference(materials, "_heat", LoadOrCreateTransparentMaterial(HeatMaterialPath, HeatColor));
             SetReference(materials, "_biteMark", LoadOrCreateTransparentMaterial(BiteMarkMaterialPath, BiteMarkColor));
             var senses = new GameObject("SensesView").AddComponent<SensesView>();
@@ -260,6 +262,27 @@ namespace Moqui.Unity.Editor
                 material = new Material(lit);
                 System.IO.Directory.CreateDirectory(System.IO.Path.GetDirectoryName(path));
                 AssetDatabase.CreateAsset(material, path);
+            }
+
+            material.SetColor(BaseColorProperty, color);
+            EditorUtility.SetDirty(material);
+            AssetDatabase.SaveAssets();
+            return material;
+        }
+
+        /// <summary>전용 셰이더 머티리얼 (기체 표현). 에셋이 다른 셰이더로 있으면 셰이더를 바꾼다.</summary>
+        private static Material LoadOrCreateShaderMaterial(string path, string shaderName, Color color)
+        {
+            Shader shader = Shader.Find(shaderName) ?? throw new System.InvalidOperationException($"Shader '{shaderName}' not found.");
+            var material = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (material == null)
+            {
+                material = new Material(shader);
+                AssetDatabase.CreateAsset(material, path);
+            }
+            else if (material.shader != shader)
+            {
+                material.shader = shader;
             }
 
             material.SetColor(BaseColorProperty, color);
