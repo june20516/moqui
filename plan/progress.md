@@ -4,13 +4,13 @@
 
 ## 현재
 - 마일스톤: **M7 거실 버티컬 슬라이스 (Stage 1·2)** (진행 중)
-- 다음 할 일: 시나리오 포맷·ScenarioRunner + Stage 1·2 클리어 봇/발각 봇
+- 다음 할 일: Unity — 레벨 기반 Stage 씬(화이트박스 1:1), 인간 뷰, HUD, 튜토리얼, 감각 표현
 - 브랜치: `milestone/m7-living-room`
 
 ## 현재 마일스톤 체크리스트 (M7)
 ### 레벨 데이터 (spec/07, tech/architecture §5)
 - [x] `livingRoom` 방 데이터가 표의 좌표/크기를 ±5u 안에서 따르고, Stage 1·2가 같은 방 데이터를 참조한다 (Core: 레벨 데이터 검사). — 증거: `LevelDataTests.LivingRoom_BoxFurniture_MatchesSpecTableWithin5u`(8개 가구), `LivingRoom_RoundFurniture_MatchesSpecTableWithin5u`, `LivingRoom_ShadowZones_UnderTableBehindShelfBehindCurtain`, `Stage1And2_ReferenceTheSameLivingRoom` (D-037 커튼 조정)
-- [ ] Stage 1·2가 공통 규칙의 레벨 데이터 검사를 통과한다 (Core). (Stage 3~5는 M9) — 진행: `LevelDataTests.Level_PassesCommonLevelChecks`(시작 위치·소음·DripSource·인간 데이터·도망칠 곳·가구 플래그), `Validator_SpawnInsideYellowZone_Reported`. 경로 규칙은 클리어 봇으로 증명 후 체크
+- [x] Stage 1·2가 공통 규칙의 레벨 데이터 검사를 통과한다 (Core). (Stage 3~5는 M9) — 증거: `LevelDataTests.Level_PassesCommonLevelChecks`(시작 위치·소음·DripSource·인간 데이터·도망칠 곳·가구 플래그), `Validator_SpawnInsideYellowZone_Reported`. 경로 규칙은 클리어 봇 `stage01_clear`·`stage02_clear`가 숨을 곳을 경유해 SkinSite에 도달해 증명
 - [x] `glass` 형상은 충돌은 하지만 시야를 막지 않는다 (Core). — 증거: `LevelDataTests.Glass_BlocksMovementButNotLineOfSight`
 - [x] 레벨·방 데이터가 `data/schema`의 JSON Schema를 만족한다 (Core, tech/verification §1). — 증거: `LevelDataTests.DataFiles_MatchJsonSchemas`, `Schema_RejectsInvalidLevel`
 - [x] (M4 이월, D-034) 레벨 데이터의 모든 가구 형상에 obstacle 플래그가 있다 (Core: 레벨 데이터 검사). — 증거: `LevelDataTests.Level_AllFurnitureHasObstacleFlag`(stage01·02), `Validator_FurnitureWithoutObstacleFlag_Reported`
@@ -40,8 +40,8 @@
 - [ ] 1920×1080, 1280×720, 2560×1440에서 HUD 요소가 화면 밖으로 나가거나 겹치지 않는다 (캡처 3장 검토).
 
 ### 봇 · 캡처 · 리포트
-- [ ] Stage 1·2 클리어 봇이 고정 시드 5개 중 4개 이상 성공한다 (Core, tech/verification §3).
-- [ ] Stage 1·2 발각 봇이 Red Zone → PlayerDied(Attack)에 도달한다 (Core).
+- [x] Stage 1·2 클리어 봇이 고정 시드 5개 중 4개 이상 성공한다 (Core, tech/verification §3). — 증거: `ScenarioTests.Scenario_MeetsExpectationOnEnoughSeeds("stage01_clear")` 5/5, `("stage02_clear")` 4/5 (D-038)
+- [x] Stage 1·2 발각 봇이 Red Zone → PlayerDied(Attack)에 도달한다 (Core). — 증거: `ScenarioTests.Scenario_MeetsExpectationOnEnoughSeeds("stage01_detect")` 5/5(졸다가 귀 소음으로 깨어 박수), `("stage02_detect")` 5/5
 - [ ] Stage 1·2 대표 캡처 4장(전경, 시작 위치, 인간 근접, Shadow Zone 내부)을 검토했다.
 - [ ] `plan/progress.md`에 버티컬 슬라이스 리포트를 작성했다 (사람 검토 권장 시점).
 
@@ -76,7 +76,8 @@
 ## 반복 로그
 | 일시 | 마일스톤 | 한 일 | 증거 | 커밋 |
 |---|---|---|---|---|
-| 2026-10-01 | M7 | 졸음 수정자(DozeSystem), Stage 2 둘러보기(IdleGlance), 호흡(BreathSystem), 감각 스냅샷(호흡·부위 위치·은신처·바람 영역), HumanTraits | Core 251/251 통과, Unity CS 이슈 0 | (이 커밋) |
+| 2026-10-01 | M7 | 시나리오 포맷·ScenarioRunner·BotPilot, Stage 1·2 클리어/발각 시나리오, D-038. 봇 결함 수정(도착 판정, 이웃 부위 부착), 경로를 머리 뒤로 | Core 256/256 통과, Unity CS 이슈 0 | (이 커밋) |
+| 2026-10-01 | M7 | 졸음 수정자(DozeSystem), Stage 2 둘러보기(IdleGlance), 호흡(BreathSystem), 감각 스냅샷(호흡·부위 위치·은신처·바람 영역), HumanTraits | Core 251/251 통과, Unity CS 이슈 0 | adc0b05 |
 | 2026-10-01 | M7 | 브랜치·체크리스트, 레벨 데이터 계층(JsonAccess, Shape·Room·Level 정의, HumanDataParser, LevelLoader, LevelValidator), 거실·stage01·stage02 데이터, JSON Schema, glass(ShapeFlags.Solid), D-037 | Core 243/243 통과, Unity CS 이슈 0 | c0bb672 |
 | 2026-10-01 | M6 | 브랜치·체크리스트, D-036, WaterSystem(발생·Trapped·탈출·WaterImpact), HumiditySystem(습기·증기·젖은 날개), 대시 비용·회복 배율, LevelChecks, 스냅샷 확장, WaterView·Sandbox_Water·캡처. **결함 수정**: 물방울 포획 터널링(선분 판정). M6 종료 | Core 220 + EditMode 40 + PlayMode 4 통과, 빌드 성공, 캡처 검토 | 2613c44 |
 | 2026-10-01 | M5 | 설계 검증 시나리오(SessionStrategyBot, Shadow Zone 무대, 실패=제한 시간), D-035, 밸런스 검토 권장 기록 | Core 204 + EditMode 40 + PlayMode 3 통과, 빌드 성공. M5 종료 | 6119aeb |
