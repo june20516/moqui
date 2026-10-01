@@ -73,22 +73,43 @@ namespace Moqui.Unity.Tests
         }
 
         [Test]
-        public void BiteMark_DotOnlyOnMarkedSite_InsideHeatRange()
+        public void BiteMark_DotAtTheBiteSpot_OnlyInsideHeatRange()
         {
             PlacePlayerFromSite(_settings.HeatRange * 0.5f);
             _view.Render(FrameTime);
-            Assert.That(_view.BiteDot(SiteId).enabled, Is.False, "no mark yet");
+            Assert.That(_view.VisibleBiteDots, Is.EqualTo(0), "no mark yet");
 
-            Site.HasBiteMark = true;
+            // 부위 캡슐 한쪽 끝 근처를 문 자국 (가운데가 아닌 곳).
+            var shape = Site.Shape;
+            System.Numerics.Vector3 core = System.Numerics.Vector3.Lerp(shape.PointA, shape.PointB, 0.8f);
+            System.Numerics.Vector3 normal = System.Numerics.Vector3.UnitY;
+            System.Numerics.Vector3 spot = core + (normal * shape.Radius);
+            _simulation.Human.AddBiteMark(new BiteMark(SiteId, SurfaceAnchor.Create(shape, spot, normal)));
             _view.Render(FrameTime);
-            Assert.That(_view.BiteDot(SiteId).enabled, Is.True);
-            Assert.That(Vector3.Distance(_view.BiteDot(SiteId).transform.position, Site.Shape.Center.ToUnity()), Is.LessThan(Site.Shape.Radius * _settings.HeatGlowScale + Tolerance));
-            var otherSite = _simulation.Human.SkinSites.First(site => site.PartId != SiteId);
-            Assert.That(_view.BiteDot(otherSite.PartId).enabled, Is.False, "only the marked site");
+
+            Assert.That(_view.VisibleBiteDots, Is.EqualTo(1));
+            Vector3 dot = _view.BiteDots[0].transform.position;
+            Assert.That(Vector3.Distance(dot, spot.ToUnity()), Is.LessThan(_settings.BiteMarkDotRadius + Tolerance), "the dot sits on the bite spot");
+            Assert.That(Vector3.Distance(dot, shape.Center.ToUnity()), Is.GreaterThan(shape.Radius), "not at the part center");
 
             PlacePlayerFromSite(_settings.HeatRange + 5f);
             _view.Render(FrameTime);
-            Assert.That(_view.BiteDot(SiteId).enabled, Is.False, "outside heat range");
+            Assert.That(_view.VisibleBiteDots, Is.EqualTo(0), "outside heat range");
+        }
+
+        /// <summary>체온 표시는 부피 막이 아니라 얇은 윤곽(림·아지랑이 셰이더)이고 피부보다 거의 두껍지 않다 (spec/11, M12).</summary>
+        [Test]
+        public void Heat_IsThinShimmer_NotAVolumeAroundTheSkin()
+        {
+            PlacePlayerFromSite(_settings.HeatRange * 0.5f);
+            _view.Render(FrameTime);
+            var glow = _view.HeatGlow(SiteId);
+
+            Assert.That(glow.enabled, Is.True);
+            var stageHeatMaterial = UnityEditor.AssetDatabase.LoadAssetAtPath<Material>("Assets/_Project/Materials/Senses_Heat.mat");
+            Assert.That(stageHeatMaterial.shader.name, Is.EqualTo("Moqui/HeatShimmer"), "the Stage scene draws heat with the shimmer shader");
+            float glowRadius = glow.transform.localScale.x * 0.5f;
+            Assert.That(glowRadius, Is.LessThanOrEqualTo(Site.Shape.Radius * 1.05f), "no thicker than the skin");
         }
 
         [Test]

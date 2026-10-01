@@ -164,7 +164,7 @@
     "senses.co2ForwardSpeed": 15,
     "senses.co2PuffStartRadius": 2,
     "senses.co2PuffEndRadius": 10,
-    "senses.heatGlowScale": 1.8,
+    "senses.heatGlowScale": 1.04,
     "senses.biteMarkDotRadius": 1.5,
     "hud.satietyHighlightMul": 0.85,
     "hud.resultDelay": 1.5,

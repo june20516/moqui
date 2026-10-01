@@ -14,6 +14,9 @@ namespace Moqui.Core.Simulation
 
         public SkinSiteState Site { get; }
 
+        /// <summary>주둥이를 꽂은 피부 지점. 자국은 여기에 생긴다 (M12).</summary>
+        public Collision.SurfaceAnchor BiteSpot { get; set; }
+
         /// <summary>이 세션을 시작한 부착의 틱. 다시 부착하면 새 세션이다.</summary>
         public int AttachedTick { get; }
 
@@ -101,6 +104,8 @@ namespace Moqui.Core.Simulation
                 if (session == null)
                 {
                     session = new SuckSession(attachedSite, player.AttachedTick);
+                    player.Anchor.Resolve(out var spot, out var spotNormal);
+                    session.BiteSpot = Collision.SurfaceAnchor.Create(attachedSite.Shape, spot, spotNormal);
                     player.SuckSession = session;
                 }
 
@@ -134,6 +139,10 @@ namespace Moqui.Core.Simulation
             {
                 session.Site.HasBiteMark = true;
                 human.BiteMarkCount++;
+                if (session.BiteSpot != null)
+                {
+                    human.AddBiteMark(new BiteMark(session.Site.PartId, session.BiteSpot));
+                }
 
                 // 세션이 끝나는 순간 가려움을 알아챈다 (spec/04 §4).
                 human.Awareness = Math.Min(GaugeMax, human.Awareness + _biteMarks.AwarenessBump);

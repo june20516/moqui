@@ -20,7 +20,8 @@ namespace Moqui.Unity.Presentation.Senses
 
         private readonly List<Renderer> _co2Pool = new List<Renderer>();
         private readonly Dictionary<string, Renderer> _heatGlows = new Dictionary<string, Renderer>();
-        private readonly Dictionary<string, Renderer> _biteDots = new Dictionary<string, Renderer>();
+        private readonly List<Renderer> _biteDots = new List<Renderer>();
+        private readonly Dictionary<string, float> _heatIntensity = new Dictionary<string, float>();
         private readonly Dictionary<string, Renderer> _shadowCues = new Dictionary<string, Renderer>();
 
         private LevelMaterials _materials;
@@ -69,13 +70,16 @@ namespace Moqui.Unity.Presentation.Senses
             foreach (var site in simulation.Human.SkinSites)
             {
                 _heatGlows.Add(site.PartId, CreateCue(PrimitiveType.Capsule, $"Heat_{site.PartId}", materials != null ? materials.Heat : null));
-                _biteDots.Add(site.PartId, CreateCue(PrimitiveType.Sphere, $"BiteMark_{site.PartId}", materials != null ? materials.BiteMark : null));
             }
         }
 
         public Renderer HeatGlow(string partId) => _heatGlows[partId];
 
-        public Renderer BiteDot(string partId) => _biteDots[partId];
+        /// <summary>자국 점 (자국마다 하나, 문 자리에 붙는다). 목록 길이는 지금까지 만든 점 수.</summary>
+        public IReadOnlyList<Renderer> BiteDots => _biteDots;
+
+        /// <summary>이번 프레임에 보인 자국 점 수.</summary>
+        public int VisibleBiteDots { get; private set; }
 
         public Renderer ShadowCue(string zoneId) => _shadowCues[zoneId];
 
@@ -163,31 +167,58 @@ namespace Moqui.Unity.Presentation.Senses
 
         private void RenderHeat(Human human, Vector3 viewer)
         {
+            _heatIntensity.Clear();
             foreach (var site in human.SkinSites)
             {
                 Renderer glow = _heatGlows[site.PartId];
-                Renderer dot = _biteDots[site.PartId];
                 float distance = Vector3.Distance(site.Shape.Center.ToUnity(), viewer);
                 float intensity = SenseCueModel.HeatIntensity(distance, _settings.HeatRange);
+                _heatIntensity[site.PartId] = intensity;
                 glow.enabled = intensity > 0f;
-                dot.enabled = intensity > 0f && site.HasBiteMark;
                 if (!glow.enabled)
                 {
                     continue;
                 }
 
+                // 체온은 피부를 거의 덮지 않는 얇은 윤곽(림·아지랑이 셰이더)이다 (M12).
                 WorldView.ApplyPose(site.Shape, glow.transform);
                 Vector3 scale = glow.transform.localScale;
                 glow.transform.localScale = new Vector3(scale.x * _settings.HeatGlowScale, scale.y, scale.z * _settings.HeatGlowScale);
                 SetAlpha(glow, intensity);
-                if (dot.enabled)
-                {
-                    // 자국 점은 부위 윗면(빛 바깥)에 붙인다.
-                    float glowRadius = site.Shape.Radius * _settings.HeatGlowScale;
-                    dot.transform.position = site.Shape.Center.ToUnity() + (Vector3.up * glowRadius);
-                    dot.transform.localScale = Vector3.one * (_settings.BiteMarkDotRadius * 2f);
-                }
             }
+
+            // 자국 점은 실제로 문 자리에, 그 부위의 체온이 보일 때만 (spec/04 §4, spec/11 §3, M12).
+            VisibleBiteDots = 0;
+            for (int i = 0; i < human.BiteMarks.Count; i++)
+            {
+                var mark = human.BiteMarks[i];
+                Renderer dot = BiteDotAt(i);
+                dot.enabled = _heatIntensity.TryGetValue(mark.PartId, out float intensity) && intensity > 0f;
+                if (!dot.enabled)
+                {
+                    continue;
+                }
+
+                mark.Resolve(out var position, out var normal);
+                dot.transform.position = (position + (normal * (_settings.BiteMarkDotRadius * 0.5f))).ToUnity();
+                dot.transform.localScale = Vector3.one * (_settings.BiteMarkDotRadius * 2f);
+                VisibleBiteDots++;
+            }
+
+            for (int i = human.BiteMarks.Count; i < _biteDots.Count; i++)
+            {
+                _biteDots[i].enabled = false;
+            }
+        }
+
+        private Renderer BiteDotAt(int index)
+        {
+            while (_biteDots.Count <= index)
+            {
+                _biteDots.Add(CreateCue(PrimitiveType.Sphere, $"BiteMark_{_biteDots.Count}", _materials != null ? _materials.BiteMark : null));
+            }
+
+            return _biteDots[index];
         }
 
         private void RenderCo2(Vector3 viewer)

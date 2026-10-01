@@ -147,6 +147,16 @@ namespace Moqui.Core.Simulation
         /// <summary>인간의 물린 자국 수 n (spec/04 §4).</summary>
         public int BiteMarkCount { get; set; }
 
+        private readonly List<BiteMark> _biteMarks = new List<BiteMark>();
+
+        /// <summary>물린 자국 (문 자리, 부위를 따라 움직임). 개수 규칙은 BiteMarkCount가 맡는다.</summary>
+        public IReadOnlyList<BiteMark> BiteMarks => _biteMarks;
+
+        public void AddBiteMark(BiteMark mark)
+        {
+            _biteMarks.Add(mark);
+        }
+
         public bool Owns(CollisionShape shape)
         {
             return _parts.ContainsKey(shape);

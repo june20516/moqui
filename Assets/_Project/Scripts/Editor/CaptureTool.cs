@@ -117,7 +117,11 @@ namespace Moqui.Unity.Editor
 
             Step(simulation, sensesView, Co2SettleSeconds);
             humanView.Refresh(simulation.Tick);
-            simulation.Human.SkinSites.First(site => site.PartId == "forearmR").HasBiteMark = true;
+            // 물린 자국: 오른 팔뚝 손목 쪽 윗면을 문 자리 (spec/04 §4, M12).
+            var bitten = simulation.Human.SkinSites.First(site => site.PartId == "forearmR");
+            bitten.HasBiteMark = true;
+            var biteCore = System.Numerics.Vector3.Lerp(bitten.Shape.PointA, bitten.Shape.PointB, 0.75f);
+            simulation.Human.AddBiteMark(new BiteMark(bitten.PartId, SurfaceAnchor.Create(bitten.Shape, biteCore + (System.Numerics.Vector3.UnitY * bitten.Shape.Radius), System.Numerics.Vector3.UnitY)));
             for (int i = 0; i < SimulationTime.ToTicks(Co2SettleSeconds); i++)
             {
                 gimmickView.Render(GameSimulation.DeltaTime);

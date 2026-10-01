@@ -57,7 +57,8 @@ namespace Moqui.Unity.Editor
         private static readonly Color MenuBackground = new Color(0.1f, 0.08f, 0.15f);
         private static readonly Color ShadowCueColor = new Color(0.35f, 0.6f, 1f, 0.35f);
         private static readonly Color Co2Color = new Color(0.95f, 0.78f, 0.98f, 0.8f);
-        private static readonly Color HeatColor = new Color(1f, 0.42f, 0.12f, 0.5f);
+        private static readonly Color HeatColor = new Color(1f, 0.55f, 0.45f, 1f);
+        private const string HeatShimmerShaderName = "Moqui/HeatShimmer";
         private static readonly Color BiteMarkColor = new Color(0.9f, 0.1f, 0.15f, 0.95f);
         private static readonly Color WebColor = new Color(0.95f, 0.95f, 0.95f, 0.55f);
         private static readonly Color SprayColor = new Color(0.62f, 0.9f, 0.55f, 0.7f);
@@ -113,7 +114,7 @@ namespace Moqui.Unity.Editor
             SetReference(materials, "_steam", LoadOrCreateShaderMaterial(SteamMaterialPath, VolumeFogShaderName, SteamColor));
             SetReference(materials, "_glass", LoadOrCreateTransparentMaterial(GlassMaterialPath, GlassColor));
             SetReference(materials, "_co2", LoadOrCreateShaderMaterial(Co2MaterialPath, SoftGasShaderName, Co2Color));
-            SetReference(materials, "_heat", LoadOrCreateTransparentMaterial(HeatMaterialPath, HeatColor));
+            SetReference(materials, "_heat", LoadOrCreateShaderMaterial(HeatMaterialPath, HeatShimmerShaderName, HeatColor));
             SetReference(materials, "_biteMark", LoadOrCreateTransparentMaterial(BiteMarkMaterialPath, BiteMarkColor));
             var web = LoadOrCreateTransparentMaterial(WebMaterialPath, WebColor, doubleSided: true);
             web.SetTexture("_BaseMap", LoadOrCreateWebTexture());
