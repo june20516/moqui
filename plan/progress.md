@@ -4,7 +4,7 @@
 
 ## 현재
 - 마일스톤: **M1 Core 충돌 월드 · 비행 · 카메라** (진행 중)
-- 다음 할 일: 시뮬레이션 틱 루프 + PlayerCommand + 관성 비행 (spec/01 이동 기준)
+- 다음 할 일: 충돌 이동(sweep + 미끄러짐) → ±500u 범위 기준
 - 브랜치: `milestone/m1-flight`
 
 ## 현재 마일스톤 체크리스트 (M1)
@@ -26,12 +26,12 @@
 - [ ] 선택한 시점이 재시작 후에도 유지된다 (Unity).
 
 ### spec/01 비행 · 대시 · 스태미나 · 입력
-- [ ] 최고 속도에서 입력을 놓으면 0.15초에 정지하고, 그동안 4.5u(±2%) 미끄러진다 (Core).
-- [ ] 정지 상태에서 1초 동안 W 입력 시 이동 거리가 56.4u(±1%)이다 (Core).
-- [ ] 반대 방향 입력 시 속도가 가속 규칙에 따라 부드럽게 반전된다 (Core).
+- [x] 최고 속도에서 입력을 놓으면 0.15초에 정지하고, 그동안 4.5u(±2%) 미끄러진다 (Core). — 증거: `FlightTests.Release_AtTopSpeed_StopsIn015SecondsAfterSliding45u`
+- [x] 정지 상태에서 1초 동안 W 입력 시 이동 거리가 56.4u(±1%)이다 (Core). — 증거: `FlightTests.Forward_OneSecondFromRest_Travels564u`
+- [x] 반대 방향 입력 시 속도가 가속 규칙에 따라 부드럽게 반전된다 (Core). — 증거: `FlightTests.ReverseInput_AtTopSpeed_ReversesSmoothly`
 - [ ] 대시 종료 직후 속도가 대시 방향 60u/s이고 이후 감속한다 (Core).
 - [ ] 바람 외력은 입력과 무관하게 즉시 더해진다 (Core).
-- [ ] 대각선 입력 속도가 단일 방향 속도와 같다 (Core).
+- [x] 대각선 입력 속도가 단일 방향 속도와 같다 (Core). — 증거: `FlightTests.DiagonalInput_TopSpeed_EqualsSingleDirectionSpeed`
 - [ ] 대시가 0.12초 동안 60u를 이동한다 (Core, ±1u).
 - [ ] 좌우·상하 입력이 없을 때 대시는 위쪽이다 (Core: DashDirectionResolver).
 - [ ] 스태미나 < 25이면 대시가 실행되지 않는다 (Core).
@@ -75,7 +75,8 @@
 ## 반복 로그
 | 일시 | 마일스톤 | 한 일 | 증거 | 커밋 |
 |---|---|---|---|---|
-| 2026-10-01 | M1 | 브랜치 생성, M1 체크리스트 복사, Core 충돌 월드(CollisionShape, ShapeGeometry, CollisionWorld) | Core 54/54 통과 (충돌 19 포함) | (이 커밋) |
+| 2026-10-01 | M1 | GameSimulation(60Hz), PlayerCommand, GameSettings, CameraBasis, FlightSystem(약한 관성) | Core 63/63 통과, Unity CS 이슈 0 | (이 커밋) |
+| 2026-10-01 | M1 | 브랜치 생성, M1 체크리스트 복사, Core 충돌 월드(CollisionShape, ShapeGeometry, CollisionWorld) | Core 54/54 통과 (충돌 19 포함) | aa7f77d |
 | 2026-10-01 | M0 | Unity 어댑터 asmdef, UnityDataSource, DataSync·BuildScript·CaptureTool, Tools/run-tests·build·capture, 씬·입력 에셋 이동, D-024·D-025. M0 종료 | Core 35 + EditMode 1 + PlayMode 1 통과, 빌드 성공(예상 외 경고 0), 캡처 1장 | e8dbd7a |
 | 2026-10-01 | M0 | Core 데이터 계층(IDataSource, JsonReader, Tuning, TuningLoader), `data/tuning.json`, spec 문서 일치 검사 | Core 35/35 통과, Unity CS 이슈 0 | 2b265df |
 | 2026-10-01 | M0 | 필수 패키지 설치, `Tools/unity-path.ps1`·`unity-import.ps1`, D-023 | unity-import exit 0, CS 이슈 0 | fd40a00 |
