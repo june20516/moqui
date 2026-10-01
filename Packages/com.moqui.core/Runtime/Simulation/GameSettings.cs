@@ -176,7 +176,11 @@ namespace Moqui.Core.Simulation
         public HidingSettings(Tuning tuning)
         {
             DebuffRecoveryMul = tuning.GetFloat("hiding.debuffRecoveryMul");
+            CueRange = tuning.GetFloat("hiding.cueRange");
         }
+
+        /// <summary>은신처 표시 거리이자 "도망칠 곳 보장" 검사 반경 (spec/07, spec/11).</summary>
+        public float CueRange { get; }
 
         /// <summary>숨은 상태에서 디버프(중독·젖은 날개·습기·탈진)가 줄어드는 속도 배율 (D-018).</summary>
         public float DebuffRecoveryMul { get; }

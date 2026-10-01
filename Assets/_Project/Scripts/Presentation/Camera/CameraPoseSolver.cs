@@ -63,7 +63,7 @@ namespace Moqui.Unity.Presentation
                 _settings.CollisionRadius,
                 direction.ToCore(),
                 distance,
-                ShapeFlags.Obstacle,
+                ShapeFlags.Solid,
                 out var collision);
             float travel = hit ? Mathf.Max(0f, collision.Distance - SphereMover.Skin) : distance;
             return origin + (direction * travel);

@@ -96,7 +96,7 @@ namespace Moqui.Core.Simulation
             string shapeId = player.Anchor.Shape.Id;
             Release(player);
             player.State = PlayerState.Flying;
-            var move = _mover.MoveStraight(player.Position, player.CollisionRadius, normal * _settings.DetachOffset, ShapeFlags.Obstacle);
+            var move = _mover.MoveStraight(player.Position, player.CollisionRadius, normal * _settings.DetachOffset, ShapeFlags.Solid);
             player.Position = move.Position;
             events.Add(new PlayerDetached(tick, shapeId));
         }

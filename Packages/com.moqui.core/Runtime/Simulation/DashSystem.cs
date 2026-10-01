@@ -70,7 +70,7 @@ namespace Moqui.Core.Simulation
         /// <summary>대시 중 1틱 이동. 대시가 끝나면 Flying으로 돌아간다.</summary>
         public void Step(Player player)
         {
-            var result = _mover.MoveStraight(player.Position, player.CollisionRadius, player.DashDirection * player.DashStepDistance, ShapeFlags.Obstacle);
+            var result = _mover.MoveStraight(player.Position, player.CollisionRadius, player.DashDirection * player.DashStepDistance, ShapeFlags.Solid);
             player.Position = result.Position;
             player.DashTicksRemaining--;
             if (result.Collided || player.DashTicksRemaining <= 0)

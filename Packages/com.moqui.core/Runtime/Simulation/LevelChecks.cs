@@ -11,7 +11,7 @@ namespace Moqui.Core.Simulation
         /// <summary>점 바로 아래 착지면(장애물 표면)까지의 높이. 아래에 아무것도 없으면 무한대.</summary>
         public static float HeightAboveLanding(CollisionWorld world, Vector3 point)
         {
-            return world.Raycast(point, -Vector3.UnitY, MaxProbeDistance, ShapeFlags.Obstacle, out var hit) ? hit.Distance : float.PositiveInfinity;
+            return world.Raycast(point, -Vector3.UnitY, MaxProbeDistance, ShapeFlags.Solid, out var hit) ? hit.Distance : float.PositiveInfinity;
         }
 
         /// <summary>물방울 발생원이 착지면에서 water.minSourceHeight 이상 위에 있는가 (spec/05 §1, 탈출 시간 보장).</summary>

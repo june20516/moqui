@@ -49,7 +49,7 @@ namespace Moqui.Core.Simulation
                 return 0f;
             }
 
-            return _world.SphereSweep(drop.Position, drop.Radius, -Vector3.UnitY, MaxProbeDistance, ShapeFlags.Obstacle, out var hit) ? hit.Distance : MaxProbeDistance;
+            return _world.SphereSweep(drop.Position, drop.Radius, -Vector3.UnitY, MaxProbeDistance, ShapeFlags.Solid, out var hit) ? hit.Distance : MaxProbeDistance;
         }
 
         /// <summary>탈출에 필요한 Dash 입력 횟수를 줄이는 값 (스킬 발수 코팅 3레벨, spec/09). 기본 0.</summary>
@@ -112,7 +112,7 @@ namespace Moqui.Core.Simulation
                 }
 
                 Vector3 travel = drop.Position - previous;
-                if (_world.SphereSweep(previous, drop.Radius, travel, travel.Length(), ShapeFlags.Obstacle, out var hit))
+                if (_world.SphereSweep(previous, drop.Radius, travel, travel.Length(), ShapeFlags.Solid, out var hit))
                 {
                     _drops.RemoveAt(i);
                     if (trapping)

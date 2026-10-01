@@ -244,7 +244,7 @@ namespace Moqui.Core.Simulation
             // 틱 안에서 속도가 선형으로 변한다고 보고 평균 속도로 적분한다. 외력(바람)은 관성 없이 그대로 더한다.
             Vector3 averageVelocity = (previousVelocity + Player.Velocity) * 0.5f;
             Vector3 displacement = (averageVelocity + Player.ExternalVelocity) * DeltaTime;
-            var move = _mover.Move(Player.Position, Player.CollisionRadius, displacement, Player.Velocity, ShapeFlags.Obstacle);
+            var move = _mover.Move(Player.Position, Player.CollisionRadius, displacement, Player.Velocity, ShapeFlags.Solid);
             Player.Position = move.Position;
             Player.Velocity = move.Velocity;
         }

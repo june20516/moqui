@@ -1,0 +1,51 @@
+{
+  "formatVersion": 1,
+  "id": "stage01",
+  "room": "livingRoom",
+  "seed": 101,
+  "playerSpawn": [-240, 120, -190],
+  "human": {
+    "id": "human",
+    "position": [0, 0, 140],
+    "facingYaw": 180,
+    "head": "head",
+    "shoulders": [[-20, 95, -6], [20, 95, -6]],
+    "parts": [
+      { "id": "head", "kind": "head", "a": [0, 112, 0], "b": [0, 118, 0], "radius": 10 },
+      { "id": "neck", "kind": "neck", "a": [0, 96, -3], "b": [0, 104, -2], "radius": 5, "site": "neck" },
+      { "id": "torso", "kind": "torso", "a": [0, 58, -8], "b": [0, 88, -6], "radius": 16 },
+      { "id": "upperArmL", "kind": "upperArm", "a": [-20, 95, -6], "b": [-24, 66, -2], "radius": 5 },
+      { "id": "forearmL", "kind": "forearm", "a": [-24, 66, -2], "b": [-20, 60, 26], "radius": 4, "site": "forearm" },
+      { "id": "upperArmR", "kind": "upperArm", "a": [20, 95, -6], "b": [24, 66, -2], "radius": 5 },
+      { "id": "forearmR", "kind": "forearm", "a": [24, 66, -2], "b": [20, 60, 26], "radius": 4, "site": "forearm" },
+      { "id": "thighL", "kind": "thigh", "a": [-10, 52, -2], "b": [-10, 52, 40], "radius": 7 },
+      { "id": "calfL", "kind": "calf", "a": [-10, 50, 42], "b": [-10, 8, 46], "radius": 5, "site": "calf" },
+      { "id": "thighR", "kind": "thigh", "a": [10, 52, -2], "b": [10, 52, 40], "radius": 7 },
+      { "id": "calfR", "kind": "calf", "a": [10, 50, 42], "b": [10, 8, 46], "radius": 5, "site": "calf" }
+    ],
+    "idle": { "lookYaws": [0] },
+    "actions": [
+      { "name": "headDroop", "weight": 3, "duration": 1.5, "motions": [
+        { "part": "head", "offsetA": [0, -6, 4], "offsetB": [0, -6, 4] },
+        { "part": "neck", "offsetA": [0, -2, 1], "offsetB": [0, -5, 3] }
+      ] },
+      { "name": "leanBody", "weight": 2, "duration": 2.0, "motions": [
+        { "part": "torso", "offsetA": [0, 0, 0], "offsetB": [5, -1, 0] },
+        { "part": "neck", "offsetA": [5, -1, 0], "offsetB": [6, -1, 0] },
+        { "part": "head", "offsetA": [6, -1, 0], "offsetB": [6, -1, 0] }
+      ] },
+      { "name": "scratchArm", "weight": 2, "duration": 1.0, "motions": [
+        { "part": "forearmR", "offsetA": [0, 0, 0], "offsetB": [-4, 4, -6] }
+      ] }
+    ],
+    "canSpray": false,
+    "modifiers": ["doze"]
+  },
+  "dripSources": [],
+  "humidZones": [],
+  "fans": [],
+  "webs": [],
+  "coils": [],
+  "sprayDispensers": [],
+  "tutorial": ["move", "look", "precision", "dash", "attach", "hide", "co2", "suck", "detach"]
+}

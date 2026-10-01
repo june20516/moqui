@@ -72,7 +72,8 @@ namespace Moqui.Core.Simulation
             string headPartId,
             IReadOnlyList<Vector3> shoulderLocals,
             IReadOnlyList<float> idleLookYaws,
-            IReadOnlyList<HumanActionDefinition> actions = null)
+            IReadOnlyList<HumanActionDefinition> actions = null,
+            HumanTraits traits = null)
         {
             Id = id ?? throw new ArgumentNullException(nameof(id));
             Position = position;
@@ -82,6 +83,7 @@ namespace Moqui.Core.Simulation
             ShoulderLocals = shoulderLocals ?? throw new ArgumentNullException(nameof(shoulderLocals));
             IdleLookYaws = idleLookYaws != null && idleLookYaws.Count > 0 ? idleLookYaws : new[] { 0f };
             Actions = actions ?? Array.Empty<HumanActionDefinition>();
+            Traits = traits ?? HumanTraits.None;
 
             var head = parts.FirstOrDefault(part => part.Id == headPartId);
             if (head == null || head.Kind != BodyPartKind.Head)
@@ -122,5 +124,8 @@ namespace Moqui.Core.Simulation
 
         /// <summary>무작위 동작 목록 (spec/02 §6). 없으면 움직이지 않는다.</summary>
         public IReadOnlyList<HumanActionDefinition> Actions { get; }
+
+        /// <summary>수정자(졸음·취함), 스프레이 사용 여부, 둘러보기 (spec/06, spec/07).</summary>
+        public HumanTraits Traits { get; }
     }
 }
