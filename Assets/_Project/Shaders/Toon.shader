@@ -11,6 +11,7 @@ Shader "Moqui/Toon"
         _AmbientStrength ("Ambient Strength", Range(0, 1)) = 0.35
         _OutlineWidth ("Outline Width (world)", Float) = 0.6
         _OutlineColor ("Outline Color", Color) = (0.12, 0.1, 0.2, 1)
+        _SelfIllumination ("Self Illumination", Range(0, 1)) = 0
     }
 
     SubShader
@@ -28,6 +29,7 @@ Shader "Moqui/Toon"
             float _AmbientStrength;
             float _OutlineWidth;
             float4 _OutlineColor;
+            float _SelfIllumination;
         CBUFFER_END
 
         TEXTURE2D(_BaseMap);
@@ -87,7 +89,9 @@ Shader "Moqui/Toon"
                 float3 albedo = (SAMPLE_TEXTURE2D(_BaseMap, sampler_BaseMap, input.uv) * _BaseColor).rgb;
                 float3 shade = lerp(_ShadowTint.rgb, 1.0, saturate(level));
                 float3 ambient = SampleSH(normal) * _AmbientStrength;
-                return half4(albedo * (shade * light.color + ambient), 1.0);
+                // 자체 밝기: 어두운 곳에서도 플레이어가 배경과 구분되도록 바탕색 쪽으로 끌어올린다 (spec/10 가독성).
+                float3 litColor = albedo * (shade * light.color + ambient);
+                return half4(lerp(litColor, albedo, _SelfIllumination), 1.0);
             }
             ENDHLSL
         }

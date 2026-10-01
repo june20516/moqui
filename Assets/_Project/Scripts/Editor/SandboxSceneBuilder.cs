@@ -247,6 +247,7 @@ namespace Moqui.Unity.Editor
 
             // 은신 비네트(Volume)가 화면에 나오려면 URP 후처리가 켜져 있어야 한다.
             camera.GetUniversalAdditionalCameraData().renderPostProcessing = true;
+            PostProcessBuilder.AddVolume();
 
             runner = new GameObject("SimulationRunner").AddComponent<SimulationRunner>();
             SetReference(runner, "_controls", AssetDatabase.LoadAssetAtPath<InputActionAsset>(ControlsPath));

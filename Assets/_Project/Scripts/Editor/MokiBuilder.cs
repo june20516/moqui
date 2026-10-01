@@ -28,6 +28,9 @@ namespace Moqui.Unity.Editor
         /// <summary>작은 캐릭터라 외곽선을 공통값보다 얇게 한다 (월드 단위).</summary>
         private const float OutlineWidth = 0.015f;
 
+        /// <summary>어두운 방에서도 플레이어가 보이도록 바탕색 쪽으로 끌어올리는 비율 (spec/10 가독성 우선).</summary>
+        private const float SelfIllumination = 0.3f;
+
         private static readonly Color SkinColor = new Color(1f, 0.9f, 0.86f);
         private static readonly Color DressColor = new Color(1f, 0.86f, 0.92f);
         private static readonly Color HairColor = new Color(1f, 0.72f, 0.84f);
@@ -283,6 +286,7 @@ namespace Moqui.Unity.Editor
         {
             Material material = SandboxSceneBuilder.LoadOrCreateShaderMaterial($"{MaterialFolder}/{name}.mat", ToonMaterials.OpaqueShader, color);
             material.SetFloat("_OutlineWidth", outlineWidth);
+            material.SetFloat("_SelfIllumination", SelfIllumination);
             EditorUtility.SetDirty(material);
             return material;
         }

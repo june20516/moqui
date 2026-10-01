@@ -4,7 +4,7 @@
 
 ## 현재
 - 마일스톤: **M10 에셋 패스** (진행 중)
-- 다음 할 일: CREDITS.md와 파일 목록 대조 검사, 후처리(Bloom·Color Grading)
+- 다음 할 일: M10 종료 정리(체크리스트 보관·태그), M11 시작
 - 브랜치: `milestone/m10-assets`
 
 ## 현재 마일스톤 체크리스트 (M10)
@@ -13,16 +13,18 @@
 - [x] 누락/오류 셰이더(마젠타)가 없다 (Unity 검사 + 캡처 검토). — `shader.isSupported` 검사 + `Captures/2026-10-01_165955` 검토: 마젠타 없음, 밤 실내 팔레트(라벤더·나무·청회색, 따뜻한 키 라이트·남색 환경광)
 - [x] 플레이어 캐릭터가 위 최소 애니메이션 7종을 가진다 (애니메이터 상태 검사). — `MokiBuilder`가 모키(2.5등신·반투명 날개 2장·지팡이 주둥이·리본)와 `Art/Generated/Moki` 클립 7종·컨트롤러를 생성, `MokiAnimator`가 Core 상태→State 파라미터, `PlayerView`가 이동 기울기. EditMode `MokiTests`(매핑·7상태·전이 조건·바인딩 경로) 통과, 캡처 `Captures/2026-10-01_170956/Moki_*.png`
 - [x] 인간이 머리 회전과 공격 3단계 애니메이션을 가진다. — `HumanView`: 얼굴(눈·코) 피벗이 Core `HeadForward`를 따라 회전, 공격 팔(어깨→주먹)이 `HumanArmPose`로 예고(뒤로 치켜듦)→타격(목표로)→회복(복귀). EditMode `HumanArmPoseTests`, PlayMode `SandboxHumanSceneTests`(얼굴 방향) 통과, 캡처 `Captures/2026-10-01_171446/Sandbox_Human_attack_*.png`
-- [ ] 각 스테이지 캡처에서 플레이어가 배경과 구분된다 (캡처 검토, `plan/progress.md`에 소견 기록).
+- [x] 각 스테이지 캡처에서 플레이어가 배경과 구분된다 (캡처 검토, `plan/progress.md`에 소견 기록). — 캡처 검토 기록 2026-10-01 M10 참조(다섯 스테이지 시작 3인칭에서 분홍 모키가 안개·벽과 구분, Stage 4 역광은 자체 밝기 0.3으로 보완)
+
+- [x] (spec/10 목표 상태) 포스트프로세싱: Bloom(약)·Color Grading. — `PostProcessBuilder`가 `Rendering/PostProcess_Night.asset`(Bloom 0.35·Neutral 톤 매핑·대비·채도·그림자 남보라/하이라이트 따뜻하게)을 모든 씬 골격에 전역 Volume으로 둔다. EditMode `SceneIntegrityTests`(약한 Bloom·Color Grading) + 셰이더 컴파일 오류 검사(`ProjectShaders_CompileWithoutErrors`, 일부러 깨뜨린 셰이더로 실패 확인)
 
 ### 사운드 (spec/10)
 - [x] 위 사운드 ID가 모두 존재하고 이벤트에 연결되어 있다 (Unity: AudioCatalog 검사). — 31종 `tools/gen_audio.py` 합성(D-049), `Resources/Audio/AudioCatalog`, `AudioCues`(이벤트·상태→ID)·`AudioDirector`(Stage)·`AudioOutput`, UI 버튼 select/confirm/cancel, 메뉴 bgm_title. EditMode `AudioTests`(카탈로그·스펙 목록·생성 폴더 일치·ID 참조·이벤트 매핑·대시·반복음), PlayMode `StageSceneTests`(음악·환경음·날갯소리) 통과
 - [x] (M8 이월) 음악 볼륨 설정이 BGM에 적용된다 (Unity). — `UserSettings.ApplyToEngine` → `AudioVolumes`, EditMode 검사 + PlayMode에서 음악 볼륨 변경이 다음 프레임 BGM 음량에 반영
 
 ### 에셋 파이프라인 (tech/asset-pipeline.md)
-- [ ] `CREDITS.md`의 모든 행이 허용 목록 라이선스이고 URL과 확인일이 있다.
-- [ ] `Assets/_Project/Art`, `Audio` 아래 모든 외부 파일이 CREDITS에 있다 (Unity: 파일 목록 대조 검사, 자체 제작물은 `Generated/` 폴더로 구분).
-- [ ] 사람 요청 항목이 비어 있지 않다면, 각 항목에 대체물이 적용되어 게임이 동작한다.
+- [x] `CREDITS.md`의 모든 행이 허용 목록 라이선스이고 URL과 확인일이 있다. — `Assets/_Project/CREDITS.md`(외부 에셋 0행, 자체 제작물 목록), EditMode `CreditsTests` 행 검사
+- [x] `Assets/_Project/Art`, `Audio` 아래 모든 외부 파일이 CREDITS에 있다 (Unity: 파일 목록 대조 검사, 자체 제작물은 `Generated/` 폴더로 구분). — `CreditsTests.EveryExternalFile_IsCredited`(현재 40개 파일 모두 `Generated/`)
+- [x] 사람 요청 항목이 비어 있지 않다면, 각 항목에 대체물이 적용되어 게임이 동작한다. — 에셋 관련 사람 요청 없음(R-001~003은 환경, 모두 해결). 모키·사운드는 조달 1·2순위(자체 생성)로 충족(D-049)
 
 ## M7 버티컬 슬라이스 리포트 (2026-10-01, 사람 검토 권장)
 **할 수 있는 것:** Unity 에디터에서 `Assets/_Project/Scenes/Stage.unity`를 열고 Play하면 Stage 1(조는 인간)이 시작된다. `StageBootstrap.RequestedLevelId`로 stage02를 고를 수 있으며, 화면 흐름(타이틀·스테이지 선택)은 M8에서 붙인다. 빌드 실행 파일은 아직 Boot 씬만 연다.
@@ -55,25 +57,12 @@
 ## 사람 요청
 | ID | 요청 | 필요 사양 | 대체물 적용 여부 | 상태 |
 |---|---|---|---|---|
-| 2026-10-01 | M9 | Unity 기믹 표현: GimmickView(선풍기 머리·모기향 연기·연무), 거미줄 격자 머티리얼(생성 텍스처), 중독 게이지 HUD·녹색 가장자리, CO₂ 바람 흩어짐, Stage 3~5 1:1·씬 테스트·대표 캡처, Stage 3 인간 위치 조정(봇 5/5). M9 종료 | Core 336 + EditMode 91 + PlayMode 12 통과, 빌드 경고 0, 캡처 검토 | (이 커밋) |
-| 2026-10-01 | M9 | 베란다 방·Stage 5(취한 인간, canSpray, 선풍기, 거미줄 3, 모기향, 자동 분사기, 방충망 유리, 아이스박스 은신처), stage05_clear 5/5·stage05_detect 5/5, 봇은 자기 근처를 노린 예고에만 도망 | Core 336/336 통과(시나리오 10종) | bf2f3f6 |
-| 2026-10-01 | M9 | 화장실 방·Stage 4(고개 숙인 인간, 샤워 부스 유리·물방울 4·습기 강/약), stage04_clear 4/5(스킬 구성)·stage04_detect 5/5, 시나리오 skills·precise, 봇 중독 반전 보정, D-048. **결함 수정**: 봇 러너가 레벨 기믹을 빠뜨림, Stage 4 몸통이 목을 덮음 | Core 시나리오 통과(stage03 4/5, stage04 4/5) | e5901b7 |
-| 2026-10-01 | M9 | 인간 자세(facingPitch·restPitch), 레벨 기믹 배열 파서·스키마, 침실 방·Stage 3(누운 인간, 선풍기, canSpray), stage03_clear 5/5·stage03_detect 5/5, 시나리오 hideRoutes, ScenarioDiagnostics, D-047 | Core 통과(시나리오 포함) | fd7f126 |
-| 2026-10-01 | M9 | 기믹 Core: FanSystem(바람·회전·소음 마스킹), 거미줄(Webbed→Web 사망), ToxinSystem(연무·자동 분사기·모기향 하한·디버프·Spray 사망), 인간 분사, 취한 타겟(흡혈·가려움·시각 배율, 무작위 휘두르기), 해독 체질 적용, 스냅샷 기믹 상태, D-046 | Core 319/319 통과 | f238329 |
-| 2026-10-01 | M8 | (사람 요청) CO₂·증기 기체형: SoftGas·VolumeFog 셰이더, GasNoise, 쿼드 빌보드 CO₂, 기체 캡처, D-045. M8 종료 | Core 300 + EditMode 82 + PlayMode 9 통과, 빌드 경고 0, 캡처 검토 | 3a66aef |
-| 2026-10-01 | M8 | HUD 액티브 스킬 칸 테스트, 겹눈 선명 범위 테스트, 미끼 월드 표시 | Core 300 + EditMode 80 + PlayMode 9 통과 | 18ced4e |
-| 2026-10-01 | M8 | 화면 흐름: GameSession·ScreenFlow·SceneNavigator, Title·StageSelect·Skills·Settings·Confirm·Stage(Pause/Result)·Ending·Boot, FileSaveStorage, UserSettings, Pause(틱·입력 정지), HUD 액티브 스킬 칸, 메뉴 캡처, D-044. **결함 수정**: 씬 생성기 메서드 손실 복구, 메뉴 글자 누락, 행 레이아웃 | Core 300 + EditMode 77 + PlayMode 9 통과, 빌드 경고 0, 캡처 검토 | 42912f0 |
-| 2026-10-01 | M8 | Core 메타: SkillCatalog·SkillLoadout·SkillEffects(스킬 반영 Tuning), 연속 와류, 미끼(DecoySystem), 보상, SaveData·직렬화·SaveStore·SkillShop, D-043 | Core 300/300 통과 | 16446af |
-| 2026-10-01 | M7 | 카메라 URP 후처리 켜기(은신 비네트 미표시 결함), 은신처·증기 양면 렌더링, 씬 무결성 테스트, 대표 캡처 검토, 버티컬 슬라이스 리포트. M7 종료 | Core 265 + EditMode 66 + PlayMode 6 통과, 빌드 경고 0, 캡처 검토 | (이 커밋) |
-| 2026-10-01 | M7 | HUD(HudState·HudView·HudPresenter·HudController, 절차 스프라이트·경고음, OS 한글 글꼴), 튜토리얼(Core TutorialTracker, TutorialHints·설정), HUD 3해상도 캡처, D-041·D-042. **결함 수정**: 가장자리 표시 겹침·해상도별 위치, 누락 스크립트 | Core 265 + EditMode 64 + PlayMode 6 통과, 빌드 경고 0, 캡처 검토 | 977d12b |
-| 2026-10-01 | M7 | HUD 원천 데이터(Core): PlayerOccluded(가려짐), FrenzyMinRemaining·CalmProgress, CanAttach, DashCost, 스냅샷 포함 | Core 261/261 통과 | 6833ed6 |
-| 2026-10-01 | M7 | 감각 큐: Co2Plume·SenseCueModel·SensesView(CO₂·체온·자국·은신처 강도), 머티리얼 3개, tuning 키 11개, 캡처에 감각 반영, D-040 | Core 256 + EditMode 51 + PlayMode 6 통과, 캡처 검토 | 6ecbce1 |
-| 2026-10-01 | M7 | 흐린 시야: SensesSettings·FogModel·SensesFog, 깊이 기반 안개+블러 셰이더, PC_Renderer 전체 화면 패스, tuning 키 2개, D-039 | Core 256 + EditMode 46 + PlayMode 6 통과, 캡처 검토 | 0159a69 |
 | R-001 | Unity 버전 확정 | 6000.6.3f1 사용으로 사람이 확정 (D-019) | - | 해결 |
 | R-002 | .NET SDK 설치 | 시스템에는 런타임만 있음(9/30에 설치된 것은 .NET 10 런타임). Unity 번들 SDK 8.0.318로 대체 (D-021) | 적용 | 해결 |
 | R-003 | Unity 로그인 + 라이선스 활성화 | Unity Personal 활성화됨, 배치 모드 라이선스 초기화 확인 | - | 해결 |
 
 ## 사람 검토 권장 (막힘 아님)
+- **에셋 품질(D-049):** 모키·인간은 프리미티브 조합, 사운드 31종은 코드 합성이다. 수용 기준은 충족하지만 품질 향상을 원하면 VRoid 모델(같은 Animator 파라미터 `State`)이나 CC0 음원으로 교체할 수 있다.
 - **한글 글꼴(D-041):** 허용 라이선스 목록에 OFL이 없어 한글 글꼴 파일을 넣지 못하고 OS 글꼴(맑은 고딕)을 실행 중에 씁니다. OFL(예: Pretendard, Noto Sans KR)을 허용 목록에 추가하면 M10에서 번들 글꼴 + TextMeshPro로 바꿀 수 있습니다.
 - **밸런스(D-035, D-048):** Stage 4 봇은 스킬 없이 클리어하지 못한다(목 반응 → 자국 3개 → 의심 고정). 아울러: 설계 검증 봇 기준으로 자국 5개(하한 40 = 의심 진입선)가 되면 인간이 영구 의심 상태로 몸 주변을 훑어 접근이 거의 불가능하다. 긴 세션 전략도 40%가 자국 5개에서 멈춘다. 수치(`biteMark.floorPerBite` 8, `floorMax` 45, 반응률)는 spec 제안값 그대로 두었으며, M7 버티컬 슬라이스 리포트에서 플레이 감각과 함께 검토를 요청한다.
 
@@ -81,6 +70,7 @@
 (없음)
 
 ## 캡처 검토 기록
+- 2026-10-01 M10 `Captures/2026-10-01_173131/` 에셋 패스: 툰 셀 3단·외곽선·남보라 그림자, 밤 실내 팔레트(라벤더 벽·나무 바닥·남색 환경광), 약한 Bloom·색 보정. 마젠타 없음. **플레이어 구분 소견**: Stage 1·2(거실, 안개 속 분홍 모키 선명), Stage 3(침실, 침대 위 분홍), Stage 4(화장실, 역광 쪽이라 보라로 어두웠음 → 툰 자체 밝기 0.3 적용 후 분홍으로 구분), Stage 5(베란다, 거미줄 격자 앞에서도 구분). 모키 자세 7종(`Moki_*.png`), 인간 공격 3단계(`Sandbox_Human_attack_*.png`), HUD 3해상도 정상. **결함 수정**: 툰 셰이더 변수 이름 중복(`lit`)으로 전체 마젠타 → 수정 후 컴파일 오류 검사 테스트 추가
 - 2026-10-01 M9 `Captures/2026-10-01_165113/` Stage 3~5: 침실(누운 인간·선풍기·옷장·침대 밑 은신처), 화장실(변기 위 고개 숙인 인간·유리 샤워 부스 안 증기), 베란다(취한 인간·테이블·거미줄 격자·연녹색 모기약 연무·모기향 받침과 연기·선풍기 머리 원판). CO₂ 바람 장면은 옅지만 바람 방향으로 기욺 → 인간을 헤드보드에서 10u 띄우고 촬영 시점을 날숨·바람 정면에 맞춤. 마젠타 없음. 작은 방(화장실) 전경 카메라가 벽에 가까움 — 아트 단계에서 포즈 조정
 - 2026-10-01 M8 `Captures/2026-10-01_160546/` 기체 표현: CO₂는 코에서 흩어지는 분홍 기체 줄기(노이즈로 일렁임, 소프트 파티클), 증기는 상자 윤곽 없는 뭉게 덩어리(가구 뒤 가리지 않음), 증기 안에서는 선명 시야가 줄어든 안개. 첫 시도(`160443`)에서 증기 윤곽이 상자 모양 → 가장자리 노이즈 침식으로 수정
 - 2026-10-01 M8 `Captures/2026-10-01_155910/` 메뉴: Title, Title+설정(9행), StageSelect(Stage 1 기록, 2 열림, 3~5 준비 중), Skills(능력치 탭, 비용·레벨), Ending. 한글·배치 정상. **결함 수정**: 첫 캡처에서 글자가 모두 빠짐(캔버스 평면이 근평면에 너무 가까움 + 씬을 다시 열면 동적 글꼴 텍스처가 비워짐), 행 높이가 기본값 100으로 잡혀 목록이 패널 밖으로 넘침 → 고정 크기 행·위쪽 기준 목록·씬별 글꼴
@@ -97,6 +87,25 @@
 ## 반복 로그
 | 일시 | 마일스톤 | 한 일 | 증거 | 커밋 |
 |---|---|---|---|---|
+| 2026-10-01 | M10 | CREDITS.md·파일 대조 검사, 후처리 Volume(Bloom·Color Grading), 모키 자체 밝기, 셰이더 컴파일 오류 검사, 진행 문서 정리(반복 로그 행 위치). **결함 수정**: 툰 셰이더 변수 중복(마젠타) | Core 336 + EditMode 123 + PlayMode 12 통과, 캡처 검토 | (이 커밋) |
+| 2026-10-01 | M10 | 사운드 31종 합성(tools/gen_audio.py), AudioCatalog·AudioCues·AudioDirector·AudioOutput, UI 버튼음·메뉴 음악, 음악 볼륨 적용, D-049 | Core 336 + EditMode 118 + PlayMode 12 통과 | 1bc4b53 |
+| 2026-10-01 | M10 | 인간 얼굴(머리 회전)과 공격 팔 3단계, 단계 캡처 | EditMode 109 + PlayMode 12 통과, 캡처 검토 | 34bd5ef |
+| 2026-10-01 | M10 | 모키 캐릭터·애니메이터 7상태·이동 기울기, 자세 캡처 | EditMode 102 + PlayMode 12 통과, 캡처 검토 | 11a6128 |
+| 2026-10-01 | M10 | 공통 툰 셰이더·반투명 변형, 밤 실내 팔레트, 모든 렌더러 Moqui 셰이더 검사 | EditMode 91 + PlayMode 12 통과, 캡처 검토 | 82d3749 |
+| 2026-10-01 | M9 | Unity 기믹 표현: GimmickView(선풍기 머리·모기향 연기·연무), 거미줄 격자 머티리얼(생성 텍스처), 중독 게이지 HUD·녹색 가장자리, CO₂ 바람 흩어짐, Stage 3~5 1:1·씬 테스트·대표 캡처, Stage 3 인간 위치 조정(봇 5/5). M9 종료 | Core 336 + EditMode 91 + PlayMode 12 통과, 빌드 경고 0, 캡처 검토 | (이 커밋) |
+| 2026-10-01 | M9 | 베란다 방·Stage 5(취한 인간, canSpray, 선풍기, 거미줄 3, 모기향, 자동 분사기, 방충망 유리, 아이스박스 은신처), stage05_clear 5/5·stage05_detect 5/5, 봇은 자기 근처를 노린 예고에만 도망 | Core 336/336 통과(시나리오 10종) | bf2f3f6 |
+| 2026-10-01 | M9 | 화장실 방·Stage 4(고개 숙인 인간, 샤워 부스 유리·물방울 4·습기 강/약), stage04_clear 4/5(스킬 구성)·stage04_detect 5/5, 시나리오 skills·precise, 봇 중독 반전 보정, D-048. **결함 수정**: 봇 러너가 레벨 기믹을 빠뜨림, Stage 4 몸통이 목을 덮음 | Core 시나리오 통과(stage03 4/5, stage04 4/5) | e5901b7 |
+| 2026-10-01 | M9 | 인간 자세(facingPitch·restPitch), 레벨 기믹 배열 파서·스키마, 침실 방·Stage 3(누운 인간, 선풍기, canSpray), stage03_clear 5/5·stage03_detect 5/5, 시나리오 hideRoutes, ScenarioDiagnostics, D-047 | Core 통과(시나리오 포함) | fd7f126 |
+| 2026-10-01 | M9 | 기믹 Core: FanSystem(바람·회전·소음 마스킹), 거미줄(Webbed→Web 사망), ToxinSystem(연무·자동 분사기·모기향 하한·디버프·Spray 사망), 인간 분사, 취한 타겟(흡혈·가려움·시각 배율, 무작위 휘두르기), 해독 체질 적용, 스냅샷 기믹 상태, D-046 | Core 319/319 통과 | f238329 |
+| 2026-10-01 | M8 | (사람 요청) CO₂·증기 기체형: SoftGas·VolumeFog 셰이더, GasNoise, 쿼드 빌보드 CO₂, 기체 캡처, D-045. M8 종료 | Core 300 + EditMode 82 + PlayMode 9 통과, 빌드 경고 0, 캡처 검토 | 3a66aef |
+| 2026-10-01 | M8 | HUD 액티브 스킬 칸 테스트, 겹눈 선명 범위 테스트, 미끼 월드 표시 | Core 300 + EditMode 80 + PlayMode 9 통과 | 18ced4e |
+| 2026-10-01 | M8 | 화면 흐름: GameSession·ScreenFlow·SceneNavigator, Title·StageSelect·Skills·Settings·Confirm·Stage(Pause/Result)·Ending·Boot, FileSaveStorage, UserSettings, Pause(틱·입력 정지), HUD 액티브 스킬 칸, 메뉴 캡처, D-044. **결함 수정**: 씬 생성기 메서드 손실 복구, 메뉴 글자 누락, 행 레이아웃 | Core 300 + EditMode 77 + PlayMode 9 통과, 빌드 경고 0, 캡처 검토 | 42912f0 |
+| 2026-10-01 | M8 | Core 메타: SkillCatalog·SkillLoadout·SkillEffects(스킬 반영 Tuning), 연속 와류, 미끼(DecoySystem), 보상, SaveData·직렬화·SaveStore·SkillShop, D-043 | Core 300/300 통과 | 16446af |
+| 2026-10-01 | M7 | 카메라 URP 후처리 켜기(은신 비네트 미표시 결함), 은신처·증기 양면 렌더링, 씬 무결성 테스트, 대표 캡처 검토, 버티컬 슬라이스 리포트. M7 종료 | Core 265 + EditMode 66 + PlayMode 6 통과, 빌드 경고 0, 캡처 검토 | (이 커밋) |
+| 2026-10-01 | M7 | HUD(HudState·HudView·HudPresenter·HudController, 절차 스프라이트·경고음, OS 한글 글꼴), 튜토리얼(Core TutorialTracker, TutorialHints·설정), HUD 3해상도 캡처, D-041·D-042. **결함 수정**: 가장자리 표시 겹침·해상도별 위치, 누락 스크립트 | Core 265 + EditMode 64 + PlayMode 6 통과, 빌드 경고 0, 캡처 검토 | 977d12b |
+| 2026-10-01 | M7 | HUD 원천 데이터(Core): PlayerOccluded(가려짐), FrenzyMinRemaining·CalmProgress, CanAttach, DashCost, 스냅샷 포함 | Core 261/261 통과 | 6833ed6 |
+| 2026-10-01 | M7 | 감각 큐: Co2Plume·SenseCueModel·SensesView(CO₂·체온·자국·은신처 강도), 머티리얼 3개, tuning 키 11개, 캡처에 감각 반영, D-040 | Core 256 + EditMode 51 + PlayMode 6 통과, 캡처 검토 | 6ecbce1 |
+| 2026-10-01 | M7 | 흐린 시야: SensesSettings·FogModel·SensesFog, 깊이 기반 안개+블러 셰이더, PC_Renderer 전체 화면 패스, tuning 키 2개, D-039 | Core 256 + EditMode 46 + PlayMode 6 통과, 캡처 검토 | 0159a69 |
 | 2026-10-01 | M7 | 단일 Stage 씬(StageBootstrap·LevelView·LevelMaterials), 반투명 레벨 머티리얼, 빌드 설정 등록, Stage 포즈 캡처 | Core 256 + EditMode 42 + PlayMode 6 통과, 캡처 검토 | 47bc1e6 |
 | 2026-10-01 | M7 | 시나리오 포맷·ScenarioRunner·BotPilot, Stage 1·2 클리어/발각 시나리오, D-038. 봇 결함 수정(도착 판정, 이웃 부위 부착), 경로를 머리 뒤로 | Core 256/256 통과, Unity CS 이슈 0 | 78d7216 |
 | 2026-10-01 | M7 | 졸음 수정자(DozeSystem), Stage 2 둘러보기(IdleGlance), 호흡(BreathSystem), 감각 스냅샷(호흡·부위 위치·은신처·바람 영역), HumanTraits | Core 251/251 통과, Unity CS 이슈 0 | adc0b05 |
