@@ -54,6 +54,7 @@ namespace Moqui.Unity.Editor
         private static readonly Color AmbientColor = new Color(0.30f, 0.28f, 0.45f);
         private const string ToonResourcePath = "Assets/_Project/Resources/Materials/Toon.mat";
         private const string ToonTransparentResourcePath = "Assets/_Project/Resources/Materials/ToonTransparent.mat";
+        private const string TelegraphResourcePath = "Assets/_Project/Resources/Materials/TelegraphRing.mat";
         private static readonly Color MenuBackground = new Color(0.1f, 0.08f, 0.15f);
         private static readonly Color ShadowCueColor = new Color(0.35f, 0.6f, 1f, 0.35f);
         private static readonly Color Co2Color = new Color(0.95f, 0.78f, 0.98f, 0.8f);
@@ -344,6 +345,7 @@ namespace Moqui.Unity.Editor
         {
             LoadOrCreateShaderMaterial(ToonResourcePath, Moqui.Unity.Presentation.Art.ToonMaterials.OpaqueShader, Color.white);
             LoadOrCreateShaderMaterial(ToonTransparentResourcePath, Moqui.Unity.Presentation.Art.ToonMaterials.TransparentShader, new Color(1f, 1f, 1f, 0.6f));
+            LoadOrCreateShaderMaterial(TelegraphResourcePath, Moqui.Unity.Presentation.Art.ToonMaterials.TelegraphShader, new Color(1f, 0.55f, 0.1f, 1f));
         }
 
         internal static void SetReference(Object target, string field, Object value)

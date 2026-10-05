@@ -28,7 +28,6 @@ namespace Moqui.Unity.Presentation
         private static readonly Color SuspiciousHeadColor = new Color(0.95f, 0.80f, 0.25f);
         private static readonly Color FrenzyHeadColor = new Color(0.90f, 0.20f, 0.15f);
         private static readonly Color TelegraphColor = new Color(1f, 0.55f, 0.1f);
-        private static readonly Color ActiveColor = new Color(1f, 0.1f, 0.1f);
 
         [SerializeField]
         private SimulationRunner _runner;
@@ -39,6 +38,9 @@ namespace Moqui.Unity.Presentation
         private Transform _face;
         private Transform _attackMarker;
         private Renderer _attackRenderer;
+        private Transform _approach;
+        private Renderer _approachRenderer;
+        private MaterialPropertyBlock _telegraphBlock;
 
         public bool IsBuilt => _human != null;
 
@@ -61,8 +63,16 @@ namespace Moqui.Unity.Presentation
 
             BuildFace(human.HeadShape.Radius);
 
-            _attackMarker = CreateMarker(PrimitiveType.Sphere, "AttackTarget", transform);
+            // 공격 예고: 카메라를 향한 판에 좁혀 오는 고리·차오름·번쩍임 (화면에서 가장 높은 위상, M12).
+            _attackMarker = Art.Primitives.Create(PrimitiveType.Quad, "AttackTarget", transform, Art.ToonMaterials.Telegraph).transform;
             _attackRenderer = _attackMarker.GetComponent<Renderer>();
+            _attackRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            _telegraphBlock = new MaterialPropertyBlock();
+
+            // 손이 오는 방향: 손바닥에서 목표까지 가는 줄기.
+            _approach = Art.Primitives.Create(PrimitiveType.Capsule, "AttackApproach", transform, Art.ToonMaterials.Transparent).transform;
+            _approachRenderer = _approach.GetComponent<Renderer>();
+            _approachRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             Refresh(0);
         }
 
@@ -94,17 +104,62 @@ namespace Moqui.Unity.Presentation
             }
         }
 
+        /// <summary>예고 판 크기 = 판정 지름 ÷ 셰이더의 판정 반경 비율 (판 가장자리에서 판정 크기로 좁혀 온다).</summary>
+        private const float TelegraphHitRadiusOfQuad = 0.34f;
+        private const float ApproachThickness = 1.2f;
+        private static readonly int ProgressId = Shader.PropertyToID("_Progress");
+        private static readonly int StrikeId = Shader.PropertyToID("_Strike");
+
+        /// <summary>현재 공격 예고 진행률 0~1 (판정 중은 1). 예고가 없으면 0.</summary>
+        public float TelegraphProgress { get; private set; }
+
+        /// <summary>공격 예고 판 (예고·판정 중에만 보인다).</summary>
+        public Renderer TelegraphIndicator => _attackRenderer;
+
         private void RefreshAttack(int tick)
         {
             var attack = _human.Attack;
-            bool showTarget = attack.Phase == AttackPhase.Telegraph || attack.Phase == AttackPhase.Active;
-            _attackMarker.gameObject.SetActive(showTarget);
-            if (showTarget)
+            bool telegraph = attack.Phase == AttackPhase.Telegraph;
+            bool strike = attack.Phase == AttackPhase.Active;
+            _attackMarker.gameObject.SetActive(telegraph || strike);
+            TelegraphProgress = strike ? 1f : telegraph ? Mathf.Clamp01((float)(tick - attack.StartTick) / Mathf.Max(1, attack.TelegraphEndTick - attack.StartTick)) : 0f;
+            if (telegraph || strike)
             {
-                _attackMarker.position = attack.Target.ToUnity();
-                _attackMarker.localScale = Vector3.one * (attack.Radius * 2f);
-                WorldView.Tint(_attackRenderer, attack.Phase == AttackPhase.Active ? ActiveColor : TelegraphColor);
+                Vector3 target = attack.Target.ToUnity();
+                _attackMarker.position = target;
+                _attackMarker.localScale = Vector3.one * (2f * attack.Radius / TelegraphHitRadiusOfQuad);
+                var camera = UnityEngine.Camera.main;
+                if (camera != null && (target - camera.transform.position).sqrMagnitude > 1e-4f)
+                {
+                    _attackMarker.rotation = Quaternion.LookRotation(target - camera.transform.position, camera.transform.up);
+                }
+
+                _attackRenderer.GetPropertyBlock(_telegraphBlock);
+                _telegraphBlock.SetFloat(ProgressId, TelegraphProgress);
+                _telegraphBlock.SetFloat(StrikeId, strike ? 1f : 0f);
+                _attackRenderer.SetPropertyBlock(_telegraphBlock);
             }
+
+            int arm = attack.ArmA;
+            bool approach = telegraph && arm >= 0 && attack.Kind != AttackKind.Spray;
+            _approach.gameObject.SetActive(approach);
+            if (approach)
+            {
+                PlaceBetween(_approach, _human.Palm(arm).ToUnity(), attack.Target.ToUnity(), ApproachThickness);
+                var color = TelegraphColor;
+                color.a = 0.15f + (0.45f * TelegraphProgress);
+                WorldView.Tint(_approachRenderer, color);
+            }
+        }
+
+        /// <summary>단위 캡슐(높이 2, Y축)을 두 점 사이에 놓는다.</summary>
+        private static void PlaceBetween(Transform capsule, Vector3 from, Vector3 to, float thickness)
+        {
+            Vector3 span = to - from;
+            float length = Mathf.Max(span.magnitude, thickness);
+            capsule.position = (from + to) * 0.5f;
+            capsule.rotation = span.sqrMagnitude > 1e-6f ? Quaternion.FromToRotation(Vector3.up, span) : Quaternion.identity;
+            capsule.localScale = new Vector3(thickness, length * 0.5f, thickness);
         }
 
         private void BuildFace(float headRadius)

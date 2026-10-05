@@ -4,7 +4,7 @@
 
 ## 현재
 - 마일스톤: **M12 플레이테스트 반영** (진행 중, /goal 자율 수행)
-- 다음 할 일: I 공격 예고 동적 표현 → F 포만 아이콘 → G 마무리
+- 다음 할 일: F 포만 아이콘 → G 마무리
 - 브랜치: `milestone/m12-playtest`
 
 ## 현재 마일스톤 체크리스트 (M12 플레이테스트 반영 — 계획, 착수 전)
@@ -36,7 +36,7 @@
 - [x] D. 자국 위치 (#5) — 증거: Core `BiteMark`(SurfaceAnchor, 흡혈 세션 시작 때 문 자리 기록)·`Human.BiteMarks`·스냅샷 `BiteMarks`, `SuckTests.BiteMark_*`, EditMode `SensesViewTests.BiteMark_DotAtTheBiteSpot_OnlyInsideHeatRange`(자국마다 점): Core에 자국 목록(부위 ID + 부위 로컬 좌표, 세션의 부착 지점) 추가·스냅샷, `SensesView`가 문 자리에 점을 그리고 부위를 따라 움직임. 자국 수 n 규칙은 그대로
 - [x] E. 흐림 강화 (#4) — 증거: tuning senses.clearRange 50·fogFullRange 160·fogMaxDensity 0.88·fogBlurPixels 6, 캡처 `Captures/2026-10-01_223838` 검토(인간 희미, CO₂ 또렷, 큰 가구 윤곽 유지), 테스트 통과: 제안값(clearRange 50, fogFullRange 160, fogMaxDensity 0.88, fogBlurPixels 6)으로 캡처 비교 → 인간은 흐림에 묻히고 CO₂·가구 실루엣은 보이는 값으로 `spec/tuning.md`·`data/tuning.json` 확정, 겹눈 스킬 효과 재확인
 - [x] H. 체온 표시 재디자인 (#9) — 증거: 셰이더 `Moqui/HeatShimmer`(림 + 위로 흐르는 아지랑이 선, 가산), `senses.heatGlowScale` 1.8 → 1.04, `SensesViewTests.Heat_IsThinShimmer_NotAVolumeAroundTheSkin`, 캡처 검토: 굵은 캡슐 막 → 피부 윤곽 림/아지랑이처럼 일렁이는 얇은 선(셰이더), 존재감 낮게·인지는 되게. 캡처로 공격 예고보다 낮은 위상 확인
-- [ ] I. 공격 예고 동적 표현 (#10): 예고 진행률만큼 차오르는 링·좁혀 오는 테두리·일렁임, 판정 순간 번쩍임, 손 접근 방향 표시. 화면에서 가장 눈에 띄는지 캡처 검토(체온·CO₂·은신처 표시와 비교)
+- [x] I. 공격 예고 동적 표현 (#10) — 증거: 셰이더 `Moqui/TelegraphRing`(카메라를 향한 판, 좁혀 오는 고리·차오름·가속 깜빡임·판정 번쩍임) + 손 접근 줄기, EditMode `HumanBodyViewTests.Telegraph_*`, 캡처 검토(체온 림보다 확실히 강함): 예고 진행률만큼 차오르는 링·좁혀 오는 테두리·일렁임, 판정 순간 번쩍임, 손 접근 방향 표시. 화면에서 가장 눈에 띄는지 캡처 검토(체온·CO₂·은신처 표시와 비교)
 - [ ] F. 포만 아이콘 (#8): 원 대신 배부른 배/추 모양 + "포만" 글자, HUD 테스트·3해상도 캡처
 - [ ] G. 마무리: 전체 테스트·봇(클리어 4/5 이상, 발각 5/5)·Unity 안 봇 재생·캡처 검토·빌드, 사람 재플레이용 빌드 실행, GOAL D1~D9 다시 체크
 
@@ -111,7 +111,8 @@
 ## 반복 로그
 | 일시 | 마일스톤 | 한 일 | 증거 | 커밋 |
 |---|---|---|---|---|
-| 2026-10-01 | M12 | E 흐림 강화(선명 50·최대 160·0.88·블러 6px) | Core 353 + EditMode 125 + PlayMode 22 통과, 캡처 검토 | (이 커밋) |
+| 2026-10-05 | M12 | I 공격 예고 동적 표현(TelegraphRing 셰이더, 손 접근 줄기) | Core 353 + EditMode 126 + PlayMode 22 통과, 캡처 검토 | (이 커밋) |
+| 2026-10-01 | M12 | E 흐림 강화(선명 50·최대 160·0.88·블러 6px) | Core 353 + EditMode 125 + PlayMode 22 통과, 캡처 검토 | 46899c3 |
 | 2026-10-01 | M12 | D 자국을 문 자리에(BiteMark·SurfaceAnchor, 자국마다 점), H 체온 표시를 얇은 림·아지랑이 선(HeatShimmer)으로 | Core 353 + EditMode 125 + PlayMode 22 통과, 캡처 검토 | b45044c |
 | 2026-10-01 | M12 | C1·C2·C 사람 몸 공격: 뼈대 포즈(BodyRig·UpdatePose), 몸동작 계획기(팔→기울이기→돌기→일어서기, maxPosture), 어깨 중심 호 손 경로·손 속도 한계·손 경로 판정·반대 손, 표현용 팔 제거, tuning(손 속도·관절·자세), 봇·시나리오 조정, D-054 | Core 352 + EditMode 124 + PlayMode 22 통과, 캡처 검토 | c3bdb61 |
 | 2026-10-01 | M12 | A 입력·대시(진행 방향/무작위 대시, 부착 중 법선 대시, LAlt·LCtrl·우클릭, 와류 제어 3레벨 쿨타임), B 벽·천장 부착 표현(몸 up = 표면 법선) | Core 339 + EditMode 130 + PlayMode 22 통과 | 7afe2b3 |

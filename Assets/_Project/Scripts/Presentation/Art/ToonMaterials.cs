@@ -10,16 +10,22 @@ namespace Moqui.Unity.Presentation.Art
     {
         public const string OpaqueResource = "Materials/Toon";
         public const string TransparentResource = "Materials/ToonTransparent";
+        public const string TelegraphResource = "Materials/TelegraphRing";
+        public const string TelegraphShader = "Moqui/TelegraphRing";
         public const string OpaqueShader = "Moqui/Toon";
         public const string TransparentShader = "Moqui/ToonTransparent";
 
         private static Material _opaque;
         private static Material _transparent;
+        private static Material _telegraph;
 
         public static Material Opaque => _opaque != null ? _opaque : _opaque = Load(OpaqueResource);
 
         /// <summary>반투명 변형 (물방울 등 코드로 만드는 반투명 표시).</summary>
         public static Material Transparent => _transparent != null ? _transparent : _transparent = Load(TransparentResource);
+
+        /// <summary>공격 예고 고리 (좁혀 오는 테두리·차오름·번쩍임, M12).</summary>
+        public static Material Telegraph => _telegraph != null ? _telegraph : _telegraph = Load(TelegraphResource);
 
         private static Material Load(string resource)
         {

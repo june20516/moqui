@@ -20,6 +20,57 @@ namespace Moqui.Unity.Tests
             Object.DestroyImmediate(_root);
         }
 
+        /// <summary>공격 예고 표시가 예고 진행률에 따라 변하고(좁혀 오는 고리·차오름), 판정 순간 번쩍임으로 바뀐다 (spec/02 §7, M12).</summary>
+        [Test]
+        public void Telegraph_IndicatorChangesWithProgress_ThenFlashesOnStrike()
+        {
+            Tuning tuning = TuningLoader.Load(new UnityDataSource());
+            LevelDefinition level = new LevelLoader(new UnityDataSource()).Load("stage01");
+            var simulation = new GameSimulation(GameSettings.FromTuning(tuning), level.CreateSetup());
+            var human = simulation.Human;
+            _root = new GameObject("HumanViewTest");
+            var view = _root.AddComponent<HumanView>();
+            view.Build(human);
+            int arm = human.Rig.Arms[0].Side > 0 ? 0 : 1;
+            var target = (human.Shoulder(arm).ToUnity() + new Vector3(0f, -20f, 0f) + (human.HeadForward.ToUnity() * 35f)).ToCore();
+            Assert.That(simulation.HumanSystem.Attacks.Start(human, AttackKind.Slap, target, 12f, 0.6f, 1f, 500f, -1, simulation.Tick, new List<SimulationEvent>()), Is.True);
+
+            var block = new MaterialPropertyBlock();
+            float ProgressShown()
+            {
+                view.TelegraphIndicator.GetPropertyBlock(block);
+                return block.GetFloat("_Progress");
+            }
+
+            simulation.Step(PlayerCommand.None);
+            view.Refresh(simulation.Tick);
+            float early = ProgressShown();
+            Assert.That(view.TelegraphIndicator.gameObject.activeSelf, Is.True);
+            Assert.That(view.TelegraphIndicator.sharedMaterial.shader.name, Is.EqualTo("Moqui/TelegraphRing"));
+            Assert.That(_root.transform.Find("AttackApproach").gameObject.activeSelf, Is.True, "the hand's approach is shown");
+
+            int middle = (human.Attack.TelegraphEndTick - simulation.Tick) / 2;
+            for (int i = 0; i < middle; i++)
+            {
+                simulation.Step(PlayerCommand.None);
+            }
+
+            view.Refresh(simulation.Tick);
+            float later = ProgressShown();
+            Assert.That(later, Is.GreaterThan(early + 0.2f), "the ring closes in as the telegraph runs");
+            view.TelegraphIndicator.GetPropertyBlock(block);
+            Assert.That(block.GetFloat("_Strike"), Is.EqualTo(0f));
+
+            while (human.Attack.Phase != AttackPhase.Active)
+            {
+                simulation.Step(PlayerCommand.None);
+            }
+
+            view.Refresh(simulation.Tick);
+            view.TelegraphIndicator.GetPropertyBlock(block);
+            Assert.That(block.GetFloat("_Strike"), Is.EqualTo(1f), "flashes when the hand strikes");
+        }
+
         [Test]
         public void Attack_ArmVisualsFollowCoreArmCapsules_NoExtraArm()
         {

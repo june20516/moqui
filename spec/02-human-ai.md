@@ -90,7 +90,7 @@
   - **판정:** 예고 시작 시점에 목표를 고정하는 규칙은 유지하되, 판정은 실제로 움직이는 손(손바닥 구)이 지나가는 경로로 한다(손이 지나간 자리에 있으면 맞는다).
 - 몸 전체로 쫓기 (M12) (D-053): 인간이 보이는 상태에서 팔이 늘어나거나 손이 총알처럼 날아오면 안 된다. 그래서 광분 공격은 사람 몸이 직접 움직여 닿는다. 목표에 닿기 위한 몸동작을 단계 순서로 고른다: **팔만 → 상체 기울이기 → 몸(허리·어깨) 돌리기 → 반쯤/완전히 일어서기**. 각 단계는 사람이 낼 수 있는 시간이 걸리고(자세 전환 시간), 그 사이 모기는 피할 수 있다. 일어서면 머리 위치·시야도 함께 바뀐다. 걷기(자리 이동)는 이번 범위가 아니다(D-011 유지).
   - 확장 구조: 몸은 뼈대(루트·골반·척추·어깨·팔꿈치·손목·목·머리)에 캡슐을 붙인 포즈로 표현하고, 루트(몸 위치·방향)는 상태로 둔다. 레벨 데이터 `human.maxPosture`(arm | lean | turn | rise, 기본 rise)로 허용 몸동작을 정한다. 이후 높은 난이도에서 `step`(걸음)·도구를 같은 계획기 단계로 추가한다 (plan/ideas.md).
-- 예고 피드백 강조 (M12 플레이테스트 반영, 미구현): "맞을 자리" 정보는 화면에서 가장 높은 위상이어야 한다. 정지한 반투명 구 대신 움직이는 요소로 보여 준다 — 예고 진행률만큼 차오르는 링, 좁혀 오는 테두리, 일렁임·떨림, 판정 순간 번쩍임. 손이 다가오는 방향도 읽혀야 한다.
+- 예고 피드백 강조 (M12): "맞을 자리" 정보는 화면에서 가장 높은 위상이어야 한다. 정지한 반투명 구 대신 움직이는 요소로 보여 준다 — 예고 진행률만큼 차오르는 링, 좁혀 오는 테두리, 일렁임·떨림, 판정 순간 번쩍임. 손이 다가오는 방향도 읽혀야 한다.
 
 ## 수용 기준
 - [x] 상태 전이와 히스테리시스(40 진입 / 20 이탈)가 동작한다 (Core). — 증거: `HumanAwarenessTests.StateTransitions_Hysteresis_Enter40Exit20`
@@ -119,7 +119,7 @@
 - [x] 팔꿈치·어깨 각도가 관절 한계를 넘지 않고, 손의 최고 속도가 tuning의 사람 손 속도를 넘지 않는다 (Core, 모든 공격 종류). (M12) — 증거: `BodyAttackTests.Strike_RespectsJointLimitsAndHumanHandSpeed`(팔꿈치 ≤ 150°, 위팔 길이 불변, 손 속도 ≤ 최고 속도), `Planner_TargetBehindNeedsTurn_NotJustArm`(어깨 폄 한계)
 - [x] 한쪽 팔뚝에 앉은 모기를 반대쪽 손으로 때린다 (Core). (M12) — 증거: `BodyAttackTests.ReactSlap_OnOwnRightForearm_UsesLeftHand`
 - [x] 판정이 움직이는 손 경로로 이뤄진다: 예고 뒤 손이 지나가기 전에 비키면 산다 (Core). (M12) — 증거: `BodyAttackTests.Strike_PlayerOnTheHandPath_NotAtTarget_Dies`, `ReactionTests.ReactSlap_PlayerLeavesDuringTelegraph_Survives`
-- [ ] 공격 예고 표시가 예고 진행률에 따라 변한다(차오름·좁혀짐 등) (Unity). (M12 플레이테스트 반영, 미구현)
+- [x] 공격 예고 표시가 예고 진행률에 따라 변한다(차오름·좁혀짐 등) (Unity). (M12) — 증거: EditMode `HumanBodyViewTests.Telegraph_IndicatorChangesWithProgress_ThenFlashesOnStrike`(셰이더 `Moqui/TelegraphRing`의 _Progress가 진행에 따라 증가, 판정 때 _Strike = 1, 손 접근 줄기 표시), 캡처 `Captures/2026-10-05_170605/Sandbox_Human_attack_Telegraph.png`(좁혀 오는 고리·접근 줄기)·`_Active.png`(번쩍임)
 - [x] 광분 중 목표가 팔 길이 밖이면 기울이기 → 돌기 → 일어서기 순서로 필요한 만큼만 몸을 움직여 닿고, 각 자세 전환에 tuning의 시간이 걸린다 (Core). (M12) — 증거: `BodyAttackTests.Planner_UsesOnlyAsMuchBodyAsNeeded`(팔·기울이기·일어서기), `Planner_TargetBehindNeedsTurn_NotJustArm`, `Rise_TakesHumanTime_AndHeadAndVisionFollowTheBody`(posture.riseTime)
 - [x] 일어서기·기울이기 후 머리 위치와 시야 원뿔이 몸 포즈를 따른다 (Core). (M12) — 증거: `BodyAttackTests.Rise_TakesHumanTime_AndHeadAndVisionFollowTheBody`, `Lean_HeadForwardFollowsUpperBody`
 - [x] 레벨의 `human.maxPosture`보다 큰 몸동작은 쓰지 않는다 (Core). (M12) — 증거: `BodyAttackTests.Planner_TooFar_NoPlan_AndMaxPostureLimitsBody`, stage03(누운 인간) `maxPosture: "turn"`
