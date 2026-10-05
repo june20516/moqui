@@ -205,10 +205,10 @@
 ## senses (모기 감각, 표현 전용)
 | 키 | 값 | 설명 |
 |---|---|---|
-| senses.clearRange | 80u | 선명한 거리 |
-| senses.fogFullRange | 250u | 최대 흐림 거리 |
-| senses.fogMaxDensity | 0.75 | 최대 흐림에서 안개색 비율 (1 미만이어야 큰 가구 실루엣이 남는다) |
-| senses.fogBlurPixels | 3px | 최대 흐림에서 블러 반경 (1080p 기준) |
+| senses.clearRange | 50u | 선명한 거리 (M12: CO₂ 단서가 쓸모 있도록 80 → 50) |
+| senses.fogFullRange | 160u | 최대 흐림 거리 (M12: 250 → 160) |
+| senses.fogMaxDensity | 0.88 | 최대 흐림에서 안개색 비율 (1 미만이어야 큰 가구 실루엣이 남는다, M12: 0.75 → 0.88) |
+| senses.fogBlurPixels | 6px | 최대 흐림에서 블러 반경 (1080p 기준, M12: 3 → 6) |
 | senses.co2VisibleRange | 450u | CO₂ 흐름 표시 거리 |
 | senses.heatRange | 60u | 체온 표시 거리 |
 | senses.co2PuffInterval | 0.12s | 날숨 중 CO₂ 연기 덩이 생성 간격 |
