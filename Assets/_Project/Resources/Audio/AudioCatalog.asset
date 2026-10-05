@@ -133,6 +133,16 @@ MonoBehaviour:
     Volume: 0.4
     Loop: 1
     Bus: 0
+  - Id: sfx_wind_loop
+    Clip: {fileID: 8300000, guid: e3c9d399b29489a44b0dec81361b3ced, type: 3}
+    Volume: 0.5
+    Loop: 1
+    Bus: 0
+  - Id: sfx_wind_gust
+    Clip: {fileID: 8300000, guid: 6d5f90e0571471d4c994c55139fed057, type: 3}
+    Volume: 0.6
+    Loop: 0
+    Bus: 0
   - Id: amb_stage1
     Clip: {fileID: 8300000, guid: 2334c35b8ff60a04a81ed7f30195299e, type: 3}
     Volume: 0.4

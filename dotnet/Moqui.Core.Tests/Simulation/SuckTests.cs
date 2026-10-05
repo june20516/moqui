@@ -95,6 +95,51 @@ namespace Moqui.Core.Tests.Simulation
             Assert.That(restarted, Is.EqualTo(Settings.Suck.RateStart).Within(0.01f), "new attachment = new session");
         }
 
+        /// <summary>흡혈 중(Suck 누름 + 세션 진행)에는 이동 입력으로 떨어지지 않고 몸이 그 자리에 고정된다 (spec/04 §2, M13).</summary>
+        [Test]
+        public void WhileSucking_MoveInput_BodyStaysFixed()
+        {
+            var simulation = AttachedTo("forearmR");
+            Run(simulation, Suck, SecondsToTicks(0.5f));
+            Vector3 attachedAt = simulation.Player.Position;
+            float gauge = simulation.Player.BloodGauge;
+
+            var suckAndMove = new PlayerCommand { SuckHeld = true, Move = new Vector2(1f, 1f), Vertical = -1f };
+            Run(simulation, suckAndMove, SecondsToTicks(1f));
+
+            Assert.That(simulation.Player.State, Is.EqualTo(PlayerState.Attached));
+            Assert.That(simulation.Player.SuckSession, Is.Not.Null);
+            Assert.That(Vector3.Distance(simulation.Player.Position, attachedAt), Is.LessThan(1e-3f), "random motion is disabled, so the body must not move");
+            Assert.That(simulation.Player.BloodGauge, Is.GreaterThan(gauge), "sucking continues");
+            Assert.That(simulation.Events.OfType<PlayerDetached>(), Is.Empty);
+        }
+
+        /// <summary>흡혈 중에도 F(떼기)와 대시(긴급 탈출)로는 바로 빠져나오고, Suck을 놓으면 이동 입력으로 떨어진다 (M13).</summary>
+        [TestCase("attach")]
+        [TestCase("dash")]
+        [TestCase("releaseThenMove")]
+        public void WhileSucking_EscapeInputs_Detach(string escape)
+        {
+            var simulation = AttachedTo("forearmR");
+            Run(simulation, Suck, SecondsToTicks(0.5f));
+
+            switch (escape)
+            {
+                case "attach":
+                    simulation.Step(new PlayerCommand { SuckHeld = true, AttachPressed = true });
+                    break;
+                case "dash":
+                    simulation.Step(new PlayerCommand { SuckHeld = true, DashPressed = true });
+                    break;
+                default:
+                    simulation.Step(new PlayerCommand { Move = new Vector2(0f, 1f) });
+                    break;
+            }
+
+            Assert.That(simulation.Player.State, Is.Not.EqualTo(PlayerState.Attached), escape);
+            Assert.That(simulation.Events.OfType<PlayerDetached>().Count(), Is.EqualTo(1), escape);
+        }
+
         [Test]
         public void Suck_NotAttached_NoGain()
         {

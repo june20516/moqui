@@ -22,7 +22,7 @@
 - [x] D9. `plan/final-report.md` 작성: 구현 요약, 미해결 이슈, 사람에게 넘길 항목. — 증거: `plan/final-report.md`
 
 ## 3. 범위
-**포함:** `plan/milestones.md`의 M0~M12 전체.
+**포함:** `plan/milestones.md`의 M0~M13 전체. M14(스테이지 확장)는 사람이 계획을 확정한 뒤 범위에 넣는다.
 
 **범위 외 (구현 금지):**
 - 멀티플레이, 온라인 기능, 업적, 클라우드 세이브

@@ -8,7 +8,7 @@ namespace Moqui.Core.Simulation
     /// <summary>
     /// 표면 부착 (spec/03 벽면 부착, spec/01 상태).
     /// Flying에서 Attach 입력 + suck.attachRange 이내의 attachable 표면 → Attached. 표면이 움직이면 따라간다.
-    /// 이동 입력이나 Attach 입력으로 이탈하며, 법선 방향으로 attach.detachOffset만큼 떨어진다.
+    /// 이동 입력이나 Attach 입력으로 이탈하며(흡혈 중에는 이동 입력 무시), 법선 방향으로 attach.detachOffset만큼 떨어진다.
     /// 부착점의 속도가 human.dislodgeSpeed를 넘으면 튕겨 나간다 (spec/02 §6).
     /// </summary>
     public sealed class AttachSystem
@@ -61,10 +61,20 @@ namespace Moqui.Core.Simulation
             return command.Move.LengthSquared() > 0f || command.Vertical != 0f;
         }
 
+        /// <summary>
+        /// 흡혈 중인가: Suck을 누른 채 흡혈 세션이 진행 중이다. 이때 몸은 고정되어 이동 입력으로 떨어지지 않는다 (spec/04 §2, M13).
+        /// F(떼기)와 대시(긴급 탈출)로는 빠져나올 수 있다.
+        /// </summary>
+        public static bool IsSucking(Player player, in PlayerCommand command)
+        {
+            return command.SuckHeld && player.SuckSession != null;
+        }
+
         /// <summary>부착 중 1틱: 이탈 입력이면 이탈하고, 아니면 움직이는 표면을 따라간다.</summary>
         public void StepAttached(Player player, in PlayerCommand command, int tick, float deltaTime, List<SimulationEvent> events)
         {
-            if (command.AttachPressed || HasMoveInput(command))
+            bool moveDetaches = HasMoveInput(command) && !IsSucking(player, command);
+            if (command.AttachPressed || moveDetaches)
             {
                 Detach(player, tick, events);
                 return;

@@ -46,7 +46,7 @@ namespace Moqui.Unity.Presentation.Audio
             // 일시정지 중에는 상태 반복음을 끈다 (음악·환경음은 그대로).
             foreach (var loop in AudioCues.Loops(simulation, pose))
             {
-                _output.SetLoop(loop.Id, loop.Playing && !_runner.Paused, loop.Pitch);
+                _output.SetLoop(loop.Id, loop.Playing && !_runner.Paused, loop.Pitch, loop.Gain);
             }
         }
 

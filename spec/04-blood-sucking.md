@@ -26,6 +26,7 @@
 - 흡혈 중 해당 부위 가려움이 `suck.itchRate × site.sensitivity × 스킬 배율`/s로 오른다. 흡혈하지 않는 동안 모든 부위는 `suck.itchDecay`/s로 감소한다.
 - 가려움은 반응 확률을 올린다 (spec/02 §5). 가려움 100이면 즉시 반응한다.
 - 흡혈 자체는 소음이 없다. 부착 상태 규칙(spec/03)이 그대로 적용된다.
+- **흡혈 중 몸 고정 (M13):** Suck을 누른 채 세션이 진행 중이면 이동·상승·하강 입력으로 떨어지지 않는다. 시점(마우스)은 자유롭다. 빠져나오는 방법은 F(떼기), 대시(긴급 탈출, 표면 법선 방향), Suck을 놓은 뒤 이동 입력이다 (D-055).
 
 ## 3. 착지
 - SkinSite에 부착하는 순간 착지 반응을 판정한다 (spec/02 §5). 스킬 "깃털 착지"가 확률을 낮춘다.
@@ -61,6 +62,7 @@
 ## 수용 기준
 - [x] 세션 흡혈 속도가 2%/s에서 시작해 6초에 걸쳐 6%/s까지 선형으로 오른다 (forearm 기준) (Core). — 증거: `SuckTests.SessionRate_Forearm_Linear2To6Over6Seconds`(0/1.5/3/4.5/6/8초 측정)
 - [x] 부위 유형별 혈액량과 가려움 증가가 표의 배율을 따른다 (Core). — 증거: `SuckTests.SiteType_BloodAmountAndItch_FollowTable`(팔뚝·종아리·볼)
+- [x] 흡혈 중(Suck 누름 + 세션 진행) 이동 입력으로는 떨어지지 않고 몸이 고정되며, F·대시·Suck을 놓은 뒤 이동으로는 빠져나온다 (Core). (M13) — 증거: `SuckTests.WhileSucking_MoveInput_BodyStaysFixed`, `WhileSucking_EscapeInputs_Detach`
 - [x] 부착 중 Suck을 놓았다 다시 눌러도 세션 가속이 유지되고, 이탈하면 초기화된다 (Core). — 증거: `SuckTests.SuckReleasedAndPressedAgain_KeepsAcceleration_DetachResets`
 - [x] 부착하지 않았거나 피부가 아닌 표면에서는 흡혈이 되지 않는다 (Core). — 증거: `SuckTests.Suck_NotAttached_NoGain`, `Suck_AttachedToWall_NoGain`, `Suck_AttachedToClothedBodyPart_NoGain`
 - [x] 세션 종료 시 빤 양이 5% 이상이면 자국이 생기고 경계가 +15 오른다. 5% 미만이면 생기지 않는다 (Core). — 증거: `SuckTests.SessionEnd_AmountAtLeast5_BiteMarkAndAwarenessPlus15`, `SessionEnd_AmountBelow5_NoBiteMark`

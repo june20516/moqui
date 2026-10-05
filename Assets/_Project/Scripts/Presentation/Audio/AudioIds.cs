@@ -60,6 +60,8 @@ namespace Moqui.Unity.Presentation.Audio
         public const string Wake = "sfx_wake";
         public const string Drip = "sfx_drip";
         public const string Steam = "sfx_steam";
+        public const string WindLoop = "sfx_wind_loop";
+        public const string WindGust = "sfx_wind_gust";
         public const string BgmTitle = "bgm_title";
         public const string BgmStage = "bgm_stage";
         public const int StageCount = 5;
@@ -90,6 +92,8 @@ namespace Moqui.Unity.Presentation.Audio
             new AudioDefinition(Wake, AudioBus.Sfx, false, 0.7f),
             new AudioDefinition(Drip, AudioBus.Sfx, false, 0.5f),
             new AudioDefinition(Steam, AudioBus.Sfx, true, 0.4f),
+            new AudioDefinition(WindLoop, AudioBus.Sfx, true, 0.5f),
+            new AudioDefinition(WindGust, AudioBus.Sfx, false, 0.6f),
             new AudioDefinition(Ambience(1), AudioBus.Ambience, true, 0.4f),
             new AudioDefinition(Ambience(2), AudioBus.Ambience, true, 0.4f),
             new AudioDefinition(Ambience(3), AudioBus.Ambience, true, 0.45f),

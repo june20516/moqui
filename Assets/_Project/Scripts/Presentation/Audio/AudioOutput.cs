@@ -12,6 +12,9 @@ namespace Moqui.Unity.Presentation.Audio
     {
         private readonly Dictionary<string, AudioSource> _loops = new Dictionary<string, AudioSource>();
         private readonly HashSet<string> _activeLoops = new HashSet<string>();
+
+        /// <summary>반복음별 음량 배율 (바람처럼 세기에 따라 커지는 소리, M13).</summary>
+        private readonly Dictionary<string, float> _loopGains = new Dictionary<string, float>();
         private AudioCatalog _catalog;
         private AudioSource _oneShots;
         private AudioSource _music;
@@ -57,7 +60,7 @@ namespace Moqui.Unity.Presentation.Audio
         }
 
         /// <summary>반복음을 켜거나 끈다. 켜진 동안 pitch를 바꿀 수 있다 (날갯소리 속도 변조).</summary>
-        public void SetLoop(string id, bool playing, float pitch = 1f)
+        public void SetLoop(string id, bool playing, float pitch = 1f, float gain = 1f)
         {
             if (!_loops.TryGetValue(id, out var source))
             {
@@ -75,10 +78,11 @@ namespace Moqui.Unity.Presentation.Audio
                 source = CreateSource();
                 source.clip = entry.Clip;
                 source.loop = true;
-                source.volume = entry.Volume * AudioVolumes.For(entry.Bus);
                 _loops[id] = source;
             }
 
+            _loopGains[id] = gain;
+            source.volume = LoopTargetVolume(id);
             source.pitch = pitch;
             if (playing && _activeLoops.Add(id))
             {
@@ -94,6 +98,8 @@ namespace Moqui.Unity.Presentation.Audio
         public bool IsLoopActive(string id) => _activeLoops.Contains(id);
 
         public float LoopPitch(string id) => _loops.TryGetValue(id, out var source) ? source.pitch : 1f;
+
+        public float LoopVolume(string id) => _loops.TryGetValue(id, out var source) ? source.volume : 0f;
 
         public void StopAllLoops()
         {
@@ -139,9 +145,15 @@ namespace Moqui.Unity.Presentation.Audio
 
             foreach (var pair in _loops)
             {
-                var entry = _catalog.Find(pair.Key);
-                pair.Value.volume = entry.Volume * AudioVolumes.For(entry.Bus);
+                pair.Value.volume = LoopTargetVolume(pair.Key);
             }
+        }
+
+        private float LoopTargetVolume(string id)
+        {
+            var entry = _catalog.Find(id);
+            float gain = _loopGains.TryGetValue(id, out float value) ? value : 1f;
+            return entry.Volume * AudioVolumes.For(entry.Bus) * gain;
         }
 
         private void OnDestroy()

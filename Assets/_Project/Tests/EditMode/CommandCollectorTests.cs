@@ -44,10 +44,10 @@ namespace Moqui.Unity.Tests
 
         [TestCase("Move", "<Keyboard>/w", "<Gamepad>/leftStick")]
         [TestCase("Vertical", "<Keyboard>/space", "<Gamepad>/rightTrigger")]
-        [TestCase("Vertical", "<Keyboard>/leftAlt", "<Gamepad>/leftTrigger")]
+        [TestCase("Vertical", "<Keyboard>/c", "<Gamepad>/leftTrigger")]
         [TestCase("Look", "<Mouse>/delta", "<Gamepad>/rightStick")]
         [TestCase("Dash", "<Mouse>/rightButton", "<Gamepad>/buttonSouth")]
-        [TestCase("Precision", "<Keyboard>/leftCtrl", "<Gamepad>/leftShoulder")]
+        [TestCase("Precision", "<Keyboard>/leftShift", "<Gamepad>/leftShoulder")]
         [TestCase("Attach", "<Keyboard>/f", "<Gamepad>/buttonEast")]
         [TestCase("Suck", "<Mouse>/leftButton", "<Gamepad>/buttonWest")]
         [TestCase("ToggleView", "<Keyboard>/v", "<Gamepad>/rightStickPress")]
@@ -94,10 +94,10 @@ namespace Moqui.Unity.Tests
 
             PressAndSample(keyboard.wKey);
             PressAndSample(keyboard.dKey);
-            PressAndSample(keyboard.leftAltKey);
+            PressAndSample(keyboard.cKey);
             PressAndSample(mouse.rightButton);
             PressAndSample(keyboard.fKey);
-            PressAndSample(keyboard.leftCtrlKey);
+            PressAndSample(keyboard.leftShiftKey);
             PressAndSample(keyboard.qKey);
             PressAndSample(mouse.leftButton);
             _collector.Sample(FrameTime);

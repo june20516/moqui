@@ -284,6 +284,19 @@ def sfx_steam(rng):
     return loop_crossfade(hiss, 0.2)
 
 
+def sfx_wind_loop(rng):
+    # 바람에 밀리는 소리: 낮은 대역 잡음이 천천히 일렁인다. 1.5초 주기 변조라 3초 루프가 이어진다.
+    rush = lowpass(noise(3.2, rng), lambda p: 500.0 + 250.0 * math.sin(TAU * p * 3.2 / 1.5))
+    rush = modulate(rush, lambda t: 0.75 + 0.25 * math.sin(TAU * t / 1.5))
+    return loop_crossfade(rush, 0.2)
+
+
+def sfx_wind_gust(rng):
+    # 바람에 처음 밀릴 때: 부풀었다 빠지는 짧은 "휙".
+    gust = lowpass(noise(0.6, rng), lambda p: 300.0 + 1800.0 * math.sin(math.pi * p))
+    return modulate(gust, lambda t: math.sin(math.pi * t / 0.6))
+
+
 # ---- 환경음 (4초 루프) ----
 
 def tv_murmur(rng, seconds=4.2):
@@ -390,6 +403,8 @@ SOUNDS = {
     'sfx_wake': (sfx_wake, 0.6),
     'sfx_drip': (sfx_drip, 0.5),
     'sfx_steam': (sfx_steam, 0.4),
+    'sfx_wind_loop': (sfx_wind_loop, 0.45),
+    'sfx_wind_gust': (sfx_wind_gust, 0.6),
     'amb_stage1': (amb_stage1, 0.35),
     'amb_stage2': (amb_stage2, 0.35),
     'amb_stage3': (amb_stage3, 0.4),

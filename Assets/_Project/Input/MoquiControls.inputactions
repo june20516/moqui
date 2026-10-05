@@ -177,7 +177,7 @@
                                       {
                                           "name":  "negative",
                                           "id":  "5945bb17-8455-48d5-bd00-fa2fbbc602bf",
-                                          "path":  "\u003cKeyboard\u003e/leftAlt",
+                                          "path":  "\u003cKeyboard\u003e/c",
                                           "interactions":  "",
                                           "processors":  "",
                                           "groups":  "Keyboard\u0026Mouse",
@@ -276,7 +276,7 @@
                                       {
                                           "name":  "",
                                           "id":  "3eca7055-cd9b-4494-b08c-f0b1d6952f76",
-                                          "path":  "\u003cKeyboard\u003e/leftCtrl",
+                                          "path":  "\u003cKeyboard\u003e/leftShift",
                                           "interactions":  "",
                                           "processors":  "",
                                           "groups":  "Keyboard\u0026Mouse",

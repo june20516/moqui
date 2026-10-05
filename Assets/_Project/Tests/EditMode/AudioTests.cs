@@ -45,7 +45,7 @@ namespace Moqui.Unity.Tests
                 "sfx_frenzy", "sfx_telegraph", "sfx_spray", "sfx_toxin", "sfx_breath", "sfx_dislodge", "sfx_decoy",
                 "sfx_drop_trap", "sfx_escape", "sfx_ui_select", "sfx_ui_confirm", "sfx_ui_cancel",
                 "amb_stage1", "amb_stage2", "amb_stage3", "amb_stage4", "amb_stage5",
-                "sfx_snore", "sfx_wake", "sfx_drip", "sfx_steam", "bgm_title", "bgm_stage",
+                "sfx_snore", "sfx_wake", "sfx_drip", "sfx_steam", "sfx_wind_loop", "sfx_wind_gust", "bgm_title", "bgm_stage",
             };
             Assert.That(AudioIds.All, Is.SupersetOf(spec));
         }
@@ -114,6 +114,31 @@ namespace Moqui.Unity.Tests
             var suck = AudioCues.Loops(simulation, MokiPose.Suck).ToDictionary(loop => loop.Id);
             Assert.That(suck[AudioIds.WingLoop].Playing, Is.False);
             Assert.That(suck[AudioIds.SuckLoop].Playing, Is.True);
+        }
+
+        /// <summary>바람에 밀리는 동안 바람 반복음이 세기에 따라 커지고 높아지며, 처음 밀릴 때 "휙"이 한 번 난다 (M13).</summary>
+        [Test]
+        public void Wind_LoopFollowsStrength_GustOnceOnEntering()
+        {
+            var simulation = CreateFlightSimulation();
+            float windSpeed = simulation.Settings.Fan.WindSpeed;
+            var cues = new AudioCues();
+
+            var calm = AudioCues.Loops(simulation, MokiPose.Idle).ToDictionary(loop => loop.Id);
+            Assert.That(calm[AudioIds.WindLoop].Playing, Is.False);
+            Assert.That(cues.OneShots(simulation), Does.Not.Contain(AudioIds.WindGust));
+
+            simulation.Player.ExternalVelocity = new System.Numerics.Vector3(windSpeed * 0.3f, 0f, 0f);
+            var weak = AudioCues.Loops(simulation, MokiPose.Idle).ToDictionary(loop => loop.Id);
+            Assert.That(cues.OneShots(simulation), Does.Contain(AudioIds.WindGust));
+            Assert.That(cues.OneShots(simulation), Does.Not.Contain(AudioIds.WindGust), "gust only when entering");
+
+            simulation.Player.ExternalVelocity = new System.Numerics.Vector3(windSpeed, 0f, 0f);
+            var strong = AudioCues.Loops(simulation, MokiPose.Idle).ToDictionary(loop => loop.Id);
+            Assert.That(weak[AudioIds.WindLoop].Playing && strong[AudioIds.WindLoop].Playing, Is.True);
+            Assert.That(strong[AudioIds.WindLoop].Gain, Is.GreaterThan(weak[AudioIds.WindLoop].Gain));
+            Assert.That(strong[AudioIds.WindLoop].Pitch, Is.GreaterThan(weak[AudioIds.WindLoop].Pitch));
+            Assert.That(strong[AudioIds.WindLoop].Gain, Is.EqualTo(1f).Within(1e-4f));
         }
 
         [Test]

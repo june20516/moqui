@@ -6,11 +6,12 @@ namespace Moqui.Unity.Presentation.Audio
     /// <summary>반복음 하나의 목표 상태.</summary>
     public readonly struct LoopCue
     {
-        public LoopCue(string id, bool playing, float pitch = 1f)
+        public LoopCue(string id, bool playing, float pitch = 1f, float gain = 1f)
         {
             Id = id;
             Playing = playing;
             Pitch = pitch;
+            Gain = gain;
         }
 
         public string Id { get; }
@@ -18,6 +19,9 @@ namespace Moqui.Unity.Presentation.Audio
         public bool Playing { get; }
 
         public float Pitch { get; }
+
+        /// <summary>카탈로그 음량에 곱하는 값 (0~1).</summary>
+        public float Gain { get; }
     }
 
     /// <summary>
@@ -30,11 +34,20 @@ namespace Moqui.Unity.Presentation.Audio
         public const float WingPitchIdle = 0.85f;
         public const float WingPitchRange = 0.45f;
 
+        /// <summary>바람 세기(바람 속도 ÷ fan.windSpeed)가 이 값을 넘으면 바람에 밀리는 것으로 본다 (M13).</summary>
+        public const float WindAudibleStrength = 0.05f;
+
+        /// <summary>바람 반복음: 가장 약할 때 음량·피치와 최대 세기에서 더하는 값.</summary>
+        public const float WindGainMin = 0.3f;
+        public const float WindPitchMin = 0.8f;
+        public const float WindPitchRange = 0.4f;
+
         private AttackPhase _lastAttackPhase = AttackPhase.Idle;
         private int _lastToxinTier;
         private bool _decoyWasActive;
         private int _lastDropCount;
         private float _lastBreathPhase = -1f;
+        private bool _wasInWind;
 
         /// <summary>이벤트 하나에 대응하는 효과음 (없으면 null).</summary>
         public static string FromEvent(SimulationEvent simulationEvent)
@@ -122,6 +135,15 @@ namespace Moqui.Unity.Presentation.Audio
 
             _lastDropCount = dropCount;
 
+            // 바람에 처음 밀리기 시작하면 "휙" 한 번 (M13).
+            bool inWind = WindStrength(simulation) > WindAudibleStrength;
+            if (inWind && !_wasInWind)
+            {
+                ids.Add(AudioIds.WindGust);
+            }
+
+            _wasInWind = inWind;
+
             var human = simulation.Human;
             if (human != null)
             {
@@ -140,9 +162,20 @@ namespace Moqui.Unity.Presentation.Audio
             yield return new LoopCue(AudioIds.SuckLoop, pose == MokiPose.Suck);
             yield return new LoopCue(AudioIds.Steam, player.InSteam);
 
+            // 바람에 밀리는 동안: 세기에 따라 커지고 높아진다 (M13).
+            float wind = WindStrength(simulation);
+            yield return new LoopCue(AudioIds.WindLoop, wind > WindAudibleStrength, WindPitchMin + (WindPitchRange * wind), WindGainMin + ((1f - WindGainMin) * wind));
+
             var human = simulation.Human;
             yield return new LoopCue(AudioIds.FrenzyLoop, human != null && human.State == AwarenessState.Frenzy);
             yield return new LoopCue(AudioIds.Snore, human != null && human.IsAsleep);
+        }
+
+        /// <summary>플레이어를 미는 바람 세기 0~1 (바람 속도 ÷ fan.windSpeed).</summary>
+        public static float WindStrength(GameSimulation simulation)
+        {
+            float windSpeed = simulation.Settings.Fan.WindSpeed;
+            return windSpeed > 0f ? System.Math.Min(1f, simulation.Player.ExternalVelocity.Length() / windSpeed) : 0f;
         }
 
         public static float WingPitch(float speed, float flightSpeed)

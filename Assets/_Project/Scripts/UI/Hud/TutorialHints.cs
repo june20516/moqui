@@ -16,9 +16,9 @@ namespace Moqui.Unity.UI.Hud
 
         private static readonly Dictionary<string, (string Keyboard, string Gamepad)> Texts = new Dictionary<string, (string, string)>
         {
-            ["move"] = ("WASD로 이동, Space/Alt로 오르내리기", "왼쪽 스틱으로 이동, RT/LT로 오르내리기"),
+            ["move"] = ("WASD로 이동, Space/C로 오르내리기", "왼쪽 스틱으로 이동, RT/LT로 오르내리기"),
             ["look"] = ("마우스로 둘러보기", "오른쪽 스틱으로 둘러보기"),
-            ["precision"] = ("Ctrl을 누른 채 움직이면 정밀 비행 (조용함)", "LB를 누른 채 움직이면 정밀 비행 (조용함)"),
+            ["precision"] = ("Shift를 누른 채 움직이면 정밀 비행 (조용함)", "LB를 누른 채 움직이면 정밀 비행 (조용함)"),
             ["dash"] = ("우클릭으로 진행 방향 대시 (소리가 크다)", "A로 대시 (소리가 크다)"),
             ["attach"] = ("가구 가까이에서 F로 착지", "가구 가까이에서 B로 착지"),
             ["hide"] = ("푸른빛 그림자 속에 숨으면 들키지 않는다", "푸른빛 그림자 속에 숨으면 들키지 않는다"),

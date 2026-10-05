@@ -7,10 +7,10 @@
 | 액션 | 키보드/마우스 | 게임패드 |
 |---|---|---|
 | Move (전후좌우) | WASD | 왼쪽 스틱 |
-| Ascend / Descend | Space / Left Alt | RT / LT |
+| Ascend / Descend | Space / C | RT / LT |
 | Look | 마우스 | 오른쪽 스틱 |
 | Dash | 마우스 오른쪽 | A (South) |
-| Precision (홀드) | Left Ctrl | LB |
+| Precision (홀드) | Left Shift | LB |
 | Attach / Detach | F | B (East) |
 | Suck (홀드) | 마우스 왼쪽 | X (West) |
 | ToggleView (시점 전환) | V | 오른쪽 스틱 누르기 (R3) |
@@ -53,7 +53,7 @@
 
 ## 상태
 ```
-Flying ──(F, 부착 가능 표면 근처)──▶ Attached ──(F 또는 이동 입력)──▶ Flying
+Flying ──(F, 부착 가능 표면 근처)──▶ Attached ──(F 또는 이동 입력. 흡혈 중에는 이동 입력 무시, M13)──▶ Flying
 Attached ──(Dash)──▶ Dashing (표면 법선 방향, M12)
 Flying ──(Dash)──▶ Dashing ──(duration 종료)──▶ Flying
 Flying ──(물방울 피격)──▶ Trapped (spec/05)
@@ -77,7 +77,7 @@ Attached ──(부위 급격한 움직임)──▶ Dislodged ──(경직 종
 - [x] 스태미나가 마지막 소모 1초 후부터 20/s로 회복한다 (Core). — 증거: `StaminaTests.Stamina_AfterDash_RegeneratesFrom1SecondAt20PerSecond`
 - [x] 스태미나 0이면 2초간 속도 50%, 대시 불가 (Core). — 증거: `StaminaTests.Stamina_ReachesZero_Exhausted2SecondsWithHalfSpeedAndNoDash`, `Exhaustion_WhileHidden_RecoversTwiceAsFast`
 - [x] 대시가 벽을 관통하지 않는다 (Core). — 증거: `DashTests.Dash_IntoWall_StopsWithoutPenetrating`
-- [x] 위 입력 매핑이 Input Actions 에셋에 존재하고, 게임패드로도 동일하게 동작한다 (Unity: 가상 Gamepad 디바이스로 입력 주입). (M12) — 증거: EditMode `CommandCollectorTests.Asset_GameplayAction_HasKeyboardAndGamepadBindings`(LAlt 하강·LCtrl 정밀·우클릭 대시), `KeyboardMouse_AllGameplayInputs_ProduceCommand`, `Gamepad_*`
+- [x] 위 입력 매핑이 Input Actions 에셋에 존재하고, 게임패드로도 동일하게 동작한다 (Unity: 가상 Gamepad 디바이스로 입력 주입). (M12) — 증거: EditMode `CommandCollectorTests.Asset_GameplayAction_HasKeyboardAndGamepadBindings`(C 하강·LShift 정밀·우클릭 대시, M13 D-055), `KeyboardMouse_AllGameplayInputs_ProduceCommand`, `Gamepad_*`
 
 ## 범위 외
 - 롤, 대시 방향 8방향화, 공중 관성 옵션
