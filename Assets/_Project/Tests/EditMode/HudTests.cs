@@ -135,6 +135,8 @@ namespace Moqui.Unity.Tests
             _simulation.Player.BloodGauge = SuckSystem.GaugeMax;
             Assert.That(Present().SatietyHighlighted, Is.True);
             Assert.That(_view.SatietyIcon.color, Is.Not.EqualTo(normal));
+            Assert.That(_view.SatietyIcon.sprite, Is.Not.SameAs(_view.BiteDotSprite), "satiety does not look like a bite dot (M12)");
+            Assert.That(_view.SatietyLabel.text, Is.EqualTo("포만"));
         }
 
         [Test]
@@ -212,7 +214,7 @@ namespace Moqui.Unity.Tests
             _simulation.Player.State = PlayerState.Trapped;
             _simulation.Player.EscapePresses = 1;
             Present();
-            Assert.That(_view.PromptText.text, Is.EqualTo($"Shift ×{_simulation.Settings.Water.EscapePresses - 1}!"));
+            Assert.That(_view.PromptText.text, Is.EqualTo($"우클릭 ×{_simulation.Settings.Water.EscapePresses - 1}!"));
         }
 
         [Test]

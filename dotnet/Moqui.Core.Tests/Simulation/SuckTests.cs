@@ -147,6 +147,43 @@ namespace Moqui.Core.Tests.Simulation
             Assert.That(Settings.BiteMark.AwarenessBump, Is.EqualTo(15f));
         }
 
+        /// <summary>자국은 주둥이를 꽂은 자리에 생기고, 부위가 움직이면 피부에 붙은 채 따라간다 (spec/04 §4, M12).</summary>
+        [Test]
+        public void BiteMark_AtTheBiteSpot_FollowsThePart_OnePerSession()
+        {
+            var simulation = AttachedTo("forearmR");
+            var human = simulation.Human;
+            simulation.Player.Anchor.Resolve(out Vector3 spot, out _);
+            Run(simulation, Suck, SecondsToTicks(2.5f));
+            simulation.Step(Attach);
+
+            Assert.That(human.BiteMarks.Count, Is.EqualTo(1));
+            var mark = human.BiteMarks[0];
+            mark.Resolve(out Vector3 position, out Vector3 normal);
+            Assert.That(mark.PartId, Is.EqualTo("forearmR"));
+            Assert.That(Vector3.Distance(position, spot), Is.LessThan(0.5f), "the mark sits where the mosquito bit");
+            var snapshot = simulation.CaptureSnapshot().Human.BiteMarks.Single();
+            Assert.That(Vector3.Distance(snapshot.Position, position), Is.LessThan(1e-3f));
+
+            // 상체를 기울여 팔이 움직여도 자국은 팔뚝 피부 위에 있다.
+            human.Pose.Posture = new PostureState { LeanDirection = Vector3.UnitZ, LeanAngle = 30f };
+            human.UpdatePose();
+            mark.Resolve(out Vector3 moved, out _);
+            var forearm = human.Shapes["forearmR"];
+            float fromSurface = Vector3.Distance(moved, ShapeGeometry.ClosestPointOnSegment(forearm.PointA, forearm.PointB, moved)) - forearm.Radius;
+            Assert.That(Vector3.Distance(moved, position), Is.GreaterThan(1f), "the mark moved with the arm");
+            Assert.That(Math.Abs(fromSurface), Is.LessThan(0.01f), "still on the forearm skin");
+
+            // 같은 부위를 다시 물면 자국이 하나 더 생긴다.
+            human.Pose.Posture = PostureState.Rest;
+            human.UpdatePose();
+            TestHumans.PlaceNearPart(simulation, "forearmR");
+            simulation.Step(Attach);
+            Run(simulation, Suck, SecondsToTicks(2.5f));
+            simulation.Step(Attach);
+            Assert.That(human.BiteMarks.Count, Is.EqualTo(2));
+        }
+
         [Test]
         public void SessionEnd_AmountBelow5_NoBiteMark()
         {

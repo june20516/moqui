@@ -157,7 +157,7 @@ namespace Moqui.Core.Tests.Simulation
             int telegraphTicks = SecondsToTicks(Settings.Attack.SelfSlapTelegraph);
             PlayerDied death = null;
 
-            for (int i = 0; i < SecondsToTicks(1f) && death == null; i++)
+            for (int i = 0; i < SecondsToTicks(3f) && death == null; i++)
             {
                 simulation.Step(PlayerCommand.None);
                 death = simulation.Events.OfType<PlayerDied>().SingleOrDefault();
@@ -166,7 +166,8 @@ namespace Moqui.Core.Tests.Simulation
             Assert.That(death, Is.Not.Null);
             Assert.That(death.Cause, Is.EqualTo(DeathCause.Attack));
             Assert.That(simulation.Player.State, Is.EqualTo(PlayerState.Dead));
-            Assert.That(death.Tick - simulation.Human.Attack.TelegraphEndTick, Is.EqualTo(0), "dies when the hit activates after the telegraph");
+            var attack = simulation.Human.Attack;
+            Assert.That(death.Tick, Is.InRange(attack.TelegraphEndTick, attack.TelegraphEndTick + attack.ActiveTicks), "dies while the hand sweeps through, after the telegraph (D-052)");
             Assert.That(telegraphTicks, Is.GreaterThan(0));
         }
 
@@ -199,13 +200,19 @@ namespace Moqui.Core.Tests.Simulation
             // 박수 진행 중에 피부에 붙어 가려움 100 → 반응이 버려진다.
             var simulation = TestHumans.Simulation(TestHumans.InFront(30f));
             simulation.Step(PlayerCommand.None);
-            var clap = simulation.Human.Attack;
-            int recoveryEnd = clap.RecoveryEndTick;
             TestHumans.PlaceNearPart(simulation, "calfR");
             simulation.Step(Attach);
             TestHumans.Site(simulation, "calfR").Itch = 100f;
 
+            // 회복 끝 틱은 타격 길이(손 경로 ÷ 손 속도)가 정해진 뒤(회복 시작 때) 확정된다.
             int startedDuringBusy = 0;
+            while (simulation.Human.Attack.Phase != AttackPhase.Recovery)
+            {
+                simulation.Step(PlayerCommand.None);
+                startedDuringBusy += simulation.Events.OfType<AttackTelegraphStarted>().Count();
+            }
+
+            int recoveryEnd = simulation.Human.Attack.RecoveryEndTick;
             while (simulation.Tick < recoveryEnd)
             {
                 simulation.Step(PlayerCommand.None);

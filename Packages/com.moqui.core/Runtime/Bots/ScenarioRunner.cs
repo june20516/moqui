@@ -61,6 +61,12 @@ namespace Moqui.Core.Bots
         private const float ApproachGap = 1f;
         private const float FleeMargin = 25f;
 
+        /// <summary>손 경로(어깨 → 목표)가 이 거리(+ 손·몸 반경) 안을 지나면 위협 (D-052).</summary>
+        private const float PathFleeMargin = 10f;
+
+        /// <summary>휘두르는 손 경로에서 이 거리(+ 손·몸 반경)까지는 먼저 벗어난다.</summary>
+        private const float StrikeAvoidMargin = 30f;
+
         private readonly Data.Tuning _tuning;
         private GameSettings _settings;
 
@@ -151,13 +157,15 @@ namespace Moqui.Core.Bots
         }
 
         /// <summary>
-        /// 자기 근처를 노리는 공격 예고이거나 보였으면 도망친다. 취한 인간의 무작위 휘두르기처럼 먼 곳을 노리는 예고는 무시한다.
+        /// 손 경로가 자기 근처를 지나는 공격 예고이거나 보였으면 도망친다. 취한 인간의 무작위 휘두르기처럼 먼 곳을 노리는 예고는 무시한다.
         /// </summary>
         private static bool ShouldFlee(GameSimulation simulation)
         {
+            // 판정은 손이 지나가는 경로다 (D-052): 어깨 → 목표 손 경로가 내 근처를 지나면 위협으로 본다.
             var player = simulation.Player.Position;
             bool threatened = simulation.Events.OfType<AttackTelegraphStarted>()
-                .Any(telegraph => Vector3.Distance(telegraph.Target, player) <= telegraph.Radius + FleeMargin);
+                .Any(telegraph => BodyKinematics.DistanceToSegment(player, simulation.Human.NearestShoulder(telegraph.Target), telegraph.Target)
+                    <= telegraph.Radius + simulation.Player.CollisionRadius + PathFleeMargin);
             return threatened || (simulation.Human != null && simulation.Human.PlayerVisible);
         }
 
@@ -270,6 +278,22 @@ namespace Moqui.Core.Bots
             }
 
             Vector3 target = state.HideRoute[state.HideIndex];
+
+            // 손이 휘둘러지는 동안 그 경로(어깨 → 목표) 가까이에 있으면 은신 경로보다 먼저 경로에서 멀어진다 (D-052).
+            var attack = simulation.Human?.Attack;
+            if (attack != null && (attack.Phase == AttackPhase.Telegraph || attack.Phase == AttackPhase.Active) && attack.Kind != AttackKind.Spray)
+            {
+                Vector3 shoulder = simulation.Human.NearestShoulder(attack.Target);
+                Vector3 closest = ClosestOnSegment(player.Position, shoulder, attack.Target);
+                if (Vector3.Distance(player.Position, closest) <= attack.Radius + player.CollisionRadius + StrikeAvoidMargin)
+                {
+                    Vector3 away = player.Position - closest;
+                    away = away.LengthSquared() > 1e-4f ? Vector3.Normalize(away) : Vector3.UnitY;
+                    command = BotPilot.FlyTo(player, player.Position + (away * StrikeAvoidMargin));
+                    return false;
+                }
+            }
+
             command = BotPilot.FlyTo(player, target);
             if (!BotPilot.Arrived(player, target))
             {
@@ -297,6 +321,14 @@ namespace Moqui.Core.Bots
             }
 
             return done;
+        }
+
+        private static Vector3 ClosestOnSegment(Vector3 point, Vector3 a, Vector3 b)
+        {
+            Vector3 ab = b - a;
+            float lengthSquared = ab.LengthSquared();
+            float t = lengthSquared > 1e-8f ? Math.Clamp(Vector3.Dot(point - a, ab) / lengthSquared, 0f, 1f) : 0f;
+            return a + (ab * t);
         }
 
         /// <summary>부위 표면에서 봇 쪽으로 1u 떨어진 점. 회차마다 처음 계산한 쪽을 유지한다.</summary>

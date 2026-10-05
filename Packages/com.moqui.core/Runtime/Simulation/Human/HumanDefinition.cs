@@ -75,8 +75,10 @@ namespace Moqui.Core.Simulation
             IReadOnlyList<HumanActionDefinition> actions = null,
             HumanTraits traits = null,
             float facingPitch = 0f,
-            float restPitch = 0f)
+            float restPitch = 0f,
+            PostureLevel maxPosture = PostureLevel.Rise)
         {
+            MaxPosture = maxPosture;
             FacingPitch = facingPitch;
             RestPitch = restPitch;
             Id = id ?? throw new ArgumentNullException(nameof(id));
@@ -137,5 +139,8 @@ namespace Moqui.Core.Simulation
 
         /// <summary>수정자(졸음·취함), 스프레이 사용 여부, 둘러보기 (spec/06, spec/07).</summary>
         public HumanTraits Traits { get; }
+
+        /// <summary>공격하려고 쓸 수 있는 가장 큰 몸동작 (spec/02, D-053). 누운 사람은 일어서지 않게 낮춘다.</summary>
+        public PostureLevel MaxPosture { get; }
     }
 }

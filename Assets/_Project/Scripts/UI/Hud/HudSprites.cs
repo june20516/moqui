@@ -17,6 +17,7 @@ namespace Moqui.Unity.UI.Hud
         private static Sprite _ring;
         private static Sprite _arrow;
         private static Sprite _vignette;
+        private static Sprite _weight;
 
         public static Sprite Square => _square ??= Create("HudSquare", (x, y) => 1f);
 
@@ -34,6 +35,20 @@ namespace Moqui.Unity.UI.Hud
             float u = (float)x / (Size - 1);
             float v = Mathf.Abs(((float)y / (Size - 1)) - 0.5f) * 2f;
             return v <= 1f - u ? 1f : 0f;
+        });
+
+        /// <summary>
+        /// 추(케틀벨) 모양: 아래 둥근 몸통 + 위 손잡이 고리. 포만(무거워짐) 표시로, 자국 점(원)과 헷갈리지 않게 한다 (spec/08, M12).
+        /// </summary>
+        public static Sprite Weight => _weight ??= Create("HudWeight", (x, y) =>
+        {
+            float u = (((float)x / (Size - 1)) * 2f) - 1f;
+            float v = (((float)y / (Size - 1)) * 2f) - 1f;
+            float body = Mathf.Sqrt((u * u) + ((v + 0.28f) * (v + 0.28f)));
+            float handle = Mathf.Sqrt((u * u) + ((v - 0.42f) * (v - 0.42f)));
+            bool inBody = body <= 0.66f;
+            bool inHandle = v >= 0.2f && handle <= 0.42f && handle >= 0.24f;
+            return inBody || inHandle ? 1f : 0f;
         });
 
         /// <summary>가운데가 투명하고 테두리로 갈수록 진해지는 비네트.</summary>

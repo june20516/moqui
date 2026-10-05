@@ -144,7 +144,18 @@ namespace Moqui.Core.Simulation
             }
 
             SkinSites = sites;
+            var marks = new List<BiteMarkSnapshot>();
+            foreach (var mark in human.BiteMarks)
+            {
+                mark.Resolve(out Vector3 position, out Vector3 normal);
+                marks.Add(new BiteMarkSnapshot(mark.PartId, position, normal));
+            }
+
+            BiteMarks = marks;
         }
+
+        /// <summary>물린 자국의 문 자리 (spec/04 §4, spec/11 §3).</summary>
+        public IReadOnlyList<BiteMarkSnapshot> BiteMarks { get; }
 
         public string Id { get; }
 
@@ -195,6 +206,22 @@ namespace Moqui.Core.Simulation
         public float ExhaleStrength { get; }
 
         public IReadOnlyList<SkinSiteSnapshot> SkinSites { get; }
+    }
+
+    public sealed class BiteMarkSnapshot
+    {
+        public BiteMarkSnapshot(string partId, Vector3 position, Vector3 normal)
+        {
+            PartId = partId;
+            Position = position;
+            Normal = normal;
+        }
+
+        public string PartId { get; }
+
+        public Vector3 Position { get; }
+
+        public Vector3 Normal { get; }
     }
 
     public sealed class SkinSiteSnapshot

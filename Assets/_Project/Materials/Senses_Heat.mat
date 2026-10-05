@@ -21,7 +21,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Senses_Heat
-  m_Shader: {fileID: 4800000, guid: 94a402b39a617434287bbe29ed37a332, type: 3}
+  m_Shader: {fileID: 4800000, guid: 04d6287274ca5184cb42dd3d5f46ca60, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -102,6 +102,9 @@ Material:
     - _AddPrecomputedVelocity: 0
     - _AlphaClip: 0
     - _AlphaToMask: 0
+    - _BandFrequency: 0.45
+    - _BandSharpness: 6
+    - _BandSpeed: 2
     - _Blend: 0
     - _BlendModePreserveSpecular: 1
     - _BumpScale: 1
@@ -114,6 +117,7 @@ Material:
     - _DstBlend: 10
     - _DstBlendAlpha: 10
     - _EnvironmentReflections: 1
+    - _FillAlpha: 0.02
     - _GlossMapScale: 0
     - _Glossiness: 0
     - _GlossyReflections: 0
@@ -136,7 +140,7 @@ Material:
     - _XRMotionVectorsPass: 1
     - _ZWrite: 0
     m_Colors:
-    - _BaseColor: {r: 1, g: 0.42, b: 0.12, a: 0.5}
+    - _BaseColor: {r: 1, g: 0.55, b: 0.45, a: 1}
     - _Color: {r: 1, g: 0.41999996, b: 0.11999995, a: 0.5}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _SpecColor: {r: 0.19999996, g: 0.19999996, b: 0.19999996, a: 1}

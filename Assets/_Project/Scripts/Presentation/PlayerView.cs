@@ -26,12 +26,33 @@ namespace Moqui.Unity.Presentation
 
             var simulation = _runner.Driver.Simulation;
             var player = simulation.Player;
+            if (player.State == Core.Simulation.PlayerState.Attached)
+            {
+                // 벽·천장에 붙으면 몸의 up을 표면 법선에 맞춰 "앉은" 자세로 보이게 한다 (spec/03, M12).
+                _lean = Vector2.zero;
+                transform.SetPositionAndRotation(_runner.Driver.InterpolatedPlayerPosition, AttachedRotation(player.Up.ToUnity(), player.Yaw));
+                return;
+            }
+
             Quaternion yaw = Quaternion.Euler(0f, player.Yaw, 0f);
             Vector3 localVelocity = Quaternion.Inverse(yaw) * player.Velocity.ToUnity();
             Vector2 target = Lean(localVelocity, simulation.Settings.Flight.Speed);
             _lean = Vector2.Lerp(_lean, target, 1f - Mathf.Exp(-LeanResponse * Time.deltaTime));
 
             transform.SetPositionAndRotation(_runner.Driver.InterpolatedPlayerPosition, yaw * Quaternion.Euler(_lean.x, 0f, _lean.y));
+        }
+
+        /// <summary>부착 중 몸 방향: up = 표면 법선, 앞 = 시점 방향을 표면에 투영한 방향 (투영이 거의 0이면 월드 위쪽을 투영).</summary>
+        public static Quaternion AttachedRotation(Vector3 surfaceNormal, float yawDegrees)
+        {
+            Vector3 up = surfaceNormal.normalized;
+            Vector3 forward = Vector3.ProjectOnPlane(Quaternion.Euler(0f, yawDegrees, 0f) * Vector3.forward, up);
+            if (forward.sqrMagnitude < 1e-4f)
+            {
+                forward = Vector3.ProjectOnPlane(Vector3.up, up);
+            }
+
+            return Quaternion.LookRotation(forward.normalized, up);
         }
 
         /// <summary>로컬 속도 → (앞뒤 pitch, 좌우 roll) 기울기. 앞으로 가면 앞으로, 오른쪽으로 가면 오른쪽으로 기운다.</summary>

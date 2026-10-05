@@ -20,7 +20,7 @@ namespace Moqui.Core.Tests.Simulation
         [Test]
         public void Lying_FacingPitch90_LooksUp_SeesPlayerAboveNotInFront()
         {
-            var human = new Human(WithPosture(90f, 0f), new CollisionWorld());
+            var human = new Human(WithPosture(90f, 0f), new CollisionWorld(), Settings.Body);
             Assert.That(Vector3.Distance(human.HeadForward, Vector3.UnitY), Is.LessThan(1e-4f), "face up");
 
             var above = TestHumans.Simulation(human.HeadCenter + new Vector3(0f, 150f, 0f), human: WithPosture(90f, 0f));

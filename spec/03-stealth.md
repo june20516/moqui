@@ -18,7 +18,7 @@
 
 ### 벽면 부착
 - 플레이어가 `attachable` 플래그를 가진 표면(가구, 벽, 인간 피부 `SkinSite`)에서 `suck.attachRange` 이내일 때 Attach 입력으로 부착한다.
-- 벽·천장·가구 옆면처럼 방향과 무관하게 `attachable` 표면이면 부착할 수 있다. 캐릭터 그림도 표면 법선에 맞춰 회전해 벽·천장에 "앉은" 것이 보여야 한다 (M12 플레이테스트 반영, 미구현).
+- 벽·천장·가구 옆면처럼 방향과 무관하게 `attachable` 표면이면 부착할 수 있다. 캐릭터 그림도 표면 법선에 맞춰 회전해 벽·천장에 "앉은" 것이 보여야 한다 (M12).
 - 부착 시: 표면 법선에 맞춰 정렬, 이동 정지, 소음 0 (`noise.attachedRadius`), 시각 증가율에 `vision.attachedMul` 적용 (스킬 그림자 동화로 감소). 표면이 움직이면 그 로컬 좌표를 따라간다.
 - 이동 입력이나 Attach 입력으로 이탈한다. 이탈 시 법선 방향으로 2u 떨어진다.
 - 부착 가능할 때 HUD에 프롬프트 "F: 착지"를 표시한다 (spec/08).
@@ -34,8 +34,8 @@
 - [x] 2u보다 먼 표면에서는 부착되지 않는다 (Core). — 증거: `AttachTests.Attach_SurfaceFartherThan2u_DoesNotAttach`, `Attach_NonAttachableSurface_DoesNotAttach`
 - [x] 부착 시 캐릭터 up 벡터가 표면 법선과 5° 이내로 정렬된다 (Core). — 증거: `AttachTests.Attach_WithinRange_AttachesAlignedToNormal`
 - [x] 레벨 데이터의 모든 가구 형상에 obstacle 플래그가 있다 (Core: 레벨 데이터 검사). — 증거: `LevelDataTests.Level_AllFurnitureHasObstacleFlag`(stage01·02), `Validator_FurnitureWithoutObstacleFlag_Reported`
-- [ ] 벽 옆면과 천장 아랫면에 부착되고, 부착 중 위치가 표면에서 떨어지지 않는다 (Core). (M12 플레이테스트 반영, 미구현)
-- [ ] 부착 중 캐릭터 그림의 up이 표면 법선과 5° 이내다(벽·천장 포함) (Unity). (M12 플레이테스트 반영, 미구현)
+- [x] 벽 옆면과 천장 아랫면에 부착되고, 부착 중 위치가 표면에서 떨어지지 않는다 (Core). (M12) — 증거: `AttachTests.Attach_CeilingAndWallSide_StaysOnSurface`(천장·벽 옆면, 2초 유지)
+- [x] 부착 중 캐릭터 그림의 up이 표면 법선과 5° 이내다(벽·천장 포함) (Unity). (M12) — 증거: EditMode `MokiTests.AttachedRotation_UpMatchesSurfaceNormal`(천장·벽·바닥·비스듬한 면), `PlayerView`가 부착 중 `AttachedRotation` 사용
 
 ## 범위 외
 - 빛의 밝기 기반 동적 은신 계산 (Shadow Zone은 수작업 볼륨으로만 처리)

@@ -63,6 +63,19 @@ namespace Moqui.Unity.Tests
             Assert.That(lean.y, Is.EqualTo(-PlayerView.MaxLeanDegrees).Within(1e-4f), "roll right");
         }
 
+        /// <summary>벽·천장에 붙으면 모키의 up이 표면 법선과 5° 이내다 (spec/03, M12).</summary>
+        [TestCase(0f, -1f, 0f, 30f)]
+        [TestCase(-1f, 0f, 0f, 90f)]
+        [TestCase(0f, 0f, -1f, 0f)]
+        [TestCase(0.6f, 0.8f, 0f, 200f)]
+        public void AttachedRotation_UpMatchesSurfaceNormal(float x, float y, float z, float yaw)
+        {
+            var normal = new Vector3(x, y, z).normalized;
+            Quaternion rotation = PlayerView.AttachedRotation(normal, yaw);
+
+            Assert.That(Vector3.Angle(rotation * Vector3.up, normal), Is.LessThan(5f));
+        }
+
         [Test]
         public void Controller_HasSevenAnimatedStates_SelectedByStateParameter()
         {

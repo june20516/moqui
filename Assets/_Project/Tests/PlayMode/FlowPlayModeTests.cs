@@ -73,7 +73,7 @@ namespace Moqui.Unity.Tests
         [UnityTest]
         public IEnumerator Pause_StopsTicksAndDropsInput()
         {
-            var keyboard = InputSystem.AddDevice<Keyboard>();
+            var mouse = InputSystem.AddDevice<Mouse>();
             StageBootstrap.RequestedLevelId = "stage01";
             yield return SceneManager.LoadSceneAsync(ScreenId.Stage.ToString(), LoadSceneMode.Single);
             yield return WaitForScene(ScreenId.Stage.ToString());
@@ -86,7 +86,7 @@ namespace Moqui.Unity.Tests
             screen.Pause();
             Assert.That(screen.IsPaused, Is.True);
             int pausedTick = simulation.Tick;
-            PressAndRelease(keyboard.leftShiftKey);
+            PressAndRelease(mouse.rightButton);
             yield return new WaitForSecondsRealtime(WaitSeconds);
 
             Assert.That(simulation.Tick, Is.EqualTo(pausedTick), "no ticks while paused");

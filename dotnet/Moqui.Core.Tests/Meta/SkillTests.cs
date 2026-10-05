@@ -149,24 +149,15 @@ namespace Moqui.Core.Tests.Meta
         }
 
         [Test]
-        public void VortexControl_AccelTimesScaledPerLevel_DiagonalDashOnlyAtLevel3()
+        public void VortexControl_AccelTimesScaledPerLevel_DashCooldownReducedAtMaxLevel()
         {
             AssertEachLevel(SkillCatalog.VortexControl, (applied, level) =>
             {
                 AssertKey(applied, "flight.accelTime", Tuning.GetFloat("flight.accelTime") * Math.Pow(0.8, level), level);
                 AssertKey(applied, "flight.decelTime", Tuning.GetFloat("flight.decelTime") * Math.Pow(0.8, level), level);
+                double cooldown = Tuning.GetFloat("dash.cooldown") * (level == 3 ? Tuning.GetFloat("skill.vortexControl.maxLevelDashCooldownMul") : 1.0);
+                AssertKey(applied, "dash.cooldown", cooldown, level);
             });
-
-            var diagonal = new PlayerCommand { DashPressed = true, Move = new Vector2(1f, 0f), Vertical = 1f };
-            for (int level = 0; level <= 3; level++)
-            {
-                var skills = SkillLoadout.Of((SkillCatalog.VortexControl, level));
-                var simulation = new GameSimulation(GameSettings.FromTuning(SkillEffects.Apply(Tuning, skills)), new SimulationSetup(new CollisionWorld(), new Vector3(0f, 100f, 0f), skills: skills));
-                simulation.Step(diagonal);
-                var direction = simulation.Player.DashDirection;
-                bool isDiagonal = MathF.Abs(direction.X) > 0.1f && MathF.Abs(direction.Y) > 0.1f;
-                Assert.That(isDiagonal, Is.EqualTo(level == 3), $"diagonal dash at level {level}");
-            }
         }
 
         private static GameSimulation ChainSimulation(int level)
@@ -262,7 +253,6 @@ namespace Moqui.Core.Tests.Meta
             var simulation = new GameSimulation(Settings, new SimulationSetup(() => new CollisionWorld(), Vector3.Zero, skills: skills));
             var retry = simulation.Retry();
             Assert.That(retry.Setup.Skills, Is.SameAs(skills));
-            Assert.That(retry.DiagonalDashUnlocked, Is.True);
         }
     }
 }

@@ -94,17 +94,18 @@ namespace Moqui.Core.Simulation
                     : site.Itch >= _attach.ItchThreshold || _random.Chance(TickProbability(AttachedHazard(sensitivity, site.Itch, modifier), deltaTime));
                 if (react)
                 {
-                    TryReact(human, player, tick, events);
+                    // 모기가 앉은 팔로는 그 팔을 칠 수 없으니 반대쪽 손으로 친다 (D-052).
+                    TryReact(human, player, human.Rig.ArmOwning(site.PartId)?.Index ?? -1, tick, events);
                 }
             }
 
             if (perception.InEarZone && _random.Chance(TickProbability(EarHazard(modifier), deltaTime)))
             {
-                TryReact(human, player, tick, events);
+                TryReact(human, player, -1, tick, events);
             }
         }
 
-        private void TryReact(Human human, Player player, int tick, List<SimulationEvent> events)
+        private void TryReact(Human human, Player player, int excludedArm, int tick, List<SimulationEvent> events)
         {
             // 인간은 한 번에 하나만 공격한다. 공격 중에 발생한 반응은 버린다.
             if (human.Attack.IsBusy)
@@ -112,7 +113,7 @@ namespace Moqui.Core.Simulation
                 return;
             }
 
-            _attacks.Start(human, AttackKind.ReactSlap, player.Position, _attack.SelfSlapRadius, _attack.SelfSlapTelegraph, _attack.SlapActiveTime, _attack.SelfSlapRecovery, tick, events);
+            _attacks.Start(human, AttackKind.ReactSlap, player.Position, _attack.SelfSlapRadius, _attack.SelfSlapTelegraph, _attack.SelfSlapRecovery, _attack.HandPeakSpeedReaction, excludedArm, tick, events);
         }
     }
 }

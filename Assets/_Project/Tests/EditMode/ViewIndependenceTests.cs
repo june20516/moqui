@@ -89,7 +89,7 @@ namespace Moqui.Unity.Tests
 
                 if (frame == 60)
                 {
-                    PressAndRelease(keyboard.leftShiftKey);
+                    PressAndRelease(mouse.rightButton);
                 }
 
                 driver.Frame(FrameTime);

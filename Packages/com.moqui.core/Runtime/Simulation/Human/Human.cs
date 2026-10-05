@@ -26,9 +26,11 @@ namespace Moqui.Core.Simulation
         private readonly Dictionary<CollisionShape, BodyPartDefinition> _parts = new Dictionary<CollisionShape, BodyPartDefinition>();
         private readonly Dictionary<CollisionShape, SkinSiteState> _sites = new Dictionary<CollisionShape, SkinSiteState>();
 
-        public Human(HumanDefinition definition, CollisionWorld world)
+        public Human(HumanDefinition definition, CollisionWorld world, BodySettings body)
         {
             Definition = definition;
+            Body = body;
+            RootPosition = definition.Position;
             // 먼저 몸 로컬 X축으로 기울이고(정면 +Z가 위로 들림), 그다음 yaw로 돌린다.
             var pitch = Quaternion.CreateFromAxisAngle(Vector3.UnitX, -definition.FacingPitch * DegreesToRadians);
             var yaw = Quaternion.CreateFromAxisAngle(Vector3.UnitY, definition.FacingYaw * DegreesToRadians);
@@ -48,13 +50,93 @@ namespace Moqui.Core.Simulation
             }
 
             HeadShape = _shapes[definition.HeadPartId];
+            Rig = BodyRig.Build(definition);
+            Pose = new BodyPose(Rig.Arms.Count);
+            _palms = new Vector3[Rig.Arms.Count];
+            _shoulders = new Vector3[Rig.Arms.Count];
+            UpdatePose();
         }
+
+        private readonly Vector3[] _palms;
+        private readonly Vector3[] _shoulders;
+        private HumanActionDefinition _poseAction;
+        private float _poseActionElapsed;
+
+        public BodySettings Body { get; }
+
+        /// <summary>데이터에서 읽은 뼈대 (골반·팔 사슬).</summary>
+        public BodyRig Rig { get; }
+
+        /// <summary>현재 자세와 팔별 손 목표. 바꾼 뒤 UpdatePose를 불러야 형상에 반영된다.</summary>
+        public BodyPose Pose { get; }
+
+        /// <summary>몸 루트 위치 (월드). 지금은 자리 이동이 없어 시작 위치 그대로다 (걷기는 이후 확장, D-053).</summary>
+        public Vector3 RootPosition { get; set; }
+
+        /// <summary>상체 회전 (몸 로컬): 비틀기 후 기울기.</summary>
+        public Quaternion UpperBodyRotation => UpperRotation(Pose.Posture);
+
+        /// <summary>상체의 월드 회전 (머리 방향·어깨 가동 범위의 기준).</summary>
+        public Quaternion UpperBodyWorldRotation => Quaternion.Concatenate(UpperBodyRotation, BodyRotation);
+
+        /// <summary>가슴 중심 (두 어깨의 가운데, 자세 반영). 팔이 없으면 머리 중심.</summary>
+        public Vector3 ChestCenter
+        {
+            get
+            {
+                if (_shoulders.Length == 0)
+                {
+                    return HeadCenter;
+                }
+
+                Vector3 sum = Vector3.Zero;
+                foreach (Vector3 shoulder in _shoulders)
+                {
+                    sum += shoulder;
+                }
+
+                return sum / _shoulders.Length;
+            }
+        }
+
+        /// <summary>팔별 현재 손바닥 중심 (월드).</summary>
+        public Vector3 Palm(int arm) => _palms[arm];
+
+        /// <summary>팔별 현재 어깨 (월드, 자세 반영).</summary>
+        public Vector3 Shoulder(int arm) => _shoulders[arm];
+
+        public static Quaternion UpperRotation(PostureState posture)
+        {
+            var twist = Quaternion.CreateFromAxisAngle(Vector3.UnitY, posture.Twist * DegreesToRadians);
+            Vector3 axis = Vector3.Cross(Vector3.UnitY, posture.LeanDirection);
+            if (posture.LeanAngle == 0f || axis.LengthSquared() < 1e-8f)
+            {
+                return twist;
+            }
+
+            var lean = Quaternion.CreateFromAxisAngle(Vector3.Normalize(axis), posture.LeanAngle * DegreesToRadians);
+            return Quaternion.Concatenate(twist, lean);
+        }
+
+        /// <summary>자세가 posture일 때 상체의 몸 로컬 점 하나가 가는 곳 (일어섬 이동 포함).</summary>
+        public Vector3 PosedUpperLocal(Vector3 local, PostureState posture)
+        {
+            return Rig.HipLocal + RiseOffset(posture.Rise) + Vector3.Transform(local - Rig.HipLocal, UpperRotation(posture));
+        }
+
+        /// <summary>자세가 posture일 때 팔의 어깨 위치 (월드). 공격 계획기가 닿는지 미리 계산할 때 쓴다.</summary>
+        public Vector3 ShoulderFor(int arm, PostureState posture) => ToWorld(PosedUpperLocal(Rig.Arms[arm].ShoulderLocal, posture));
+
+        /// <summary>팔 길이 = 위팔 + 아래팔 + 손바닥까지.</summary>
+        public float ArmReach(int arm) => Rig.Arms[arm].UpperLength + Rig.Arms[arm].ForearmLength + Body.HandReachExtra;
+
+        private Vector3 RiseOffset(float rise) => ((Vector3.UnitY * Body.RiseLift) + (Vector3.UnitZ * Body.RiseForward)) * rise;
 
         public HumanDefinition Definition { get; }
 
         public string Id => Definition.Id;
 
-        public Quaternion BodyRotation { get; }
+        public Quaternion BodyRotation { get; set; }
 
         public CollisionShape HeadShape { get; }
 
@@ -64,6 +146,16 @@ namespace Moqui.Core.Simulation
 
         /// <summary>인간의 물린 자국 수 n (spec/04 §4).</summary>
         public int BiteMarkCount { get; set; }
+
+        private readonly List<BiteMark> _biteMarks = new List<BiteMark>();
+
+        /// <summary>물린 자국 (문 자리, 부위를 따라 움직임). 개수 규칙은 BiteMarkCount가 맡는다.</summary>
+        public IReadOnlyList<BiteMark> BiteMarks => _biteMarks;
+
+        public void AddBiteMark(BiteMark mark)
+        {
+            _biteMarks.Add(mark);
+        }
 
         public bool Owns(CollisionShape shape)
         {
@@ -86,14 +178,14 @@ namespace Moqui.Core.Simulation
 
         public Vector3 HeadCenter => HeadShape.Center;
 
-        public Vector3 HeadForward => Vector3.Transform(LocalDirection(HeadYaw, HeadPitch), BodyRotation);
+        public Vector3 HeadForward => Vector3.Transform(LocalDirection(HeadYaw, HeadPitch), UpperBodyWorldRotation);
 
         /// <summary>머리 회전을 반영한 귀 2개 위치 (머리 캡슐 양옆, spec/02 §2).</summary>
         public Vector3 LeftEar => HeadCenter - (HeadRight * HeadShape.Radius);
 
         public Vector3 RightEar => HeadCenter + (HeadRight * HeadShape.Radius);
 
-        public Vector3 HeadRight => Vector3.Transform(LocalDirection(HeadYaw + 90f, 0f), BodyRotation);
+        public Vector3 HeadRight => Vector3.Transform(LocalDirection(HeadYaw + 90f, 0f), UpperBodyWorldRotation);
 
         // ---- 어그로 ----
         public float Awareness { get; set; }
@@ -199,16 +291,30 @@ namespace Moqui.Core.Simulation
         /// <summary>
         /// 몸 캡슐을 정의 자세 + 현재 동작의 이동량 × 곡선으로 다시 놓는다. 절차적 포즈 (tech/architecture.md §4.6).
         /// </summary>
+        /// <summary>무작위 동작(spec/02 §6)을 정하고 포즈를 다시 계산한다.</summary>
         public void ApplyPose(HumanActionDefinition action, float elapsedSeconds)
         {
-            float profile = action?.Profile(elapsedSeconds) ?? 0f;
+            _poseAction = action;
+            _poseActionElapsed = elapsedSeconds;
+            UpdatePose();
+        }
+
+        /// <summary>
+        /// 몸 형상을 다시 놓는다: 휴식 자세 + 무작위 동작 → 일어섬(골반 상승, 무릎 고정) → 상체 비틀기·기울기(골반 피벗) → 손 목표가 있는 팔은 2관절 IK.
+        /// </summary>
+        public void UpdatePose()
+        {
+            float profile = _poseAction?.Profile(_poseActionElapsed) ?? 0f;
+            var posture = Pose.Posture;
+            Quaternion upper = UpperRotation(posture);
+            Vector3 rise = RiseOffset(posture.Rise);
             foreach (var part in Definition.Parts)
             {
                 Vector3 a = part.LocalA;
                 Vector3 b = part.LocalB;
-                if (action != null)
+                if (_poseAction != null)
                 {
-                    foreach (var motion in action.Motions)
+                    foreach (var motion in _poseAction.Motions)
                     {
                         if (motion.PartId == part.Id)
                         {
@@ -218,7 +324,44 @@ namespace Moqui.Core.Simulation
                     }
                 }
 
+                if (Rig.UpperBodyParts.Contains(part.Id))
+                {
+                    a = Rig.HipLocal + rise + Vector3.Transform(a - Rig.HipLocal, upper);
+                    b = Rig.HipLocal + rise + Vector3.Transform(b - Rig.HipLocal, upper);
+                }
+                else if (posture.Rise > 0f && Rig.Thighs.Contains(part.Id))
+                {
+                    // 무릎(b)은 두고 골반 쪽(a)만 올린다. 허벅지 길이는 유지한다.
+                    float length = Vector3.Distance(a, b);
+                    Vector3 raised = a + rise - b;
+                    a = b + (raised.LengthSquared() > 1e-6f ? Vector3.Normalize(raised) * length : a - b);
+                }
+
                 _shapes[part.Id].SetSegment(ToWorld(a), ToWorld(b));
+            }
+
+            foreach (var arm in Rig.Arms)
+            {
+                Vector3 shoulder = ToWorld(PosedUpperLocal(arm.ShoulderLocal, posture));
+                _shoulders[arm.Index] = shoulder;
+                Vector3? target = Pose.HandTargets[arm.Index];
+                if (target.HasValue)
+                {
+                    // 팔꿈치는 바깥·아래·뒤로 꺾인다 (상체 기준).
+                    Vector3 poleLocal = new Vector3(arm.Side * 0.6f, -1f, -0.4f);
+                    Vector3 pole = shoulder + Vector3.Transform(poleLocal, Quaternion.Concatenate(upper, BodyRotation));
+                    BodyKinematics.SolveArm(shoulder, target.Value, arm.UpperLength, arm.ForearmLength, Body.HandReachExtra, Body.ElbowFlexMax, pole,
+                        out Vector3 elbow, out Vector3 wrist, out Vector3 palm);
+                    _shapes[arm.UpperArmId].SetSegment(shoulder, elbow);
+                    _shapes[arm.ForearmId].SetSegment(elbow, wrist);
+                    _palms[arm.Index] = palm;
+                }
+                else
+                {
+                    var forearm = _shapes[arm.ForearmId];
+                    Vector3 direction = forearm.PointB - forearm.PointA;
+                    _palms[arm.Index] = forearm.PointB + (direction.LengthSquared() > 1e-6f ? Vector3.Normalize(direction) * Body.HandReachExtra : Vector3.Zero);
+                }
             }
         }
 
@@ -228,44 +371,51 @@ namespace Moqui.Core.Simulation
         }
 
         /// <summary>점에 가장 가까운 어깨(손 출발점)의 월드 위치.</summary>
-        public Vector3 NearestShoulder(Vector3 point)
+        /// <summary>점에 가장 가까운 팔 (자세 반영 어깨 기준). 팔이 없으면 −1.</summary>
+        public int NearestArm(Vector3 point)
         {
-            Vector3 best = Definition.Position;
+            int best = -1;
             float bestDistance = float.MaxValue;
-            foreach (var local in Definition.ShoulderLocals)
+            for (int i = 0; i < _shoulders.Length; i++)
             {
-                Vector3 shoulder = ToWorld(local);
-                float distance = Vector3.Distance(point, shoulder);
+                float distance = Vector3.Distance(point, _shoulders[i]);
                 if (distance < bestDistance)
                 {
                     bestDistance = distance;
-                    best = shoulder;
+                    best = i;
                 }
             }
 
             return best;
         }
 
+        public Vector3 NearestShoulder(Vector3 point)
+        {
+            int arm = NearestArm(point);
+            return arm >= 0 ? _shoulders[arm] : RootPosition;
+        }
+
         public float DistanceToNearestShoulder(Vector3 point)
         {
-            float best = float.MaxValue;
-            foreach (var local in Definition.ShoulderLocals)
-            {
-                best = MathF.Min(best, Vector3.Distance(point, ToWorld(local)));
-            }
-
-            return best;
+            int arm = NearestArm(point);
+            return arm >= 0 ? Vector3.Distance(point, _shoulders[arm]) : float.MaxValue;
         }
 
         public Vector3 ToWorld(Vector3 local)
         {
-            return Definition.Position + Vector3.Transform(local, BodyRotation);
+            return RootPosition + Vector3.Transform(local, BodyRotation);
+        }
+
+        /// <summary>월드 점 → 몸 로컬.</summary>
+        public Vector3 ToLocal(Vector3 world)
+        {
+            return Vector3.Transform(world - RootPosition, Quaternion.Conjugate(BodyRotation));
         }
 
         /// <summary>world 점을 바라보는 머리 상대각(도). 몸 정면 기준.</summary>
         public void AnglesToward(Vector3 worldPoint, out float yaw, out float pitch)
         {
-            Vector3 local = Vector3.Transform(worldPoint - HeadCenter, Quaternion.Conjugate(BodyRotation));
+            Vector3 local = Vector3.Transform(worldPoint - HeadCenter, Quaternion.Conjugate(UpperBodyWorldRotation));
             float horizontal = MathF.Sqrt((local.X * local.X) + (local.Z * local.Z));
             yaw = MathF.Atan2(local.X, local.Z) / DegreesToRadians;
             pitch = MathF.Atan2(local.Y, horizontal) / DegreesToRadians;

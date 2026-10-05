@@ -8,8 +8,8 @@ namespace Moqui.Unity.Presentation
 {
     /// <summary>
     /// 툰 인간 표현. Core 상태를 읽어서 그리기만 한다:
-    /// 몸 형상 위치, 머리 방향으로 도는 얼굴(눈·코), 어그로 상태 색,
-    /// 공격 3단계 팔(예고 → 타격 → 회복)과 판정 위치 표시 (spec/02, spec/10).
+    /// 몸 형상 위치(공격하는 팔도 Core 팔 캡슐 그대로, D-052), 머리 방향으로 도는 얼굴(눈·코), 어그로 상태 색,
+    /// 공격 판정 위치 표시 (spec/02, spec/10).
     /// </summary>
     public sealed class HumanView : MonoBehaviour
     {
@@ -22,17 +22,12 @@ namespace Moqui.Unity.Presentation
         private const float EyeDepth = 0.82f;
         private const float EyeSize = 0.28f;
 
-        // 공격 팔 굵기 (머리 반지름 배수).
-        private const float ArmThickness = 0.5f;
-        private const float FistSize = 0.9f;
-
         private static readonly Color SkinColor = new Color(0.86f, 0.70f, 0.58f);
         private static readonly Color EyeColor = new Color(0.15f, 0.12f, 0.22f);
         private static readonly Color SafeHeadColor = new Color(0.45f, 0.75f, 0.45f);
         private static readonly Color SuspiciousHeadColor = new Color(0.95f, 0.80f, 0.25f);
         private static readonly Color FrenzyHeadColor = new Color(0.90f, 0.20f, 0.15f);
         private static readonly Color TelegraphColor = new Color(1f, 0.55f, 0.1f);
-        private static readonly Color ActiveColor = new Color(1f, 0.1f, 0.1f);
 
         [SerializeField]
         private SimulationRunner _runner;
@@ -43,18 +38,14 @@ namespace Moqui.Unity.Presentation
         private Transform _face;
         private Transform _attackMarker;
         private Renderer _attackRenderer;
-        private Transform _attackArm;
-        private Transform _attackFist;
-        private AttackPhase _observedPhase = AttackPhase.Idle;
-        private int _phaseStartTick;
+        private Transform _approach;
+        private Renderer _approachRenderer;
+        private MaterialPropertyBlock _telegraphBlock;
 
         public bool IsBuilt => _human != null;
 
         /// <summary>얼굴 피벗. 앞(+Z)이 Core의 머리 방향이다.</summary>
         public Transform Face => _face;
-
-        /// <summary>공격 팔의 주먹 (공격 중에만 보인다).</summary>
-        public Transform AttackFist => _attackFist;
 
         public void Build(Human human)
         {
@@ -72,14 +63,16 @@ namespace Moqui.Unity.Presentation
 
             BuildFace(human.HeadShape.Radius);
 
-            _attackArm = CreateMarker(PrimitiveType.Capsule, "AttackArm", transform);
-            WorldView.Tint(_attackArm.GetComponent<Renderer>(), SkinColor);
-            _attackFist = CreateMarker(PrimitiveType.Sphere, "AttackFist", transform);
-            _attackFist.localScale = Vector3.one * (FistSize * human.HeadShape.Radius);
-            WorldView.Tint(_attackFist.GetComponent<Renderer>(), SkinColor);
-
-            _attackMarker = CreateMarker(PrimitiveType.Sphere, "AttackTarget", transform);
+            // 공격 예고: 카메라를 향한 판에 좁혀 오는 고리·차오름·번쩍임 (화면에서 가장 높은 위상, M12).
+            _attackMarker = Art.Primitives.Create(PrimitiveType.Quad, "AttackTarget", transform, Art.ToonMaterials.Telegraph).transform;
             _attackRenderer = _attackMarker.GetComponent<Renderer>();
+            _attackRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            _telegraphBlock = new MaterialPropertyBlock();
+
+            // 손이 오는 방향: 손바닥에서 목표까지 가는 줄기.
+            _approach = Art.Primitives.Create(PrimitiveType.Capsule, "AttackApproach", transform, Art.ToonMaterials.Transparent).transform;
+            _approachRenderer = _approach.GetComponent<Renderer>();
+            _approachRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             Refresh(0);
         }
 
@@ -111,41 +104,52 @@ namespace Moqui.Unity.Presentation
             }
         }
 
+        /// <summary>예고 판 크기 = 판정 지름 ÷ 셰이더의 판정 반경 비율 (판 가장자리에서 판정 크기로 좁혀 온다).</summary>
+        private const float TelegraphHitRadiusOfQuad = 0.34f;
+        private const float ApproachThickness = 1.2f;
+        private static readonly int ProgressId = Shader.PropertyToID("_Progress");
+        private static readonly int StrikeId = Shader.PropertyToID("_Strike");
+
+        /// <summary>현재 공격 예고 진행률 0~1 (판정 중은 1). 예고가 없으면 0.</summary>
+        public float TelegraphProgress { get; private set; }
+
+        /// <summary>공격 예고 판 (예고·판정 중에만 보인다).</summary>
+        public Renderer TelegraphIndicator => _attackRenderer;
+
         private void RefreshAttack(int tick)
         {
             var attack = _human.Attack;
-            if (attack.Phase != _observedPhase)
+            bool telegraph = attack.Phase == AttackPhase.Telegraph;
+            bool strike = attack.Phase == AttackPhase.Active;
+            _attackMarker.gameObject.SetActive(telegraph || strike);
+            TelegraphProgress = strike ? 1f : telegraph ? Mathf.Clamp01((float)(tick - attack.StartTick) / Mathf.Max(1, attack.TelegraphEndTick - attack.StartTick)) : 0f;
+            if (telegraph || strike)
             {
-                _observedPhase = attack.Phase;
-                _phaseStartTick = tick;
+                Vector3 target = attack.Target.ToUnity();
+                _attackMarker.position = target;
+                _attackMarker.localScale = Vector3.one * (2f * attack.Radius / TelegraphHitRadiusOfQuad);
+                var camera = UnityEngine.Camera.main;
+                if (camera != null && (target - camera.transform.position).sqrMagnitude > 1e-4f)
+                {
+                    _attackMarker.rotation = Quaternion.LookRotation(target - camera.transform.position, camera.transform.up);
+                }
+
+                _attackRenderer.GetPropertyBlock(_telegraphBlock);
+                _telegraphBlock.SetFloat(ProgressId, TelegraphProgress);
+                _telegraphBlock.SetFloat(StrikeId, strike ? 1f : 0f);
+                _attackRenderer.SetPropertyBlock(_telegraphBlock);
             }
 
-            bool showTarget = attack.Phase == AttackPhase.Telegraph || attack.Phase == AttackPhase.Active;
-            _attackMarker.gameObject.SetActive(showTarget);
-            if (showTarget)
+            int arm = attack.ArmA;
+            bool approach = telegraph && arm >= 0 && attack.Kind != AttackKind.Spray;
+            _approach.gameObject.SetActive(approach);
+            if (approach)
             {
-                _attackMarker.position = attack.Target.ToUnity();
-                _attackMarker.localScale = Vector3.one * (attack.Radius * 2f);
-                WorldView.Tint(_attackRenderer, attack.Phase == AttackPhase.Active ? ActiveColor : TelegraphColor);
+                PlaceBetween(_approach, _human.Palm(arm).ToUnity(), attack.Target.ToUnity(), ApproachThickness);
+                var color = TelegraphColor;
+                color.a = 0.15f + (0.45f * TelegraphProgress);
+                WorldView.Tint(_approachRenderer, color);
             }
-
-            bool swinging = attack.IsBusy;
-            _attackArm.gameObject.SetActive(swinging);
-            _attackFist.gameObject.SetActive(swinging);
-            if (!swinging)
-            {
-                return;
-            }
-
-            Vector3 target = attack.Target.ToUnity();
-            Vector3 shoulder = _human.NearestShoulder(attack.Target).ToUnity();
-            float headRadius = _human.HeadShape.Radius;
-            Vector3 windUp = HumanArmPose.WindUp(shoulder, target, Vector3.up, headRadius);
-            float progress = HumanArmPose.Progress(tick, _phaseStartTick, HumanArmPose.PhaseEndTick(attack));
-            Vector3 hand = HumanArmPose.Hand(attack.Phase, progress, shoulder, windUp, target);
-
-            _attackFist.position = hand;
-            PlaceBetween(_attackArm, shoulder, hand, ArmThickness * headRadius);
         }
 
         /// <summary>단위 캡슐(높이 2, Y축)을 두 점 사이에 놓는다.</summary>

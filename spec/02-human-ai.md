@@ -45,8 +45,8 @@
 - 광분 중:
   - 경계는 감소하지 않는다.
   - 머리가 플레이어를 `head.frenzyTurnSpeed`로 추적한다 (보일 때).
-  - 플레이어가 사거리 `attack.reach + frenzy.reachBonus` 안에 보이면 손바닥 공격을 `frenzy.slapInterval` 간격으로 반복한다 (예고 `frenzy.slapTelegraph`).
-  - 플레이어가 보이지 않아도 마지막으로 본 위치 주변 `frenzy.blindSwatRadius` 안의 무작위 지점을 `frenzy.blindSwatInterval`마다 휘두른다 (사거리 안일 때).
+  - 플레이어가 보이고 사람 몸으로 손이 닿으면(§7 몸 전체로 쫓기: 팔 → 기울이기 → 돌기 → 일어서기, `human.maxPosture`까지) 손바닥 공격을 `frenzy.slapInterval` 간격으로 반복한다 (예고 `frenzy.slapTelegraph` 이상, 자세 전환 시간 + `attack.minTelegraph`보다 짧지 않음).
+  - 플레이어가 보이지 않아도 마지막으로 본 위치 주변 `frenzy.blindSwatRadius` 안의 무작위 지점을 `frenzy.blindSwatInterval`마다 휘두른다 (손이 닿는 지점일 때).
   - 피부에 붙은 모기에 대한 반응 확률에 `frenzy.reactionMul`을 곱한다.
   - 레벨 데이터에서 `human.canSpray`가 참이면 모기약 스프레이를 쓴다 (spec/06): 플레이어가 `spray.useRange` 안에 보이고 쿨타임 `spray.cooldown`이 끝났을 때 플레이어 방향으로 분사한다.
 - 스테이지 결과에 광분 횟수를 기록한다 (spec/09 보너스).
@@ -73,24 +73,24 @@
 | 공격 | 발동 | 예고 | 판정 |
 |---|---|---|---|
 | 박수 (clap) | Red Zone 진입 | `attack.clap.telegraph` | 얼굴 앞 25u, 반경 `attack.clap.radius` |
-| 손바닥 (slap) | 광분 + 사거리 안에서 보임 | `frenzy.slapTelegraph`. 예고 시작 시점의 모기 위치에 목표 고정 | 반경 `attack.slap.radius`, `attack.slap.activeTime` 동안 |
+| 손바닥 (slap) | 광분 + 손이 닿는 곳에서 보임 | `frenzy.slapTelegraph`. 예고 시작 시점의 모기 위치에 목표 고정 | 반경 `attack.slap.radius`의 손바닥이 지나가는 경로, 타격 시간 = 손 경로 ÷ 손 최고 속도 동안 |
 | 맹목 휘두르기 (blindSwat) | 광분 + 보이지 않음 | `frenzy.slapTelegraph` | 마지막 위치 주변 무작위 지점, 반경 `attack.slap.radius` |
 | 반응 때리기 (reactSlap) | §5 | `attack.selfSlap.telegraph` | 예고 시작 시점의 모기 위치, 반경 `attack.selfSlap.radius` |
-| 스프레이 | 광분 + `canSpray` | `spray.telegraph` (캔을 드는 동작) | 연무 구역 생성 (spec/06) |
+| 스프레이 | 광분 + `canSpray` + 손이 닿지 않음 | `spray.telegraph` (캔을 드는 동작) | 연무 구역 생성 (spec/06) |
 
-- 판정 구에 플레이어 충돌 구가 겹치면 즉사한다 (스프레이 제외).
+- 움직이는 손바닥 판정 구(박수는 두 손)가 지나가는 경로에 플레이어 충돌 구가 닿으면 즉사한다 (스프레이 제외, D-052).
 - **예고 피드백** (Unity): 손 동작, 판정 위치의 붉은 표시, 경고음 `sfx_telegraph`, 화면 밖 공격이면 화면 가장자리에 방향 표시 (spec/08).
 - 공격 후 `recovery` 동안 다음 공격을 하지 않는다.
-- 공격 동작 (M12 플레이테스트 반영, 미구현): 목표에 가까운 어깨 쪽의 **실제 팔**(upperArm·forearm 캡슐)이 예고 동안 뒤로 치켜들고, 판정 동안 목표 지점으로 뻗고, 회복 동안 제자리로 돌아온다. 팔 캡슐은 Core가 움직이므로 그 팔에 붙어 있던 모기는 팔을 따라가거나 튕겨 나간다. 판정은 기존대로 예고 시작 시점에 고정한 목표 구다. 따로 튀어나오는 표현용 팔은 쓰지 않는다 (D-051).
-- 사람의 신체 제약 (M12 플레이테스트 반영, 미구현) (D-052):
+- 공격 동작 (M12): 목표에 가까운 어깨 쪽의 **실제 팔**(upperArm·forearm 캡슐)이 예고 동안 뒤로 치켜들고, 판정 동안 목표 지점으로 뻗고, 회복 동안 제자리로 돌아온다. 팔 캡슐은 Core가 움직이므로 그 팔에 붙어 있던 모기는 팔을 따라가거나 튕겨 나간다. 판정은 기존대로 예고 시작 시점에 고정한 목표 구다. 따로 튀어나오는 표현용 팔은 쓰지 않는다 (D-051).
+- 사람의 신체 제약 (M12) (D-052):
   - **닿는 거리:** 손이 닿는 범위는 팔 길이(어깨 → 손끝)와 자세가 허락하는 몸 기울임으로 정한다. 그 밖의 목표는 때리지 않는다(손을 뻗는 대신 다른 행동). 현재 `attack.reach` 80u + `frenzy.reachBonus` 40u = 120u는 팔 길이(약 66u + 손)보다 길어 고친다.
   - **관절 한계:** 팔꿈치는 굽히기만 하고(과신전 없음), 어깨는 사람 가동 범위 안에서만 돈다. 손은 직선이 아니라 어깨·팔꿈치 회전으로 생기는 호를 그린다(근위 → 원위 순서: 어깨가 먼저, 팔꿈치가 펴지며, 손목이 마지막).
   - **속도:** 타격 시간은 고정값이 아니라 손이 가야 할 경로 길이 ÷ 사람 손 최고 속도로 정한다. 멀수록 늦게 도착한다. 예고(치켜듦)·회복도 사람이 낼 수 있는 시간 이상으로 둔다. 수치는 근거 조사 후 `spec/tuning.md`에 둔다.
   - **어느 손:** 내 몸의 한쪽 팔에 앉은 모기는 반대쪽 손으로 때린다. 박수는 두 손이 얼굴 앞에서 만난다. 다리(종아리)처럼 먼 부위는 몸을 숙이는 시간만큼 느리다.
   - **판정:** 예고 시작 시점에 목표를 고정하는 규칙은 유지하되, 판정은 실제로 움직이는 손(손바닥 구)이 지나가는 경로로 한다(손이 지나간 자리에 있으면 맞는다).
-- 몸 전체로 쫓기 (M12 플레이테스트 반영, 미구현) (D-053): 인간이 보이는 상태에서 팔이 늘어나거나 손이 총알처럼 날아오면 안 된다. 그래서 광분 공격은 사람 몸이 직접 움직여 닿는다. 목표에 닿기 위한 몸동작을 단계 순서로 고른다: **팔만 → 상체 기울이기 → 몸(허리·어깨) 돌리기 → 반쯤/완전히 일어서기**. 각 단계는 사람이 낼 수 있는 시간이 걸리고(자세 전환 시간), 그 사이 모기는 피할 수 있다. 일어서면 머리 위치·시야도 함께 바뀐다. 걷기(자리 이동)는 이번 범위가 아니다(D-011 유지).
+- 몸 전체로 쫓기 (M12) (D-053): 인간이 보이는 상태에서 팔이 늘어나거나 손이 총알처럼 날아오면 안 된다. 그래서 광분 공격은 사람 몸이 직접 움직여 닿는다. 목표에 닿기 위한 몸동작을 단계 순서로 고른다: **팔만 → 상체 기울이기 → 몸(허리·어깨) 돌리기 → 반쯤/완전히 일어서기**. 각 단계는 사람이 낼 수 있는 시간이 걸리고(자세 전환 시간), 그 사이 모기는 피할 수 있다. 일어서면 머리 위치·시야도 함께 바뀐다. 걷기(자리 이동)는 이번 범위가 아니다(D-011 유지).
   - 확장 구조: 몸은 뼈대(루트·골반·척추·어깨·팔꿈치·손목·목·머리)에 캡슐을 붙인 포즈로 표현하고, 루트(몸 위치·방향)는 상태로 둔다. 레벨 데이터 `human.maxPosture`(arm | lean | turn | rise, 기본 rise)로 허용 몸동작을 정한다. 이후 높은 난이도에서 `step`(걸음)·도구를 같은 계획기 단계로 추가한다 (plan/ideas.md).
-- 예고 피드백 강조 (M12 플레이테스트 반영, 미구현): "맞을 자리" 정보는 화면에서 가장 높은 위상이어야 한다. 정지한 반투명 구 대신 움직이는 요소로 보여 준다 — 예고 진행률만큼 차오르는 링, 좁혀 오는 테두리, 일렁임·떨림, 판정 순간 번쩍임. 손이 다가오는 방향도 읽혀야 한다.
+- 예고 피드백 강조 (M12): "맞을 자리" 정보는 화면에서 가장 높은 위상이어야 한다. 정지한 반투명 구 대신 움직이는 요소로 보여 준다 — 예고 진행률만큼 차오르는 링, 좁혀 오는 테두리, 일렁임·떨림, 판정 순간 번쩍임. 손이 다가오는 방향도 읽혀야 한다.
 
 ## 수용 기준
 - [x] 상태 전이와 히스테리시스(40 진입 / 20 이탈)가 동작한다 (Core). — 증거: `HumanAwarenessTests.StateTransitions_Hysteresis_Enter40Exit20`
@@ -113,16 +113,16 @@
 - [x] 같은 시드와 같은 입력이면 인간의 움직임과 반응이 똑같이 재현된다 (Core). — 증거: `FrenzyTests.SameSeedAndCommands_HumanBehaviourReplaysExactly` (다른 시드는 다른 결과)
 - [x] 머리가 yawLimit를 넘어 회전하지 않는다 (Core). — 증거: `HumanAwarenessTests.Head_StimulusBehind_NeverExceedsYawLimit`
 - [x] 공격 중에는 새 공격이나 반응이 시작되지 않는다 (Core). — 증거: `ReactionTests.AttackInProgress_NoNewAttackOrReactionUntilRecoveryEnds`
-- [ ] 공격 중 가까운 쪽 팔 캡슐이 예고(치켜듦) → 판정(목표로 뻗음) → 회복(제자리) 순서로 움직이고, 판정 시점에 손 끝이 목표 구 안에 있다 (Core). (M12 플레이테스트 반영, 미구현)
-- [ ] 공격 표현에 별도 팔 오브젝트가 없고, 인간 팔 그림이 Core 팔 캡슐을 따른다 (Unity). (M12 플레이테스트 반영, 미구현)
-- [ ] 공격 목표가 팔 길이(+자세별 기울임) 밖이면 손으로 때리지 않는다 (Core). (M12 플레이테스트 반영, 미구현)
-- [ ] 팔꿈치·어깨 각도가 관절 한계를 넘지 않고, 손의 최고 속도가 tuning의 사람 손 속도를 넘지 않는다 (Core, 모든 공격 종류). (M12 플레이테스트 반영, 미구현)
-- [ ] 한쪽 팔뚝에 앉은 모기를 반대쪽 손으로 때린다 (Core). (M12 플레이테스트 반영, 미구현)
-- [ ] 판정이 움직이는 손 경로로 이뤄진다: 예고 뒤 손이 지나가기 전에 비키면 산다 (Core). (M12 플레이테스트 반영, 미구현)
-- [ ] 공격 예고 표시가 예고 진행률에 따라 변한다(차오름·좁혀짐 등) (Unity). (M12 플레이테스트 반영, 미구현)
-- [ ] 광분 중 목표가 팔 길이 밖이면 기울이기 → 돌기 → 일어서기 순서로 필요한 만큼만 몸을 움직여 닿고, 각 자세 전환에 tuning의 시간이 걸린다 (Core). (M12 플레이테스트 반영, 미구현)
-- [ ] 일어서기·기울이기 후 머리 위치와 시야 원뿔이 몸 포즈를 따른다 (Core). (M12 플레이테스트 반영, 미구현)
-- [ ] 레벨의 `human.maxPosture`보다 큰 몸동작은 쓰지 않는다 (Core). (M12 플레이테스트 반영, 미구현)
+- [x] 공격 중 가까운 쪽 팔 캡슐이 예고(치켜듦) → 판정(목표로 뻗음) → 회복(제자리) 순서로 움직이고, 판정 시점에 손 끝이 목표 구 안에 있다 (Core). (M12) — 증거: `BodyAttackTests.Strike_RespectsJointLimitsAndHumanHandSpeed`(5개 목표: 손이 예고·타격·회복 동안 Core 팔 캡슐로 움직이고 타격 끝 손바닥이 목표 구 안), 캡처 `Captures/2026-10-01_222754/Sandbox_Human_attack_*.png`
+- [x] 공격 표현에 별도 팔 오브젝트가 없고, 인간 팔 그림이 Core 팔 캡슐을 따른다 (Unity). (M12) — 증거: EditMode `HumanBodyViewTests.Attack_ArmVisualsFollowCoreArmCapsules_NoExtraArm` (HumanArmPose·AttackArm 제거)
+- [x] 공격 목표가 팔 길이(+자세별 기울임) 밖이면 손으로 때리지 않는다 (Core). (M12) — 증거: `BodyAttackTests.Planner_TooFar_NoPlan_AndMaxPostureLimitsBody`, `Frenzy_PlayerSeenBeyondReach_NoSlap`
+- [x] 팔꿈치·어깨 각도가 관절 한계를 넘지 않고, 손의 최고 속도가 tuning의 사람 손 속도를 넘지 않는다 (Core, 모든 공격 종류). (M12) — 증거: `BodyAttackTests.Strike_RespectsJointLimitsAndHumanHandSpeed`(팔꿈치 ≤ 150°, 위팔 길이 불변, 손 속도 ≤ 최고 속도), `Planner_TargetBehindNeedsTurn_NotJustArm`(어깨 폄 한계)
+- [x] 한쪽 팔뚝에 앉은 모기를 반대쪽 손으로 때린다 (Core). (M12) — 증거: `BodyAttackTests.ReactSlap_OnOwnRightForearm_UsesLeftHand`
+- [x] 판정이 움직이는 손 경로로 이뤄진다: 예고 뒤 손이 지나가기 전에 비키면 산다 (Core). (M12) — 증거: `BodyAttackTests.Strike_PlayerOnTheHandPath_NotAtTarget_Dies`, `ReactionTests.ReactSlap_PlayerLeavesDuringTelegraph_Survives`
+- [x] 공격 예고 표시가 예고 진행률에 따라 변한다(차오름·좁혀짐 등) (Unity). (M12) — 증거: EditMode `HumanBodyViewTests.Telegraph_IndicatorChangesWithProgress_ThenFlashesOnStrike`(셰이더 `Moqui/TelegraphRing`의 _Progress가 진행에 따라 증가, 판정 때 _Strike = 1, 손 접근 줄기 표시), 캡처 `Captures/2026-10-05_170605/Sandbox_Human_attack_Telegraph.png`(좁혀 오는 고리·접근 줄기)·`_Active.png`(번쩍임)
+- [x] 광분 중 목표가 팔 길이 밖이면 기울이기 → 돌기 → 일어서기 순서로 필요한 만큼만 몸을 움직여 닿고, 각 자세 전환에 tuning의 시간이 걸린다 (Core). (M12) — 증거: `BodyAttackTests.Planner_UsesOnlyAsMuchBodyAsNeeded`(팔·기울이기·일어서기), `Planner_TargetBehindNeedsTurn_NotJustArm`, `Rise_TakesHumanTime_AndHeadAndVisionFollowTheBody`(posture.riseTime)
+- [x] 일어서기·기울이기 후 머리 위치와 시야 원뿔이 몸 포즈를 따른다 (Core). (M12) — 증거: `BodyAttackTests.Rise_TakesHumanTime_AndHeadAndVisionFollowTheBody`, `Lean_HeadForwardFollowsUpperBody`
+- [x] 레벨의 `human.maxPosture`보다 큰 몸동작은 쓰지 않는다 (Core). (M12) — 증거: `BodyAttackTests.Planner_TooFar_NoPlan_AndMaxPostureLimitsBody`, stage03(누운 인간) `maxPosture: "turn"`
 
 ## 범위 외
 - 인간의 보행과 자리 이동, 파리채·전기 모기채 등 도구 공격 (향후 확장 후보: 도구는 닿는 거리·판정 면적을 늘려 난이도·레벨링 요소로 쓸 수 있다 — plan/ideas.md) (스프레이 제외), 다수의 인간

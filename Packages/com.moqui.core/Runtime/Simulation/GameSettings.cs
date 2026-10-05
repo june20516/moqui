@@ -20,6 +20,7 @@ namespace Moqui.Core.Simulation
             Head = new HeadSettings(tuning);
             Frenzy = new FrenzySettings(tuning);
             Attack = new AttackSettings(tuning);
+            Body = new BodySettings(tuning);
             Sites = new SiteSettings(tuning);
             Reaction = new ReactionSettings(tuning);
             HumanMotion = new HumanMotionSettings(tuning);
@@ -82,6 +83,9 @@ namespace Moqui.Core.Simulation
         public FrenzySettings Frenzy { get; }
 
         public AttackSettings Attack { get; }
+
+        /// <summary>인간 몸 치수·관절 한계·자세 전환 (spec/02, D-052·D-053).</summary>
+        public BodySettings Body { get; }
 
         public WorldSettings World { get; }
 

@@ -108,7 +108,6 @@
 | frenzy.minDuration | 8s | 진입 후 최소 유지 |
 | frenzy.calmTime | 6s | 연속으로 보지 못해야 진정 |
 | frenzy.exitValue | 60 | 진정 시 경계 값 |
-| frenzy.reachBonus | +40u | 공격 사거리 증가 (몸을 일으킴) |
 | frenzy.slapInterval | 0.4s | 손바닥 공격 사이 대기 |
 | frenzy.slapTelegraph | 0.45s | 광분 중 손바닥·맹목 휘두르기 예고 |
 | frenzy.blindSwatRadius | 30u | 마지막 위치 주변 |
@@ -137,18 +136,33 @@
 ## attack
 | 키 | 값 | 설명 |
 |---|---|---|
-| attack.reach | 80u | 어깨 기준 최대 사거리 |
 | attack.clap.telegraph | 0.35s | Red Zone 즉사기 |
 | attack.clap.radius | 15u | `attack.clap.offset` 지점 중심 |
 | attack.clap.offset | 25u | 판정 중심: 얼굴 앞 거리 (spec/02 §7) |
-| attack.clap.activeTime | 0.1s | 판정 유지 시간 (D-029) |
 | attack.clap.recovery | 1.0s | |
-| attack.slap.radius | 12u | 예고 시작 시점의 플레이어 위치에 고정 |
-| attack.slap.activeTime | 0.1s | 판정 유지 시간 |
+| attack.slap.radius | 12u | 손바닥 판정 구 반경. 목표는 예고 시작 시점의 플레이어 위치에 고정 |
 | attack.slap.recovery | 1.5s | |
 | attack.selfSlap.telegraph | 0.5s | 반응 때리기 예고 |
 | attack.selfSlap.radius | 10u | 예고 시작 시점의 모기 위치 중심 |
 | attack.selfSlap.recovery | 1.0s | |
+| attack.handPeakSpeed.frenzy | 500u/s | 광분 손바닥·맹목 휘두르기·박수 손 최고 속도. 타격 시간 = 손 경로 ÷ (최고 속도 ÷ 1.5) (D-052, knowledge/human-arm-motion.md) |
+| attack.handPeakSpeed.reaction | 400u/s | 반사적 자기 몸 치기 |
+| attack.handPeakSpeed.drunk | 300u/s | 취한 사람 무작위 휘두르기 |
+| attack.minTelegraph | 0.2s | 예고 최소 시간(사람 반응 시간 하한). 자세 전환 시간 + 이 값보다 짧은 예고는 늘린다 |
+
+### 인간 몸 (D-052·D-053, knowledge/human-arm-motion.md)
+| 키 | 값 | 설명 |
+|---|---|---|
+| human.handReachExtra | 9u | 손목 → 손바닥 중심 (팔 길이 = 위팔 + 아래팔 + 이 값, 데이터 캡슐에서 계산) |
+| human.elbowFlexMax | 150° | 팔꿈치 최대 굽힘 (AAOS) |
+| human.shoulderExtensionMax | 60° | 어깨 폄 한계. 몸 뒤쪽은 늘어뜨린 팔에서 이 각도 안만 닿는다 |
+| posture.maxLeanAngle | 35° | 상체 최대 기울기 |
+| posture.maxTwist | 60° | 상체 최대 비틀기 |
+| posture.riseLift | 30u | 완전히 일어설 때 골반 상승 |
+| posture.riseForward | 15u | 완전히 일어설 때 골반 전진 |
+| posture.leanTime | 0.4s | 최대 기울기까지 |
+| posture.turnTime | 0.4s | 최대 비틀기까지 |
+| posture.riseTime | 1.2s | 완전히 일어서기까지 (급히 일어남) |
 
 ## suck (흡혈)
 | 키 | 값 | 설명 |
@@ -191,10 +205,10 @@
 ## senses (모기 감각, 표현 전용)
 | 키 | 값 | 설명 |
 |---|---|---|
-| senses.clearRange | 80u | 선명한 거리 |
-| senses.fogFullRange | 250u | 최대 흐림 거리 |
-| senses.fogMaxDensity | 0.75 | 최대 흐림에서 안개색 비율 (1 미만이어야 큰 가구 실루엣이 남는다) |
-| senses.fogBlurPixels | 3px | 최대 흐림에서 블러 반경 (1080p 기준) |
+| senses.clearRange | 50u | 선명한 거리 (M12: CO₂ 단서가 쓸모 있도록 80 → 50) |
+| senses.fogFullRange | 160u | 최대 흐림 거리 (M12: 250 → 160) |
+| senses.fogMaxDensity | 0.88 | 최대 흐림에서 안개색 비율 (1 미만이어야 큰 가구 실루엣이 남는다, M12: 0.75 → 0.88) |
+| senses.fogBlurPixels | 6px | 최대 흐림에서 블러 반경 (1080p 기준, M12: 3 → 6) |
 | senses.co2VisibleRange | 450u | CO₂ 흐름 표시 거리 |
 | senses.heatRange | 60u | 체온 표시 거리 |
 | senses.co2PuffInterval | 0.12s | 날숨 중 CO₂ 연기 덩이 생성 간격 |
@@ -203,7 +217,7 @@
 | senses.co2ForwardSpeed | 15u/s | 날숨 방향(머리 정면) 초기 속도, 수명 동안 0으로 줄어듦 |
 | senses.co2PuffStartRadius | 2u | 연기 덩이 시작 반지름 (세기 배율 적용) |
 | senses.co2PuffEndRadius | 10u | 연기 덩이 끝 반지름 (세기 배율 적용) |
-| senses.heatGlowScale | 1.8 | 체온 빛의 굵기 배율 (피부 부위 반지름 기준) |
+| senses.heatGlowScale | 1.04 | 체온 윤곽의 굵기 배율 (피부 부위 반지름 기준). 피부를 덮는 막이 아니라 얇은 림·아지랑이 선 (M12, D-052) |
 | senses.biteMarkDotRadius | 1.5u | 물린 자국 붉은 점 반지름 |
 | hiding.cueRange | 120u | 은신처 표시 거리 |
 | hiding.cueIntensitySafe | 0.35 | 은신처 표시 강도 — Safe |
@@ -339,7 +353,8 @@
 | skill.resistSatiety.penaltyMul | 0.75 | 감속 폭(1 − 배율)에 곱 |
 | skill.silentWings.noiseMul | 0.88 | 곱 |
 | skill.swiftWings.speedMul | 1.08 | 곱 |
-| skill.vortexControl.accelTimeMul | 0.8 | 곱, 가속·감속 시간 모두. 3레벨에서 8방향 대시 |
+| skill.vortexControl.accelTimeMul | 0.8 | 곱, 가속·감속 시간 모두 |
+| skill.vortexControl.maxLevelDashCooldownMul | 0.7 | 최대 레벨(3)에서 대시 쿨타임에 곱 (D-051) |
 | skill.stamina.maxAdd | +15 | 합 |
 | skill.stamina.regenMul | 1.1 | 곱 |
 | skill.featherLanding.landChanceMul | 0.7 | 곱 |

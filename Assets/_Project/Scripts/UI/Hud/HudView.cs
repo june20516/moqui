@@ -48,6 +48,12 @@ namespace Moqui.Unity.UI.Hud
 
         public Image SatietyIcon { get; private set; }
 
+        /// <summary>자국 점 스프라이트 (포만 아이콘과 구분되는지 검사용).</summary>
+        public Sprite BiteDotSprite => _biteDots.Count > 0 ? _biteDots[0].sprite : null;
+
+        /// <summary>포만 아이콘 아래 글자.</summary>
+        public Text SatietyLabel { get; private set; }
+
         public Image Eye { get; private set; }
 
         public Image EyeFill { get; private set; }
@@ -170,7 +176,7 @@ namespace Moqui.Unity.UI.Hud
                 case HudPrompt.Detach:
                     return UseGamepadLabels ? "B: 이탈" : "F: 이탈";
                 case HudPrompt.Escape:
-                    return UseGamepadLabels ? $"A ×{escapePresses}!" : $"Shift ×{escapePresses}!";
+                    return UseGamepadLabels ? $"A ×{escapePresses}!" : $"우클릭 ×{escapePresses}!";
                 default:
                     return string.Empty;
             }
@@ -201,12 +207,16 @@ namespace Moqui.Unity.UI.Hud
             BloodText = CreateText("BloodText", top, 20, TextAnchor.MiddleCenter);
             Stretch(BloodText.rectTransform);
 
-            SatietyIcon = CreateImage("SatietyIcon", top, HudSprites.Circle, SatietyNormalColor);
-            Place(SatietyIcon.rectTransform, new Vector2(1f, 0.5f), new Vector2(24f, 0f), new Vector2(24f, 24f));
+            // 포만: 추 모양 + "포만" 글자 (자국 점과 다른 모양, M12).
+            SatietyIcon = CreateImage("SatietyIcon", top, HudSprites.Weight, SatietyNormalColor);
+            Place(SatietyIcon.rectTransform, new Vector2(1f, 0.5f), new Vector2(24f, 2f), new Vector2(26f, 26f));
+            SatietyLabel = CreateText("SatietyLabel", top, 14, TextAnchor.MiddleCenter);
+            SatietyLabel.text = "포만";
+            Place(SatietyLabel.rectTransform, new Vector2(1f, 0.5f), new Vector2(24f, -22f), new Vector2(48f, 18f));
             for (int i = 0; i < MaxBiteDots; i++)
             {
                 var dot = CreateImage($"BiteDot{i}", top, HudSprites.Circle, BloodColor);
-                Place(dot.rectTransform, new Vector2(1f, 0.5f), new Vector2(52f + (i * 16f), 0f), new Vector2(10f, 10f));
+                Place(dot.rectTransform, new Vector2(1f, 0.5f), new Vector2(60f + (i * 16f), 0f), new Vector2(10f, 10f));
                 _biteDots.Add(dot);
             }
 

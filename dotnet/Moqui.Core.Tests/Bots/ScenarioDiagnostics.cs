@@ -1,3 +1,4 @@
+using System.Linq;
 using Moqui.Core.Bots;
 using Moqui.Core.Data.Levels;
 using Moqui.Core.Simulation;
@@ -25,6 +26,12 @@ namespace Moqui.Core.Tests.Bots
             var level = new LevelLoader(source).Load(scenario.LevelId);
             var result = new ScenarioRunner(TestSimulations.Tuning).Run(level, scenario, seed, (simulation, step) =>
             {
+                foreach (var telegraph in simulation.Events.OfType<AttackTelegraphStarted>())
+                {
+                    var player = simulation.Player.Position;
+                    TestContext.Out.WriteLine($"  t={simulation.Tick * GameSimulation.DeltaTime:F2} telegraph {telegraph.Kind} target=({telegraph.Target.X:F0},{telegraph.Target.Y:F0},{telegraph.Target.Z:F0}) player=({player.X:F0},{player.Y:F0},{player.Z:F0}) arm={simulation.Human.Attack.ArmA} lean={simulation.Human.Attack.PostureTarget.LeanAngle:F0} twist={simulation.Human.Attack.PostureTarget.Twist:F0} rise={simulation.Human.Attack.PostureTarget.Rise:F1}");
+                }
+
                 if (simulation.Tick % every != 0)
                 {
                     return;

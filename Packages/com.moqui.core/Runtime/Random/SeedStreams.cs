@@ -16,6 +16,9 @@ namespace Moqui.Core.Random
         public const string Doze = "doze";
         public const string Glance = "glance";
 
+        /// <summary>이동 입력 없는 대시의 무작위 방향 (D-051).</summary>
+        public const string Dash = "dash";
+
         private const ulong FnvOffset = 14695981039346656037UL;
         private const ulong FnvPrime = 1099511628211UL;
 
