@@ -135,6 +135,8 @@ namespace Moqui.Unity.Tests
             _simulation.Player.BloodGauge = SuckSystem.GaugeMax;
             Assert.That(Present().SatietyHighlighted, Is.True);
             Assert.That(_view.SatietyIcon.color, Is.Not.EqualTo(normal));
+            Assert.That(_view.SatietyIcon.sprite, Is.Not.SameAs(_view.BiteDotSprite), "satiety does not look like a bite dot (M12)");
+            Assert.That(_view.SatietyLabel.text, Is.EqualTo("포만"));
         }
 
         [Test]
