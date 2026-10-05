@@ -17,9 +17,11 @@ namespace Moqui.Core.Simulation
         private readonly HeadController _headController;
         private readonly DozeSettings _doze;
         private readonly IRandom _glanceRandom;
+        private readonly SuckEventSettings _suckEvent;
 
-        public HumanBrain(AwarenessSettings awareness, FrenzySettings frenzy, HeadSettings head, DozeSettings doze, IRandom glanceRandom)
+        public HumanBrain(AwarenessSettings awareness, FrenzySettings frenzy, HeadSettings head, DozeSettings doze, IRandom glanceRandom, SuckEventSettings suckEvent)
         {
+            _suckEvent = suckEvent;
             _awareness = awareness;
             _frenzy = frenzy;
             _head = head;
@@ -79,6 +81,22 @@ namespace Moqui.Core.Simulation
 
         public void UpdateHead(Human human, Player player, int tick, float deltaTime)
         {
+            // 흡혈 중 시선 이벤트: 문 자리를 본다 (spec/04 §8, D-056).
+            if (human.SuckEvent.Kind == SuckEventKind.Glance)
+            {
+                var glance = human.SuckEvent;
+                if (glance.Phase == SuckEventPhase.Return)
+                {
+                    _headController.TurnToward(human, glance.ReturnYaw, glance.ReturnPitch, _suckEvent.GlanceTurnSpeed, deltaTime);
+                }
+                else
+                {
+                    _headController.TurnTowardPoint(human, glance.Target, _suckEvent.GlanceTurnSpeed, deltaTime);
+                }
+
+                return;
+            }
+
             switch (human.State)
             {
                 case AwarenessState.Safe:

@@ -32,6 +32,16 @@ namespace Moqui.Core.Tests.Bots
                     TestContext.Out.WriteLine($"  t={simulation.Tick * GameSimulation.DeltaTime:F2} telegraph {telegraph.Kind} target=({telegraph.Target.X:F0},{telegraph.Target.Y:F0},{telegraph.Target.Z:F0}) player=({player.X:F0},{player.Y:F0},{player.Z:F0}) arm={simulation.Human.Attack.ArmA} lean={simulation.Human.Attack.PostureTarget.LeanAngle:F0} twist={simulation.Human.Attack.PostureTarget.Twist:F0} rise={simulation.Human.Attack.PostureTarget.Rise:F1}");
                 }
 
+                foreach (var started in simulation.Events.OfType<SuckEventStarted>())
+                {
+                    TestContext.Out.WriteLine($"  t={simulation.Tick * GameSimulation.DeltaTime:F2} suckEvent {started.Kind} {simulation.Human.SuckEvent.Phase} itch={simulation.Player.SuckSession?.Site.Itch:F0}");
+                }
+
+                foreach (var noticed in simulation.Events.OfType<SuckGlanceNoticed>())
+                {
+                    TestContext.Out.WriteLine($"  t={simulation.Tick * GameSimulation.DeltaTime:F2} glance NOTICED aw={simulation.Human.Awareness:F0}");
+                }
+
                 if (simulation.Tick % every != 0)
                 {
                     return;
@@ -44,7 +54,7 @@ namespace Moqui.Core.Tests.Bots
             TestContext.Out.WriteLine(result.ToString());
         }
 
-        /// <summary>광분 빈도 측정 (M13): 스테이지별 클리어 봇 시드 1~5의 광분 횟수, 반응 공격 수, 최고 경계.</summary>
+        /// <summary>광분 빈도 측정 (M13): 스테이지별 클리어 봇 시드 1~5의 광분 횟수, 반응 공격 수, 흡혈 중 이벤트 수, 최고 경계.</summary>
         [Test]
         public void FrenzyStats()
         {
@@ -58,13 +68,23 @@ namespace Moqui.Core.Tests.Bots
                 for (ulong seed = 1; seed <= 5; seed++)
                 {
                     int reactions = 0;
+                    int twitches = 0;
+                    int shifts = 0;
+                    int glances = 0;
                     float maxAwareness = 0f;
                     var result = new ScenarioRunner(TestSimulations.Tuning).Run(level, scenario, seed, (simulation, step) =>
                     {
                         reactions += simulation.Events.OfType<AttackTelegraphStarted>().Count(telegraph => telegraph.Kind == AttackKind.ReactSlap);
                         maxAwareness = System.Math.Max(maxAwareness, simulation.Human.Awareness);
+                        foreach (var started in simulation.Events.OfType<SuckEventStarted>())
+                        {
+                            var phase = simulation.Human.SuckEvent.Phase;
+                            twitches += started.Kind == SuckEventKind.Twitch ? 1 : 0;
+                            shifts += started.Kind == SuckEventKind.Shift && phase == SuckEventPhase.Telegraph ? 1 : 0;
+                            glances += started.Kind == SuckEventKind.Glance ? 1 : 0;
+                        }
                     });
-                    TestContext.Out.WriteLine($"{scenarioId} seed={seed} {result.Outcome} t={result.Ticks * GameSimulation.DeltaTime:F0}s frenzies={result.Frenzies} reactions={reactions} maxAwareness={maxAwareness:F0} marks={result.BiteMarks}");
+                    TestContext.Out.WriteLine($"{scenarioId} seed={seed} {result.Outcome} t={result.Ticks * GameSimulation.DeltaTime:F0}s frenzies={result.Frenzies} reactions={reactions} twitch={twitches} shift={shifts} glance={glances} maxAwareness={maxAwareness:F0} marks={result.BiteMarks}");
                 }
             }
         }

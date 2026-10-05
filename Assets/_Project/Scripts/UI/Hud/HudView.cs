@@ -26,6 +26,7 @@ namespace Moqui.Unity.UI.Hud
         private static readonly Color SatietyHighlightColor = new Color(1f, 0.6f, 0.2f);
         private static readonly Color HidingColor = new Color(0.4f, 0.65f, 1f);
         private static readonly Color ItchColor = new Color(1f, 0.45f, 0.2f);
+        private static readonly Color RidingColor = new Color(0.6f, 1f, 0.7f);
         private static readonly Color SuspiciousVignette = new Color(1f, 0.85f, 0.3f, 0.25f);
         private static readonly Color FrenzyVignette = new Color(1f, 0.1f, 0.1f, 0.45f);
         private static readonly Color ActiveReadyColor = new Color(0.75f, 0.55f, 1f, 0.9f);
@@ -103,6 +104,9 @@ namespace Moqui.Unity.UI.Hud
 
         public Text TutorialText { get; private set; }
 
+        /// <summary>흡혈 중 이벤트 경고 문구 (조준점 위).</summary>
+        public Text SuckWarningText { get; private set; }
+
         public GameObject ActiveSkillRoot { get; private set; }
 
         public Image ActiveSkillIcon { get; private set; }
@@ -162,7 +166,7 @@ namespace Moqui.Unity.UI.Hud
             ApplyTop(state, time);
             ApplyEdges(state, time);
             ApplyBottom(state, time);
-            ApplyCenter(state);
+            ApplyCenter(state, time);
         }
 
         public string PromptLabel(HudPrompt prompt, int escapePresses)
@@ -324,6 +328,26 @@ namespace Moqui.Unity.UI.Hud
             ItchRing.fillOrigin = (int)Image.Origin360.Top;
             Crosshair = CreateImage("Crosshair", Root, HudSprites.Circle, Color.white);
             Place(Crosshair.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(6f, 6f));
+            SuckWarningText = CreateText("SuckWarning", Root, 26, TextAnchor.MiddleCenter);
+            Place(SuckWarningText.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, 90f), new Vector2(900f, 40f));
+        }
+
+        /// <summary>흡혈 중 이벤트 경고 문구 (spec/04 §8). 키 이름 없이 행동만 알려 준다.</summary>
+        public static string SuckWarningLabel(HudSuckWarning warning)
+        {
+            switch (warning)
+            {
+                case HudSuckWarning.Twitch:
+                    return "가려워한다 — 손이 움찔!";
+                case HudSuckWarning.ShiftComing:
+                    return "몸이 움직이려 한다 — 흡혈을 누른 채 버티거나 떠나기";
+                case HudSuckWarning.Riding:
+                    return "버티는 중 — 피가 잘 나온다";
+                case HudSuckWarning.Glance:
+                    return "쳐다본다 — 흡혈을 멈추고 가만히!";
+                default:
+                    return string.Empty;
+            }
         }
 
         private void ApplyTop(HudState state, float time)
@@ -432,11 +456,15 @@ namespace Moqui.Unity.UI.Hud
             ToxinVignette.color = state.ToxinTier > 0 ? Pulse(new Color(ToxinColor.r, ToxinColor.g, ToxinColor.b, strength), time) : Color.clear;
         }
 
-        private void ApplyCenter(HudState state)
+        private void ApplyCenter(HudState state, float time)
         {
             ItchRing.gameObject.SetActive(state.ItchVisible);
             ItchRing.fillAmount = state.ItchFraction;
             Crosshair.gameObject.SetActive(state.CrosshairVisible);
+            SuckWarningText.gameObject.SetActive(state.SuckWarning != HudSuckWarning.None);
+            SuckWarningText.text = SuckWarningLabel(state.SuckWarning);
+            Color warningColor = state.SuckWarning == HudSuckWarning.Riding ? RidingColor : ItchColor;
+            SuckWarningText.color = Pulse(warningColor, time);
         }
 
         private void PlaceMarker(RectTransform marker, EdgeMarker edge)

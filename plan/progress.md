@@ -25,9 +25,9 @@
 - [x] A. 키 배치(#1)·흡혈 중 몸 고정(#2)·바람 소리(#3) — 증거: EditMode `CommandCollectorTests`(C 하강·LShift 정밀), Core `SuckTests.WhileSucking_MoveInput_BodyStaysFixed`·`WhileSucking_EscapeInputs_Detach`, EditMode `AudioTests.Wind_LoopFollowsStrength_GustOnceOnEntering`, 음원 2종 합성
 - [x] B. 카메라(#4·#8) — 증거: EditMode `CameraTests.ThirdPerson_AttachedToCeiling_PivotFollowsSurfaceNormal`·`ThirdPerson_Blocked_PullsInAtOnce_ReturnsAtReturnSpeed`·`ThirdPerson_CameraCrampedAgainstBody_HidesPlayer`·`ToonOutline_WidthScalesWithViewDistance`, 캡처 `Captures/2026-10-05_191556/Stage_*_ceiling_tp·corner_tp·under_forearm_tp.png`: 붙은 면 법선 기준 3인칭 피벗, 당김 즉시·복귀 완만, 몸에 가까우면 모키 숨김, 외곽선 껍질 제한, 회귀 캡처
 - [x] C. 관망(#4) — 증거: EditMode `SensesFogTests.Perch_AttachedAndStill_WidensClearAndFullRanges`, 캡처 `Stage_stage01_ceiling_fp.png`: 붙어 있으면 감각 안개 범위 확대 (tuning `perch.*`)
-- [ ] D. 광분 빈도(#6): 봇·시뮬레이션으로 광분 진입률 측정 → 수치 조정
-- [ ] E. 흡혈 중 이벤트(#7): 긁으러 오는 손, 부위가 움직임, 시선 (D-056)
-- [ ] F. 스테이지 확장 계획(#5): `plan/stage-expansion.md`
+- [x] D. 광분 빈도(#6) — 증거: `ScenarioDiagnostics.FrenzyStats` 측정, D-057(빗나감 경계 실험 → 철회, 시선 들킴 +70 채택): 봇·시뮬레이션으로 광분 진입률 측정 → 규칙 조정
+- [x] E. 흡혈 중 이벤트(#7) — 증거: Core `SuckEventTests`(7), EditMode `HudTests.SuckEventWarnings_ShowDuringSessionOnly`, 봇 클리어 5·4·5·4·4, `DesignValidationTests` 통과: 긁으러 오는 손, 부위가 움직임, 시선 (D-056)
+- [x] F. 스테이지 확장 계획(#5) — 증거: `plan/stage-expansion.md`(넓은 방, 4장 × 5, 소개 → 조합 → 광분 → 응용, 요소 목록 위협·해법, 사람 결정 항목 4개): `plan/stage-expansion.md`
 - [ ] G. 마무리: 봇·빌드·성능, spec 체크, 최종 보고서
 
 ## M7 버티컬 슬라이스 리포트 (2026-10-01, 사람 검토 권장)
@@ -95,7 +95,8 @@
 ## 반복 로그
 | 일시 | 마일스톤 | 한 일 | 증거 | 커밋 |
 |---|---|---|---|---|
-| 2026-10-05 | M13 | B 카메라(붙은 면 피벗·완만 복귀·근접 숨김·외곽선 껍질 제한)·C 관망, 광분 빈도 측정(FrenzyStats) | Core 357 + EditMode 132 + PlayMode 22 통과, 캡처 검토 `2026-10-05_191556` | (이 커밋) |
+| 2026-10-05 | M13 | D 광분 빈도(측정·빗나감 경계 실험 철회·시선 들킴 +70)·E 흡혈 중 이벤트 3종 + HUD 경고·F 스테이지 확장 계획, 봇 얼기·경유점 | Core 364 + EditMode 133 + PlayMode 22 통과, 봇 클리어 5·4·5·4·4 | (이 커밋) |
+| 2026-10-05 | M13 | B 카메라(붙은 면 피벗·완만 복귀·근접 숨김·외곽선 껍질 제한)·C 관망, 광분 빈도 측정(FrenzyStats) | Core 357 + EditMode 132 + PlayMode 22 통과, 캡처 검토 `2026-10-05_191556` | 4f2f63f |
 | 2026-10-05 | M13 | A 키 배치(Space/C/LShift)·흡혈 중 몸 고정·바람 소리 | Core 357 + EditMode 127 + PlayMode 22 통과 | ee66187 |
 | 2026-10-05 | M12 | G 마무리: 빌드·성능 재측정, GOAL D3 재체크, 최종 보고서 M12 반영, M12 종료 | 빌드 성공, 테스트 전부 통과 | (이 커밋) |
 | 2026-10-05 | M12 | F 포만 아이콘(추 모양 + 글자) | Core 353 + EditMode 126 + PlayMode 22 통과, 캡처 검토 | cce70a9 |

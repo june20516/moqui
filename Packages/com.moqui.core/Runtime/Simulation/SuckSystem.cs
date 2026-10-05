@@ -42,9 +42,11 @@ namespace Moqui.Core.Simulation
         private readonly SuckSettings _suck;
         private readonly SiteSettings _sites;
         private readonly BiteMarkSettings _biteMarks;
+        private readonly SuckEventSettings _suckEvent;
 
-        public SuckSystem(SuckSettings suck, SiteSettings sites, BiteMarkSettings biteMarks)
+        public SuckSystem(SuckSettings suck, SiteSettings sites, BiteMarkSettings biteMarks, SuckEventSettings suckEvent)
         {
+            _suckEvent = suckEvent;
             _suck = suck;
             _sites = sites;
             _biteMarks = biteMarks;
@@ -109,11 +111,14 @@ namespace Moqui.Core.Simulation
                     player.SuckSession = session;
                 }
 
-                float gain = Math.Min(SessionRate(session.SuckSeconds, attachedSite.Type) * deltaTime, GaugeMax - player.BloodGauge);
+                // 부위가 움직이는 동안 버티면 피가 더 잘 나오고, 움직이느라 가려움을 못 느낀다 (spec/04 §8, D-056).
+                bool riding = human.SuckEvent.Is(SuckEventKind.Shift, SuckEventPhase.Active);
+                float eventRate = riding ? _suckEvent.ShiftRateMul : 1f;
+                float gain = Math.Min(SessionRate(session.SuckSeconds, attachedSite.Type) * eventRate * deltaTime, GaugeMax - player.BloodGauge);
                 session.SuckSeconds += deltaTime;
                 session.Amount += gain;
                 player.BloodGauge += gain;
-                float itchGain = _suck.ItchRate * _sites.Sensitivity(attachedSite.Type) * ItchMultiplier * deltaTime;
+                float itchGain = riding ? 0f : _suck.ItchRate * _sites.Sensitivity(attachedSite.Type) * ItchMultiplier * deltaTime;
                 attachedSite.Itch = Math.Min(GaugeMax, attachedSite.Itch + itchGain);
                 suckedSite = attachedSite;
             }

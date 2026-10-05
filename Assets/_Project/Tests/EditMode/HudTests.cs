@@ -197,6 +197,37 @@ namespace Moqui.Unity.Tests
             Assert.That(_view.HidingArrow.gameObject.activeSelf, Is.False, "already hidden");
         }
 
+        /// <summary>흡혈 중 이벤트마다 조준점 위에 경고 문구가 뜨고, 흡혈 세션이 없으면 사라진다 (spec/04 §8, M13).</summary>
+        [Test]
+        public void SuckEventWarnings_ShowDuringSessionOnly()
+        {
+            var human = _simulation.Human;
+            var site = human.SkinSites.First();
+            _simulation.Player.SuckSession = new SuckSession(site, 0);
+            var expected = new[]
+            {
+                (SuckEventKind.Twitch, SuckEventPhase.Active, HudSuckWarning.Twitch),
+                (SuckEventKind.Shift, SuckEventPhase.Telegraph, HudSuckWarning.ShiftComing),
+                (SuckEventKind.Shift, SuckEventPhase.Active, HudSuckWarning.Riding),
+                (SuckEventKind.Glance, SuckEventPhase.Telegraph, HudSuckWarning.Glance),
+                (SuckEventKind.Glance, SuckEventPhase.Return, HudSuckWarning.Glance),
+            };
+            foreach (var (kind, phase, warning) in expected)
+            {
+                human.SuckEvent.Kind = kind;
+                human.SuckEvent.Phase = phase;
+                var state = Present();
+                Assert.That(state.SuckWarning, Is.EqualTo(warning), $"{kind}/{phase}");
+                Assert.That(_view.SuckWarningText.gameObject.activeSelf, Is.True);
+                Assert.That(_view.SuckWarningText.text, Is.Not.Empty);
+            }
+
+            _simulation.Player.SuckSession = null;
+            Present();
+            Assert.That(_view.SuckWarningText.gameObject.activeSelf, Is.False);
+            human.SuckEvent.Clear();
+        }
+
         [Test]
         public void Prompts_FollowPlayerStateAndInputDevice()
         {

@@ -27,6 +27,7 @@ namespace Moqui.Core.Simulation
             Attach = new AttachSettings(tuning);
             BiteMark = new BiteMarkSettings(tuning);
             Suck = new SuckSettings(tuning);
+            SuckEvent = new SuckEventSettings(tuning);
             Water = new WaterSettings(tuning);
             Humid = new HumidSettings(tuning);
             Doze = new DozeSettings(tuning);
@@ -59,6 +60,9 @@ namespace Moqui.Core.Simulation
         public HumidSettings Humid { get; }
 
         public SuckSettings Suck { get; }
+
+        /// <summary>흡혈 중 이벤트 (spec/04 §8).</summary>
+        public SuckEventSettings SuckEvent { get; }
 
         public SiteSettings Sites { get; }
 

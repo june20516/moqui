@@ -245,6 +245,9 @@ namespace Moqui.Core.Simulation
 
         public HumanAttack Attack { get; } = new HumanAttack();
 
+        /// <summary>진행 중인 흡혈 중 이벤트 (spec/04 §8).</summary>
+        public SuckEventState SuckEvent { get; } = new SuckEventState();
+
         // ---- 졸음 (spec/06) ----
 
         public DozeState Doze { get; set; } = DozeState.Awake;

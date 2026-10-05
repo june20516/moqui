@@ -13,6 +13,12 @@ namespace Moqui.Core.Bots
         private const float DeadZone = 0.5f;
         private const float RadiansToDegrees = 180f / MathF.PI;
 
+        /// <summary>흡혈 중 시선 이벤트(돌림·응시·되돌림)가 오면 흡혈을 멈추고 붙은 채 얼어 있어야 한다 (spec/04 §8, D-056).</summary>
+        public static bool ShouldFreeze(Human human)
+        {
+            return human != null && human.SuckEvent.Kind == SuckEventKind.Glance;
+        }
+
         public static bool Arrived(Player player, Vector3 target)
         {
             return Vector3.Distance(player.Position, target) < ArriveDistance;

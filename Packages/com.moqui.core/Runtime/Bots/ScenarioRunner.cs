@@ -166,7 +166,9 @@ namespace Moqui.Core.Bots
             bool threatened = simulation.Events.OfType<AttackTelegraphStarted>()
                 .Any(telegraph => BodyKinematics.DistanceToSegment(player, simulation.Human.NearestShoulder(telegraph.Target), telegraph.Target)
                     <= telegraph.Radius + simulation.Player.CollisionRadius + PathFleeMargin);
-            return threatened || (simulation.Human != null && simulation.Human.PlayerVisible);
+            // 흡혈 중 시선 이벤트(D-056)에는 붙은 채 얼어 있는 쪽이 낫다: 보여도 도망치지 않는다.
+            bool freezing = simulation.Player.State == PlayerState.Attached && BotPilot.ShouldFreeze(simulation.Human);
+            return threatened || (simulation.Human != null && simulation.Human.PlayerVisible && !freezing);
         }
 
         private PlayerCommand NextCommand(GameSimulation simulation, ScenarioDefinition scenario, RunState state)
@@ -232,7 +234,8 @@ namespace Moqui.Core.Bots
                         return PlayerCommand.None;
                     }
 
-                    return new PlayerCommand { SuckHeld = true };
+                    // 시선 이벤트: 흡혈을 멈추고 붙은 채 얼어 있는다 (spec/04 §8, D-056).
+                    return BotPilot.ShouldFreeze(simulation.Human) ? PlayerCommand.None : new PlayerCommand { SuckHeld = true };
                 case ScenarioStepKind.Detach:
                     if (player.State != PlayerState.Attached)
                     {

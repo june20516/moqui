@@ -46,6 +46,9 @@ namespace Moqui.Core.Tests.Support
         private Phase _phase = Phase.Rest;
         private string _site;
 
+        /// <summary>접근 지점으로 곧장 가는 길이 몸에 막히면 거쳐 가는 점.</summary>
+        private Vector3? _waypoint;
+
         public SessionStrategyBot(GameSimulation simulation, int sessions)
         {
             _simulation = simulation;
@@ -73,7 +76,8 @@ namespace Moqui.Core.Tests.Support
                 _simulation.Step(NextCommand());
                 awarenessSum += _simulation.Human.Awareness;
                 ticks++;
-                if (_simulation.Events.OfType<AttackTelegraphStarted>().Any() || _simulation.Human.PlayerVisible)
+                bool freezing = _simulation.Player.State == PlayerState.Attached && Moqui.Core.Bots.BotPilot.ShouldFreeze(_simulation.Human);
+                if (_simulation.Events.OfType<AttackTelegraphStarted>().Any() || (_simulation.Human.PlayerVisible && !freezing))
                 {
                     Flee();
                 }
@@ -101,7 +105,7 @@ namespace Moqui.Core.Tests.Support
                         return new PlayerCommand { AttachPressed = true };
                     }
 
-                    return FlyTo(approach);
+                    return FlyTo(Route(approach));
                 case Phase.Suck:
                     if (player.State != PlayerState.Attached)
                     {
@@ -117,7 +121,8 @@ namespace Moqui.Core.Tests.Support
                         return new PlayerCommand { AttachPressed = true };
                     }
 
-                    return new PlayerCommand { SuckHeld = true };
+                    // 시선 이벤트: 흡혈을 멈추고 얼어 있는다 (D-056).
+                    return Moqui.Core.Bots.BotPilot.ShouldFreeze(_simulation.Human) ? PlayerCommand.None : new PlayerCommand { SuckHeld = true };
                 case Phase.Retreat:
                     if (Vector3.Distance(player.Position, CurrentHideSpot) < ArriveDistance)
                     {
@@ -133,6 +138,7 @@ namespace Moqui.Core.Tests.Support
                     if (settled && human.State != AwarenessState.Frenzy && !human.Attack.IsBusy && TryPickSite(out string site))
                     {
                         _site = site;
+                        _waypoint = null;
                         _phase = Phase.Approach;
                     }
 
@@ -166,6 +172,52 @@ namespace Moqui.Core.Tests.Support
 
             Flees++;
             _phase = Phase.Retreat;
+        }
+
+        /// <summary>곧장 가는 길이 막히면 막히지 않는 경유점(위쪽·같은 쪽 은신처·앞쪽)을 거쳐 간다.</summary>
+        private Vector3 Route(Vector3 target)
+        {
+            Vector3 position = _simulation.Player.Position;
+            if (_waypoint.HasValue)
+            {
+                if (Vector3.Distance(position, _waypoint.Value) >= ArriveDistance * 2f)
+                {
+                    return _waypoint.Value;
+                }
+
+                _waypoint = null;
+            }
+
+            if (_simulation.Player.State != PlayerState.Flying || PathClear(position, target))
+            {
+                return target;
+            }
+
+            Vector3[] candidates =
+            {
+                target + (Vector3.UnitY * 40f),
+                CurrentHideSpot,
+                new Vector3(target.X, target.Y, 50f),
+                new Vector3(target.X, target.Y + 40f, 50f),
+            };
+            foreach (var candidate in candidates)
+            {
+                if (PathClear(position, candidate) && PathClear(candidate, target))
+                {
+                    _waypoint = candidate;
+                    return candidate;
+                }
+            }
+
+            return target;
+        }
+
+        private bool PathClear(Vector3 from, Vector3 to)
+        {
+            Vector3 delta = to - from;
+            float distance = delta.Length();
+            return distance < 1e-3f
+                || !_simulation.World.SphereSweep(from, _simulation.Player.CollisionRadius, delta / distance, distance, ShapeFlags.Solid, out _);
         }
 
         private Vector3 ApproachPoint(string partId)

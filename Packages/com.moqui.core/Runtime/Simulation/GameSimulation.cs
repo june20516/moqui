@@ -47,7 +47,7 @@ namespace Moqui.Core.Simulation
             _dash = new DashSystem(settings.Dash, settings.Flight, _stamina, _mover);
             _attach = new AttachSystem(settings.Attach, settings.HumanMotion, settings.Flight, World, _mover);
             _fallingBodies = new FallingBodySystem(settings.World);
-            Suck = new SuckSystem(settings.Suck, settings.Sites, settings.BiteMark);
+            Suck = new SuckSystem(settings.Suck, settings.Sites, settings.BiteMark, settings.SuckEvent);
             Water = new WaterSystem(settings.Water, World, _fallingBodies, _dash, setup.DripSources);
             Humidity = new HumiditySystem(settings.Humid, settings.Water, settings.Hiding, World, Water);
             _dashRandom = SeedStreams.Create(setup.Seed, SeedStreams.Dash);
@@ -210,6 +210,7 @@ namespace Moqui.Core.Simulation
         {
             Player.Yaw = command.LookYaw;
             Player.PrecisionHeld = command.PrecisionHeld;
+            Player.SuckHeld = command.SuckHeld;
             Player.SpeedMultiplier = _stamina.SpeedMultiplier(Player) * Suck.SpeedMultiplier(Player.BloodGauge);
             Player.DashDistanceMultiplier = Suck.DashMultiplier(Player.BloodGauge);
             Player.StaminaRegenMultiplier = 1f;
@@ -236,7 +237,7 @@ namespace Moqui.Core.Simulation
                     _attach.StepAttached(Player, command, Tick, DeltaTime, _events);
                     if (Player.State == PlayerState.Attached)
                     {
-                        _attach.TryDislodge(Player, Tick, _events);
+                        _attach.TryDislodge(Player, Tick, _events, GripMultiplier());
                     }
 
                     return;
@@ -277,6 +278,15 @@ namespace Moqui.Core.Simulation
             {
                 Fly(command);
             }
+        }
+
+        /// <summary>
+        /// 흡혈 중 "부위가 움직임" 이벤트에서 Suck을 누른 채 버티면 튕김 기준 속도에 suckEvent.gripMul을 곱한다 (D-056).
+        /// </summary>
+        private float GripMultiplier()
+        {
+            bool shifting = Human != null && Human.SuckEvent.Is(SuckEventKind.Shift, SuckEventPhase.Active);
+            return shifting && Player.SuckHeld && Player.SuckSession != null ? Settings.SuckEvent.GripMul : 1f;
         }
 
         /// <summary>승패 판정 (architecture §4.4 Outcome): 흡혈 게이지 100% → Cleared(1회), 사망 → Died.</summary>

@@ -6,7 +6,7 @@ namespace Moqui.Core.Simulation
 {
     /// <summary>
     /// 인간 한 틱 (tech/architecture.md §4.4 순서). StepMotion(무작위 동작)은 플레이어 이동 전에,
-    /// Step(Sensing → Awareness → HumanBrain → Attacks → Reactions)은 플레이어 이동 뒤에 부른다.
+    /// Step(Sensing → Awareness → HumanBrain → Attacks → Reactions → SuckEvents)은 플레이어 이동 뒤에 부른다.
     /// </summary>
     public sealed class HumanSystem
     {
@@ -22,12 +22,13 @@ namespace Moqui.Core.Simulation
             _vision = new VisionSensor(settings.Vision, world, settings.Humid.SteamVisionMul, settings.Drunk.VisionRateMul);
             _hearing = new HearingSensor(settings.Noise, settings.Hearing);
             Awareness = new AwarenessSystem(settings.Awareness);
-            _brain = new HumanBrain(settings.Awareness, settings.Frenzy, settings.Head, settings.Doze, SeedStreams.Create(seed, SeedStreams.Glance));
+            _brain = new HumanBrain(settings.Awareness, settings.Frenzy, settings.Head, settings.Doze, SeedStreams.Create(seed, SeedStreams.Glance), settings.SuckEvent);
             Doze = new DozeSystem(settings.Doze, settings.Awareness, SeedStreams.Create(seed, SeedStreams.Doze));
             Breath = new BreathSystem(settings.Breath);
             _attacks = new HumanAttackSystem(settings.Attack, settings.Frenzy, SeedStreams.Create(seed, SeedStreams.BlindSwat), settings.Toxin, settings.Drunk, SeedStreams.Create(seed, SeedStreams.DrunkSwat));
             Reactions = new ReactionSystem(settings, _attacks, SeedStreams.Create(seed, SeedStreams.Reactions));
             Motion = new HumanMotionSystem(settings.HumanMotion, SeedStreams.Create(seed, SeedStreams.HumanActions));
+            SuckEvents = new SuckEventSystem(settings.SuckEvent, settings.Vision, world, Motion, SeedStreams.Create(seed, SeedStreams.SuckEvents));
         }
 
         public AwarenessSystem Awareness { get; }
@@ -37,6 +38,9 @@ namespace Moqui.Core.Simulation
         public ReactionSystem Reactions { get; }
 
         public HumanMotionSystem Motion { get; }
+
+        /// <summary>흡혈 중 이벤트 (spec/04 §8).</summary>
+        public SuckEventSystem SuckEvents { get; }
 
         public DozeSystem Doze { get; }
 
@@ -89,6 +93,7 @@ namespace Moqui.Core.Simulation
             _attacks.Advance(human, player, tick, events);
             _attacks.Decide(human, player, perception, tick, events);
             Reactions.Step(human, player, perception, tick, deltaTime, events);
+            SuckEvents.Step(human, player, tick, deltaTime, events);
         }
     }
 }

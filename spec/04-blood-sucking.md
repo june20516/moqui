@@ -59,6 +59,12 @@
 
 - 사망 시 원인을 기록하고 0.8초 사망 연출 후 결과 화면(실패)으로 간다. 재시도하면 스테이지를 처음부터 시작한다.
 
+## 8. 흡혈 중 이벤트 (M13, D-056)
+"흡혈 중" = 인간의 피부에 붙어 Suck을 누른 채 세션이 진행 중. 이벤트는 한 번에 하나이고, 인간이 공격 중이거나 졸고 있으면 시작하지 않는다(광분 중에는 긁으러 오는 손만). 난수는 레벨 시드의 suckEvents 스트림을 쓴다. 각 이벤트는 "버틸지 / 멈출지 / 떠날지"의 선택을 만든다. HUD는 조준점 위에 경고 문구를 띄운다 (spec/08).
+- **긁으러 오는 손 (Twitch):** 그 부위 가려움이 `suckEvent.twitchItchStart`부터 `suckEvent.twitchItchStep`마다(40·60·80) 반대쪽 손이 문 자리 쪽으로 움찔한다. 손바닥이 휴식 위치 → 문 자리 거리의 `twitchReachStart` + (단계 − 1) × `twitchReachStep`만큼 sin 곡선으로 갔다가 `twitchDuration`에 돌아온다. 판정은 없다(경고). 같은 세션에서 단계마다 한 번. 실제 때리기는 기존 반응 규칙(§2, spec/02 §5)이다.
+- **부위가 움직임 (Shift):** 위험률 `suckEvent.shiftRate`. 예고 `shiftTelegraph` 뒤, 그 부위가 부위 축에 수직인 수평 방향(좌우 무작위)으로 `shiftDistance`만큼 `shiftDuration` 동안 갔다 돌아온다(최고 속도가 `human.dislodgeSpeed`를 넘는다). Suck을 누르고 있으면 주둥이로 버텨 튕김 기준 속도가 `gripMul`배가 되어 붙어 있고, 그동안 흡혈 속도 × `shiftRateMul`, 가려움은 오르지 않는다. 놓았으면 튕겨 난다(spec/02 §6).
+- **시선 (Glance):** 위험률 `suckEvent.glanceRate` × (0.5 + 가려움/100). 머리가 문 자리로 `glanceTurnSpeed`로 `glanceTurnTime` 동안 돌고(예고), `glanceHold` 동안 보고, 다시 `glanceTurnTime` 동안 원래 보던 쪽으로 되돌린다. 보는 동안 모기가 Suck을 누르고 있고 머리 정면 Yellow 원뿔 안에서 가림 없이 보이면 **들킨다**: 경계 + `glanceNoticeAwareness`(평소 경계 30 이상이면 광분), 자극 위치 = 문 자리. 시선이 진행되는 동안 흡혈을 멈추고 붙어 있으면 시야로 경계가 오르지 않는다(가려운 자리만 살핀다).
+
 ## 수용 기준
 - [x] 세션 흡혈 속도가 2%/s에서 시작해 6초에 걸쳐 6%/s까지 선형으로 오른다 (forearm 기준) (Core). — 증거: `SuckTests.SessionRate_Forearm_Linear2To6Over6Seconds`(0/1.5/3/4.5/6/8초 측정)
 - [x] 부위 유형별 혈액량과 가려움 증가가 표의 배율을 따른다 (Core). — 증거: `SuckTests.SiteType_BloodAmountAndItch_FollowTable`(팔뚝·종아리·볼)
@@ -73,6 +79,11 @@
 - [x] 재시도 시 흡혈 게이지, 가려움, 자국, 인간 경계, 플레이어 위치, 중독 게이지가 모두 초기화된다 (Core). — 증거: `RetryTests.Retry_AfterPlaying_EveryStateMatchesFreshStart`(스냅샷 전체 비교: 위치·스태미나·경계·광분·공격·가려움·자국), `Retry_SameCommands_ReplaysIdentically`. 흡혈·중독 게이지는 생기는 즉시 스냅샷에 넣어 같은 테스트로 검증 (D-031)
 - [x] 설계 검증: 같은 스테이지에서 "긴 세션 2회" 시나리오가 "짧은 세션 6회" 시나리오보다 평균 경계가 낮고 클리어 시간이 짧다 (Core 시나리오 비교, 시드 20개 평균). — 증거: `DesignValidationTests.LongSessions_VersusShortSessions_LowerAwarenessAndFasterClear` — 시드 20: 긴 세션 12/20 클리어·평균 경계 28.2·평균 280.6초, 짧은 세션 0/20·38.8·600초 (D-035)
 - [x] 자국이 세션의 부착 지점(부위 로컬 좌표)에 기록되고 스냅샷에 위치로 나온다 (Core). (M12) — 증거: `SuckTests.BiteMark_AtTheBiteSpot_FollowsThePart_OnePerSession`(문 자리·스냅샷 위치·부위를 따라감·같은 부위 두 번이면 2개)
+- [x] 가려움 40·60·80에서 반대쪽 손이 문 자리 쪽으로 움찔했다 돌아오고(판정 없음), 단계마다 한 번이다 (Core). (M13) — 증거: `SuckEventTests.TwitchLevels_Are40_60_80_WithGrowingReach`, `Twitch_ItchCrossesThreshold_OppositeHandTwitchesTowardBiteAndBack`
+- [x] 부위가 움직일 때 Suck을 누르고 있으면 버티며 흡혈 1.5배·가려움 정지, 놓았으면 튕겨 난다 (Core). (M13) — 증거: `SuckEventTests.Shift_HoldingSuck_RidesItWithFasterBloodAndNoItch`, `Shift_NotHoldingSuck_IsDislodged`
+- [x] 시선 중 계속 빨면 들켜 경계가 +70 오르고, 멈추고 얼어 있으면 들키지 않으며 머리가 되돌아간다. 흡혈 중이 아니면 이벤트가 없다 (Core). (M13) — 증거: `SuckEventTests.Glance_KeepSucking_IsNoticed`, `Glance_Frozen_PassesUnnoticed_HeadReturns`(얼기 규칙을 끄면 실패함을 확인), `NotSucking_NoEventStarts`
+- [x] 흡혈 중 이벤트마다 HUD 경고 문구가 뜬다 (Unity). (M13) — 증거: EditMode `HudTests.SuckEventWarnings_ShowDuringSessionOnly`
+- [x] 이벤트가 있어도 "적게 물고 길게 빠는" 설계가 유지되고 봇이 각 스테이지를 4/5 이상 클리어한다 (Core). (M13) — 증거: `DesignValidationTests.LongSessions_VersusShortSessions_LowerAwarenessAndFasterClear`(긴 세션 12/20 vs 짧은 0/20), `ScenarioTests`(봇은 시선이 오면 흡혈을 멈추고 얼어 있는다)
 
 ## 범위 외
 - 흡혈 후 탈출(퇴장) 단계

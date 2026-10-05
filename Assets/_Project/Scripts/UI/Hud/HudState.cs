@@ -17,6 +17,24 @@ namespace Moqui.Unity.UI.Hud
     }
 
     /// <summary>HUD가 그릴 값 한 프레임분. 시뮬레이션과 카메라에서 계산하며 판정에는 쓰지 않는다 (spec/08 HUD 표).</summary>
+    /// <summary>흡혈 중 이벤트 경고 (spec/04 §8, spec/08).</summary>
+    public enum HudSuckWarning
+    {
+        None,
+
+        /// <summary>긁으러 오는 손이 움찔했다.</summary>
+        Twitch,
+
+        /// <summary>부위가 곧 움직인다 (예고).</summary>
+        ShiftComing,
+
+        /// <summary>부위가 움직이는 중 (버티기).</summary>
+        Riding,
+
+        /// <summary>인간이 문 자리를 쳐다본다.</summary>
+        Glance,
+    }
+
     public sealed class HudState
     {
         /// <summary>가장자리 표시가 화면 끝에서 떨어지는 뷰포트 비율. 세로는 상단(게이지·눈)·하단(스태미나·프롬프트·안내) 띠를 피한다.</summary>
@@ -99,6 +117,9 @@ namespace Moqui.Unity.UI.Hud
 
         public bool AttackTelegraphing { get; private set; }
 
+        /// <summary>흡혈 중 이벤트 경고 (흡혈 세션 중에만).</summary>
+        public HudSuckWarning SuckWarning { get; private set; }
+
         /// <summary>광분 중에만, 가장 가까운 Shadow Zone 방향.</summary>
         public EdgeMarker HidingDirection { get; private set; }
 
@@ -155,7 +176,23 @@ namespace Moqui.Unity.UI.Hud
             state.HidingDirection = human.State == AwarenessState.Frenzy && !player.IsHidden
                 ? NearestShadowZoneMarker(simulation, camera)
                 : EdgeMarker.Hidden;
+            state.SuckWarning = player.SuckSession != null ? SuckWarningFor(human.SuckEvent) : HudSuckWarning.None;
             return state;
+        }
+
+        public static HudSuckWarning SuckWarningFor(SuckEventState suckEvent)
+        {
+            switch (suckEvent.Kind)
+            {
+                case SuckEventKind.Twitch:
+                    return HudSuckWarning.Twitch;
+                case SuckEventKind.Shift:
+                    return suckEvent.Phase == SuckEventPhase.Telegraph ? HudSuckWarning.ShiftComing : HudSuckWarning.Riding;
+                case SuckEventKind.Glance:
+                    return HudSuckWarning.Glance;
+                default:
+                    return HudSuckWarning.None;
+            }
         }
 
         private static HudPrompt PromptFor(GameSimulation simulation)

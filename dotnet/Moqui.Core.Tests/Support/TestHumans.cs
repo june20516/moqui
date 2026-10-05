@@ -28,11 +28,12 @@ namespace Moqui.Core.Tests.Support
             new PartMotionDefinition("forearmR", new Vector3(8f, 0f, 8f), new Vector3(25f, 10f, 15f)),
         });
 
-        /// <summary>확률 반응을 끈다 (움직임만 검증할 때). 스킬 배율과 같은 공개 배율을 0으로 둔다.</summary>
+        /// <summary>확률 반응과 흡혈 중 이벤트를 끈다 (움직임만 검증할 때). 스킬 배율과 같은 공개 배율을 0으로 둔다.</summary>
         public static void DisableReactions(GameSimulation simulation)
         {
             simulation.HumanSystem.Reactions.ExtraMultiplier = 0f;
             simulation.HumanSystem.Reactions.LandingSkillMultiplier = 0f;
+            simulation.HumanSystem.SuckEvents.Enabled = false;
         }
 
         public static HumanDefinition Seated(float facingYaw = 0f, float[] idleLookYaws = null, HumanActionDefinition[] actions = null, HumanTraits traits = null)

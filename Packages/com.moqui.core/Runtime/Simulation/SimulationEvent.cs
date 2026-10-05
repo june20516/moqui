@@ -264,4 +264,34 @@ namespace Moqui.Core.Simulation
 
         public Vector3 Position { get; }
     }
+
+    /// <summary>흡혈 중 이벤트가 시작되거나 단계가 바뀌었다 (spec/04 §8, D-056). 표현·HUD용.</summary>
+    public sealed class SuckEventStarted : SimulationEvent
+    {
+        public SuckEventStarted(int tick, string humanId, SuckEventKind kind)
+            : base(tick)
+        {
+            HumanId = humanId;
+            Kind = kind;
+        }
+
+        public string HumanId { get; }
+
+        public SuckEventKind Kind { get; }
+    }
+
+    /// <summary>시선 이벤트에서 흡혈 중인 모기를 보았다 (D-056).</summary>
+    public sealed class SuckGlanceNoticed : SimulationEvent
+    {
+        public SuckGlanceNoticed(int tick, string humanId, Vector3 position)
+            : base(tick)
+        {
+            HumanId = humanId;
+            Position = position;
+        }
+
+        public string HumanId { get; }
+
+        public Vector3 Position { get; }
+    }
 }

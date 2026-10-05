@@ -49,7 +49,7 @@ namespace Moqui.Core.Simulation
                 human.LineOfSightCheckedTick = tick;
             }
 
-            float multiplier = VisionMultiplier(player);
+            float multiplier = SuckEventSystem.HiddenByFreezing(human, player) ? 0f : VisionMultiplier(player);
             bool visible = human.LineOfSightCached && multiplier > 0f;
             perception.PlayerSeen = inYellow && visible;
             perception.RedZoneTriggered = inRed && visible;

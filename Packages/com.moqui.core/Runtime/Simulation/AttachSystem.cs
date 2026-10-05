@@ -86,9 +86,10 @@ namespace Moqui.Core.Simulation
         }
 
         /// <summary>부위 움직임으로 튕겨 나가야 하면 처리하고 참을 돌려준다.</summary>
-        public bool TryDislodge(Player player, int tick, List<SimulationEvent> events)
+        /// <param name="gripMultiplier">튕김 기준 속도 배율 (흡혈하며 버티기, D-056). 기본 1.</param>
+        public bool TryDislodge(Player player, int tick, List<SimulationEvent> events, float gripMultiplier = 1f)
         {
-            if (player.State != PlayerState.Attached || player.AnchorVelocity.Length() <= _motion.DislodgeSpeed)
+            if (player.State != PlayerState.Attached || player.AnchorVelocity.Length() <= _motion.DislodgeSpeed * gripMultiplier)
             {
                 return false;
             }

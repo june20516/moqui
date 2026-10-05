@@ -177,6 +177,22 @@
 | suck.itchDecay | 5 /s | 흡혈하지 않을 때 감소 |
 | suck.itchThreshold | 100 | 도달 시 즉시 반응 |
 | suck.attachRange | 2u | 표면 부착 가능 거리 |
+| suckEvent.twitchItchStart | 40 | 긁으러 오는 손: 첫 움찔 가려움 (M13, D-056) |
+| suckEvent.twitchItchStep | 20 | 움찔 단계 간격 (40·60·80) |
+| suckEvent.twitchReachStart | 0.25 | 움찔할 때 손이 문 자리까지 가는 비율 (첫 단계) |
+| suckEvent.twitchReachStep | 0.2 | 단계마다 더하는 비율 |
+| suckEvent.twitchDuration | 0.6s | 움찔 한 번 |
+| suckEvent.shiftRate | 0.08/s | 부위가 움직임: 흡혈 중 위험률 |
+| suckEvent.shiftTelegraph | 0.8s | 움직이기 전 예고 |
+| suckEvent.shiftDuration | 1.2s | 부위가 옆으로 갔다 돌아오는 시간 |
+| suckEvent.shiftDistance | 30u | 부위 이동량 (최고 ≈ 78u/s > human.dislodgeSpeed) |
+| suckEvent.gripMul | 2 | 움직이는 동안 Suck을 누르고 버티면 튕김 기준 속도 배율 |
+| suckEvent.shiftRateMul | 1.5 | 버티는 동안 흡혈 속도 배율 (가려움은 오르지 않음) |
+| suckEvent.glanceRate | 0.03/s | 시선: 흡혈 중 위험률 × (0.5 + 가려움/100) |
+| suckEvent.glanceTurnTime | 0.8s | 문 자리로 머리를 돌리는 예고 |
+| suckEvent.glanceTurnSpeed | 120°/s | 그때 머리 회전 속도 |
+| suckEvent.glanceHold | 1.2s | 응시 시간 |
+| suckEvent.glanceNoticeAwareness | 70 | 응시 중 흡혈하는 모기를 보면 오르는 경계 (평소 경계 30 이상이면 광분, D-057) |
 | attach.detachOffset | 2u | 이탈 시 표면 법선 방향으로 떨어지는 거리 (spec/03, D-031) |
 
 ## site (부위 유형)

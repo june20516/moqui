@@ -132,6 +132,8 @@ namespace Moqui.Core.Simulation
             AttackRadius = human.Attack.Radius;
             FrenzyCount = human.FrenzyCount;
             BiteMarkCount = human.BiteMarkCount;
+            SuckEventKind = human.SuckEvent.Kind;
+            SuckEventPhase = human.SuckEvent.Phase;
             Doze = human.Doze;
             BreathPhase = human.BreathPhase;
             IsExhaling = human.IsExhaling;
@@ -193,6 +195,11 @@ namespace Moqui.Core.Simulation
         public int FrenzyCount { get; }
 
         public int BiteMarkCount { get; }
+
+        /// <summary>진행 중인 흡혈 중 이벤트와 단계 (HUD 경고, spec/04 §8).</summary>
+        public SuckEventKind SuckEventKind { get; }
+
+        public SuckEventPhase SuckEventPhase { get; }
 
         public DozeState Doze { get; }
 
