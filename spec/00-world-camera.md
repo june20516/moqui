@@ -22,8 +22,10 @@
 ### 3인칭 (기본)
 - Cinemachine 오빗 카메라.
 - 피벗: 플레이어 중심 + `camera.heightOffset`, 거리 `camera.distance`, FOV `camera.fov`.
-- 벽에 막히면 `camera.collisionRadius` 구 sweep으로 당겨온다.
-- 부착 상태에서는 카메라가 캐릭터와 분리되어 자유 오빗한다.
+- 벽에 막히면 `camera.collisionRadius` 구 sweep으로 당겨온다. **당길 때는 즉시, 다시 물러날 때는 `camera.returnSpeed`로 천천히** 돌아가 좁은 곳·움직이는 팔 근처에서 화면이 튀지 않게 한다 (M13).
+- 부착 상태에서는 카메라가 캐릭터와 분리되어 자유 오빗한다. **피벗은 월드 위가 아니라 붙은 면의 법선 쪽**으로 `camera.heightOffset`만큼 둔다 (천장이면 몸 아래쪽). 기준 방향이 바뀌면 `camera.pivotBlendTime` 동안 돌린다 (M13).
+- 카메라가 플레이어 중심에서 `camera.hidePlayerDistance`보다 가까워지면 모키 메시를 그림자만 남기고 숨긴다. 카메라가 몸 안에 들어가 외곽선 뒷면이 화면을 덮는(까만 화면) 일을 막는다 (M13).
+- 툰 외곽선 두께는 시야 거리에 비례하고(최대 `_OutlineWidth`), 카메라가 표면에 바짝 붙어도 외곽선 껍질 안에 들어가지 않는다 (M13, spec/10).
 
 ### 1인칭
 - 카메라 위치: 캐릭터 머리 + `camera.fp.eyeOffset`, FOV `camera.fp.fov`, near clip `camera.fp.nearClip`.
@@ -44,6 +46,10 @@
 - [x] 1인칭에서 플레이어 메시의 렌더러가 Shadows Only이고, 3인칭으로 돌아오면 원래대로 복구된다 (Unity). — 증거: `CameraTests.FirstPerson_PlayerRenderers_ShadowsOnlyThenRestored`
 - [x] 1인칭 부착 상태에서 시선이 법선 기준 `camera.fp.attachedLookLimit`를 벗어나지 않는다 (Unity). — 증거: `StealthPresentationTests.FirstPersonAttached_LookIntoWall_StaysWithinLimitOfNormal`(실제 부착 시뮬레이션, 240프레임 입력 누적), `ThirdPersonAttached_LookNotConstrained`
 - [x] 1인칭에서 벽에 최대한 붙어도 화면에 벽 뒤가 보이지 않는다 (캡처 검토: 벽 접촉 포즈 1장). — 증거: `Captures/2026-10-01_131326/Sandbox_Flight_fp_wall_contact.png`, `..._fp_wall_contact_angled.png` (시뮬레이션으로 앞 벽까지 비행 후 캡처, 캡처 검토 기록 참조)
+- [x] 천장에 붙으면 3인칭 피벗이 법선(아래) 쪽으로 가고 카메라가 천장을 뚫지 않는다 (Unity). (M13) — 증거: `CameraTests.ThirdPerson_AttachedToCeiling_PivotFollowsSurfaceNormal`
+- [x] 막히면 즉시 당기고 트이면 `camera.returnSpeed`로 물러난다 (Unity). (M13) — 증거: `CameraTests.ThirdPerson_Blocked_PullsInAtOnce_ReturnsAtReturnSpeed`
+- [x] 카메라가 몸에 너무 가까우면 모키를 숨기고, 외곽선 두께는 시야 거리에 비례한다 (Unity). (M13) — 증거: `CameraTests.ThirdPerson_CameraCrampedAgainstBody_HidesPlayer`, `ToonOutline_WidthScalesWithViewDistance`
+- [x] 천장·구석·팔뚝 아래 캡처에서 화면이 까맣게 덮이지 않는다 (캡처 검토). (M13) — 증거: `Captures/2026-10-05_191556/Stage_stage0*_ceiling_tp.png`·`_corner_tp.png`·`_under_forearm_tp.png` 검토. 수정 전 `Captures/2026-10-05_184849`(탐침)·`2026-10-05_191439`에서는 모키 실루엣과 천장 외곽선 껍질(카메라를 향한 면의 0.6u 부풀림)이 화면을 남색으로 덮었음 → 카메라를 향한 면은 카메라까지 거리의 절반 이상 부풀리지 않도록 셰이더 수정
 - [x] 선택한 시점이 재시작 후에도 유지된다 (Unity). — 증거: `CameraTests.SelectedView_PlayerPrefsStore_SurvivesRestart`, `SelectedView_NewControllerWithSameStore_IsRestored`
 
 ## 범위 외

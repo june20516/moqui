@@ -26,6 +26,10 @@ namespace Moqui.Unity.Presentation.Senses
             CueIntensitySuspicious = tuning.GetFloat("hiding.cueIntensitySuspicious");
             CueIntensityFrenzy = tuning.GetFloat("hiding.cueIntensityFrenzy");
             SteamClearRangeMul = tuning.GetFloat("humid.steamClearRangeMul");
+            PerchDelay = tuning.GetFloat("perch.delay");
+            PerchBlendTime = tuning.GetFloat("perch.blendTime");
+            PerchClearRangeMul = tuning.GetFloat("perch.clearRangeMul");
+            PerchFogFullRangeMul = tuning.GetFloat("perch.fogFullRangeMul");
         }
 
         public float ClearRange { get; }
@@ -65,5 +69,14 @@ namespace Moqui.Unity.Presentation.Senses
         public float CueIntensityFrenzy { get; }
 
         public float SteamClearRangeMul { get; }
+
+        /// <summary>관망 (M13): 붙은 뒤 시작까지 (s), 넓어지는 시간 (s), 선명·최대 흐림 거리 배율.</summary>
+        public float PerchDelay { get; }
+
+        public float PerchBlendTime { get; }
+
+        public float PerchClearRangeMul { get; }
+
+        public float PerchFogFullRangeMul { get; }
     }
 }

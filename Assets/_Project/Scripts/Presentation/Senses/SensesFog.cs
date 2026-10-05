@@ -13,6 +13,28 @@ namespace Moqui.Unity.Presentation.Senses
             return inSteam ? clear * settings.SteamClearRangeMul : clear;
         }
 
+        /// <summary>관망 정도 p (0~1)에서의 선명 거리: 기본 선명 거리 × lerp(1, perch.clearRangeMul, p) (M13).</summary>
+        public static float PerchClearRange(SensesSettings settings, float clearRange, float perch)
+        {
+            return clearRange * Mathf.Lerp(1f, settings.PerchClearRangeMul, perch);
+        }
+
+        /// <summary>관망 정도 p (0~1)에서의 최대 흐림 거리 (M13).</summary>
+        public static float PerchFullRange(SensesSettings settings, float perch)
+        {
+            return settings.FogFullRange * Mathf.Lerp(1f, settings.PerchFogFullRangeMul, perch);
+        }
+
+        /// <summary>
+        /// 관망 정도를 한 프레임 진행한다 (M13): 붙은 지 perch.delay가 지나면 perch.blendTime에 걸쳐 1로, 떨어지면 같은 속도로 0으로.
+        /// </summary>
+        public static float StepPerch(SensesSettings settings, float perch, float attachedSeconds, bool attached, float deltaTime)
+        {
+            float target = attached && attachedSeconds >= settings.PerchDelay ? 1f : 0f;
+            float rate = settings.PerchBlendTime > 0f ? deltaTime / settings.PerchBlendTime : 1f;
+            return Mathf.MoveTowards(perch, target, rate);
+        }
+
         /// <summary>기준점에서 distance만큼 떨어진 곳의 흐림 (0 = 선명, maxDensity = 최대 흐림).</summary>
         public static float Amount(float distance, float clearRange, float fullRange, float maxDensity)
         {
@@ -38,11 +60,15 @@ namespace Moqui.Unity.Presentation.Senses
 
         private SensesSettings _settings;
 
-        public static void Apply(SensesSettings settings, Vector3 origin, bool inSteam)
+        /// <summary>지금 관망 정도 (0~1, M13).</summary>
+        public float Perch { get; private set; }
+
+        /// <param name="perch">관망 정도 0~1 (붙어서 지켜보면 시야가 넓어진다, M13).</param>
+        public static void Apply(SensesSettings settings, Vector3 origin, bool inSteam, float perch = 0f)
         {
             Shader.SetGlobalVector(OriginId, origin);
-            Shader.SetGlobalFloat(ClearId, FogModel.ClearRange(settings, inSteam));
-            Shader.SetGlobalFloat(FullId, settings.FogFullRange);
+            Shader.SetGlobalFloat(ClearId, FogModel.PerchClearRange(settings, FogModel.ClearRange(settings, inSteam), perch));
+            Shader.SetGlobalFloat(FullId, FogModel.PerchFullRange(settings, perch));
             Shader.SetGlobalFloat(MaxId, settings.FogMaxDensity);
             Shader.SetGlobalFloat(BlurId, settings.FogBlurPixels);
         }
@@ -62,8 +88,12 @@ namespace Moqui.Unity.Presentation.Senses
             }
 
             _settings ??= new SensesSettings(_runner.Tuning);
-            var player = _runner.Driver.Simulation.Player;
-            Apply(_settings, player.Position.ToUnity(), player.InSteam);
+            var simulation = _runner.Driver.Simulation;
+            var player = simulation.Player;
+            bool attached = player.State == Core.Simulation.PlayerState.Attached;
+            float attachedSeconds = attached ? (simulation.Tick - player.AttachedTick) * Core.Simulation.GameSimulation.DeltaTime : 0f;
+            Perch = FogModel.StepPerch(_settings, Perch, attachedSeconds, attached, Time.deltaTime);
+            Apply(_settings, player.Position.ToUnity(), player.InSteam, Perch);
         }
 
         private void OnDisable()

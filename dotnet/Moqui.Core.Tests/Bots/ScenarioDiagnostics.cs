@@ -43,5 +43,30 @@ namespace Moqui.Core.Tests.Bots
             });
             TestContext.Out.WriteLine(result.ToString());
         }
+
+        /// <summary>광분 빈도 측정 (M13): 스테이지별 클리어 봇 시드 1~5의 광분 횟수, 반응 공격 수, 최고 경계.</summary>
+        [Test]
+        public void FrenzyStats()
+        {
+            var source = FileSystemDataSource.ForRepoData();
+            for (int stage = 1; stage <= 5; stage++)
+            {
+                string scenarioId = $"stage{stage:00}_clear";
+                string file = ScenarioDefinition.FilePath(scenarioId);
+                var scenario = ScenarioDefinition.Parse(source.ReadText(file), file);
+                var level = new LevelLoader(source).Load(scenario.LevelId);
+                for (ulong seed = 1; seed <= 5; seed++)
+                {
+                    int reactions = 0;
+                    float maxAwareness = 0f;
+                    var result = new ScenarioRunner(TestSimulations.Tuning).Run(level, scenario, seed, (simulation, step) =>
+                    {
+                        reactions += simulation.Events.OfType<AttackTelegraphStarted>().Count(telegraph => telegraph.Kind == AttackKind.ReactSlap);
+                        maxAwareness = System.Math.Max(maxAwareness, simulation.Human.Awareness);
+                    });
+                    TestContext.Out.WriteLine($"{scenarioId} seed={seed} {result.Outcome} t={result.Ticks * GameSimulation.DeltaTime:F0}s frenzies={result.Frenzies} reactions={reactions} maxAwareness={maxAwareness:F0} marks={result.BiteMarks}");
+                }
+            }
+        }
     }
 }

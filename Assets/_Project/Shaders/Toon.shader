@@ -9,7 +9,8 @@ Shader "Moqui/Toon"
         _ShadowTint ("Shadow Tint", Color) = (0.42, 0.38, 0.62, 1)
         _Bands ("Bands", Range(2, 4)) = 3
         _AmbientStrength ("Ambient Strength", Range(0, 1)) = 0.35
-        _OutlineWidth ("Outline Width (world)", Float) = 0.6
+        _OutlineWidth ("Outline Width (world, max)", Float) = 0.6
+        _OutlineDistanceRatio ("Outline Width per View Distance", Float) = 0.006
         _OutlineColor ("Outline Color", Color) = (0.12, 0.1, 0.2, 1)
         _SelfIllumination ("Self Illumination", Range(0, 1)) = 0
     }
@@ -28,6 +29,7 @@ Shader "Moqui/Toon"
             float _Bands;
             float _AmbientStrength;
             float _OutlineWidth;
+            float _OutlineDistanceRatio;
             float4 _OutlineColor;
             float _SelfIllumination;
         CBUFFER_END
@@ -99,6 +101,9 @@ Shader "Moqui/Toon"
         Pass
         {
             // 외곽선: 법선 방향으로 부풀린 뒷면을 그린다 (월드 공간 두께라 늘린 상자도 두께가 같다).
+            // 두께는 시야 거리 × _OutlineDistanceRatio (화면에서 거의 일정한 굵기)이고 _OutlineWidth를 넘지 않는다.
+            // 또 카메라를 향한 면은 카메라까지 거리(면 기준)의 절반보다 부풀리지 않는다: 카메라가 벽·천장에 바짝 붙어도
+            // 외곽선 껍질 안에 들어가 그 뒷면이 화면을 덮는(까만 화면) 일이 없다. 실루엣 외곽선은 뒤를 향한 면에서 나오므로 그대로다 (M13).
             Name "ToonOutline"
             Tags { "LightMode" = "SRPDefaultUnlit" }
             Cull Front
@@ -120,7 +125,15 @@ Shader "Moqui/Toon"
                 UNITY_SETUP_INSTANCE_ID(input);
                 float3 positionWS = TransformObjectToWorld(input.positionOS.xyz);
                 float3 normalWS = normalize(TransformObjectToWorldNormal(input.normalOS));
-                return TransformWorldToHClip(positionWS + normalWS * _OutlineWidth);
+                float3 toCamera = GetCameraPositionWS() - positionWS;
+                float width = min(_OutlineWidth, _OutlineDistanceRatio * length(toCamera));
+                float cameraInFront = dot(toCamera, normalWS);
+                if (cameraInFront > 0.0)
+                {
+                    width = min(width, cameraInFront * 0.5);
+                }
+
+                return TransformWorldToHClip(positionWS + normalWS * width);
             }
 
             half4 Frag() : SV_Target

@@ -127,20 +127,23 @@ namespace Moqui.Unity.Editor
                 gimmickView.Render(GameSimulation.DeltaTime);
             }
 
-            var solver = new CameraPoseSolver(new CameraSettings(tuning), simulation.World);
+            var cameraSettings = new CameraSettings(tuning);
+            var solver = new CameraPoseSolver(cameraSettings, simulation.World);
             var player = GameObject.Find("Player");
             var visibility = player.GetComponent<PlayerViewVisibility>();
             Vector3 spawn = simulation.Player.Position.ToUnity();
             Vector3 head = simulation.Human.HeadCenter.ToUnity();
             string prefix = $"Stage_{levelId}_";
 
-            void Shot(Vector3 playerPosition, CameraPose pose, bool firstPerson, string name)
+            void Shot(Vector3 playerPosition, CameraPose pose, bool firstPerson, string name, float perch = 0f)
             {
                 simulation.Player.Position = playerPosition.ToCore();
                 sensesView.Render(0f);
                 gimmickView.Render(0f);
-                SensesFog.Apply(senses, playerPosition, false);
-                Capture(camera, player, visibility, playerPosition, pose, firstPerson, outputDirectory, prefix + name);
+                SensesFog.Apply(senses, playerPosition, false, perch);
+                // 실제 카메라와 같이: 1인칭이거나 카메라가 몸에 너무 가까우면 모키를 숨긴다 (M13).
+                bool hidden = firstPerson || Vector3.Distance(pose.Position, playerPosition) < cameraSettings.HidePlayerDistance;
+                Capture(camera, player, visibility, playerPosition, pose, hidden, outputDirectory, prefix + name);
             }
 
             Vector3 overviewPosition = OverviewPoint(simulation.World, spawn, head);
@@ -161,8 +164,43 @@ namespace Moqui.Unity.Editor
             vignette.Tick(tuning, true, ShadowSettleSeconds);
             Shot(hidden, solver.ThirdPerson(hidden, YawTowards(hidden, head), -5f), false, "shadow_zone");
             vignette.Tick(tuning, false, ShadowSettleSeconds);
+            CaptureCrampedViews(simulation, solver, head, Shot);
             SensesFog.Disable();
             Debug.Log($"[CaptureTool] {prefix}: shapes={level.AllShapes().Count()}, shadow={shadow.Id}, human={simulation.Human.State}, co2Puffs={sensesView.Plume.Puffs.Count}");
+        }
+
+        /// <summary>
+        /// 좁은 곳·붙은 면 카메라 회귀 장면 (M13): 천장에 붙어 내려다보기(3인칭·1인칭, 관망), 방 위쪽 구석, 팔뚝 아래에 붙기.
+        /// 화면이 모키 실루엣이나 외곽선으로 까맣게 덮이지 않아야 한다.
+        /// </summary>
+        private static void CaptureCrampedViews(GameSimulation simulation, CameraPoseSolver solver, Vector3 head, System.Action<Vector3, CameraPose, bool, string, float> shot)
+        {
+            float bodyOffset = simulation.Player.CollisionRadius + SphereMover.Skin;
+            var ceiling = simulation.World.Shapes.First(shape => shape.Id.EndsWith("ceiling"));
+            Vector3 roomCenter = ceiling.Center.ToUnity();
+            float ceilingBottom = ceiling.Center.Y - ceiling.HalfExtents.Y;
+
+            // 천장: 인간 머리 위쪽 천장에 붙어 내려다본다.
+            var onCeiling = new Vector3(head.x, ceilingBottom - bodyOffset, head.z - 60f);
+            float yawToHead = YawTowards(onCeiling, head);
+            shot(onCeiling, solver.ThirdPerson(onCeiling, yawToHead, -50f, Vector3.down), false, "ceiling_tp", 1f);
+            shot(onCeiling, solver.FirstPersonAttached(onCeiling, yawToHead, -60f, Vector3.down), true, "ceiling_fp", 1f);
+
+            // 구석: 북쪽·동쪽 벽과 천장이 만나는 곳 바로 아래에서 방 가운데를 본다.
+            var north = simulation.World.Shapes.First(shape => shape.Id.EndsWith("wall_north"));
+            var east = simulation.World.Shapes.First(shape => shape.Id.EndsWith("wall_east"));
+            float innerZ = north.Center.Z - (Mathf.Sign(north.Center.Z - roomCenter.z) * north.HalfExtents.Z);
+            float innerX = east.Center.X - (Mathf.Sign(east.Center.X - roomCenter.x) * east.HalfExtents.X);
+            var corner = new Vector3(
+                innerX - (Mathf.Sign(innerX - roomCenter.x) * (bodyOffset + 0.1f)),
+                ceilingBottom - bodyOffset - 0.1f,
+                innerZ - (Mathf.Sign(innerZ - roomCenter.z) * (bodyOffset + 0.1f)));
+            shot(corner, solver.ThirdPerson(corner, YawTowards(corner, head), -20f), false, "corner_tp", 0f);
+
+            // 팔뚝 아래: 오른 팔뚝 아랫면에 붙어 머리 쪽을 본다.
+            var forearm = simulation.Human.Shapes["forearmR"];
+            Vector3 underArm = (System.Numerics.Vector3.Lerp(forearm.PointA, forearm.PointB, 0.3f) - (System.Numerics.Vector3.UnitY * (forearm.Radius + bodyOffset))).ToUnity();
+            shot(underArm, solver.ThirdPerson(underArm, YawTowards(underArm, head), -10f, Vector3.down), false, "under_forearm_tp", 1f);
         }
 
         private sealed class MemoryStorage : ISaveStorage
@@ -741,7 +779,7 @@ namespace Moqui.Unity.Editor
         private static void Capture(Camera camera, GameObject player, PlayerViewVisibility visibility, Vector3 playerPosition, CameraPose pose, bool firstPerson, string outputDirectory, string name)
         {
             player.transform.position = playerPosition;
-            visibility.SetFirstPerson(firstPerson);
+            visibility.SetHidden(firstPerson);
             pose.ApplyTo(camera);
             CaptureCamera(camera, Path.Combine(outputDirectory, name + ".png"));
         }

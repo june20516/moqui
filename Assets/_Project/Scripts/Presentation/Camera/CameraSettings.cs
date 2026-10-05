@@ -15,6 +15,9 @@ namespace Moqui.Unity.Presentation
             CollisionRadius = tuning.GetFloat("camera.collisionRadius");
             DefaultView = ParseView(tuning.GetString("camera.defaultView"));
             SwitchTime = tuning.GetFloat("camera.switchTime");
+            ReturnSpeed = tuning.GetFloat("camera.returnSpeed");
+            PivotBlendTime = tuning.GetFloat("camera.pivotBlendTime");
+            HidePlayerDistance = tuning.GetFloat("camera.hidePlayerDistance");
             FirstPersonEyeOffset = tuning.GetVector3("camera.fp.eyeOffset").ToUnity();
             FirstPersonFov = tuning.GetFloat("camera.fp.fov");
             FirstPersonNearClip = tuning.GetFloat("camera.fp.nearClip");
@@ -35,6 +38,15 @@ namespace Moqui.Unity.Presentation
         public CameraViewMode DefaultView { get; }
 
         public float SwitchTime { get; }
+
+        /// <summary>당겨진 3인칭 카메라가 원래 거리로 돌아가는 속도 (u/s).</summary>
+        public float ReturnSpeed { get; }
+
+        /// <summary>피벗 기준 방향이 바뀔 때 보간 시간 (s).</summary>
+        public float PivotBlendTime { get; }
+
+        /// <summary>카메라가 플레이어 중심에서 이보다 가까우면 모키를 숨긴다 (u).</summary>
+        public float HidePlayerDistance { get; }
 
         public Vector3 FirstPersonEyeOffset { get; }
 

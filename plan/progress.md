@@ -23,8 +23,8 @@
 
 ### 작업 순서
 - [x] A. 키 배치(#1)·흡혈 중 몸 고정(#2)·바람 소리(#3) — 증거: EditMode `CommandCollectorTests`(C 하강·LShift 정밀), Core `SuckTests.WhileSucking_MoveInput_BodyStaysFixed`·`WhileSucking_EscapeInputs_Detach`, EditMode `AudioTests.Wind_LoopFollowsStrength_GustOnceOnEntering`, 음원 2종 합성
-- [ ] B. 카메라(#4·#8): 붙은 면 법선 기준 3인칭 피벗, 당김 즉시·복귀 완만, 몸에 가까우면 모키 숨김, 회귀 캡처(천장·벽·구석·팔꿈치 아래)
-- [ ] C. 관망(#4): 붙어 있으면 감각 안개 범위 확대 (tuning `perch.*`)
+- [x] B. 카메라(#4·#8) — 증거: EditMode `CameraTests.ThirdPerson_AttachedToCeiling_PivotFollowsSurfaceNormal`·`ThirdPerson_Blocked_PullsInAtOnce_ReturnsAtReturnSpeed`·`ThirdPerson_CameraCrampedAgainstBody_HidesPlayer`·`ToonOutline_WidthScalesWithViewDistance`, 캡처 `Captures/2026-10-05_191556/Stage_*_ceiling_tp·corner_tp·under_forearm_tp.png`: 붙은 면 법선 기준 3인칭 피벗, 당김 즉시·복귀 완만, 몸에 가까우면 모키 숨김, 외곽선 껍질 제한, 회귀 캡처
+- [x] C. 관망(#4) — 증거: EditMode `SensesFogTests.Perch_AttachedAndStill_WidensClearAndFullRanges`, 캡처 `Stage_stage01_ceiling_fp.png`: 붙어 있으면 감각 안개 범위 확대 (tuning `perch.*`)
 - [ ] D. 광분 빈도(#6): 봇·시뮬레이션으로 광분 진입률 측정 → 수치 조정
 - [ ] E. 흡혈 중 이벤트(#7): 긁으러 오는 손, 부위가 움직임, 시선 (D-056)
 - [ ] F. 스테이지 확장 계획(#5): `plan/stage-expansion.md`
@@ -77,6 +77,7 @@
 (없음)
 
 ## 캡처 검토 기록
+- 2026-10-05 M13 `Captures/2026-10-05_191556/` 좁은 곳 카메라: 천장 3인칭(모키 숨김, 몸 아래 피벗)·1인칭에서 관망으로 방 전체·인간·CO₂가 보임, 팔뚝 아래 3인칭 정상, 구석은 옆 벽 그늘면 + 방 안쪽. **결함 수정**: 탐침(`2026-10-05_184849`)에서 천장 3인칭이 모키 실루엣으로, 1인칭이 회색 안개로 덮임 → 붙은 면 기준 피벗·근접 숨김·관망. `2026-10-05_191439`에서 천장 외곽선 껍질(0.6u)이 남색 덩어리로 남음 → 카메라를 향한 면은 거리 절반까지만 부풀림
 - 2026-10-01 M10 `Captures/2026-10-01_173131/` 에셋 패스: 툰 셀 3단·외곽선·남보라 그림자, 밤 실내 팔레트(라벤더 벽·나무 바닥·남색 환경광), 약한 Bloom·색 보정. 마젠타 없음. **플레이어 구분 소견**: Stage 1·2(거실, 안개 속 분홍 모키 선명), Stage 3(침실, 침대 위 분홍), Stage 4(화장실, 역광 쪽이라 보라로 어두웠음 → 툰 자체 밝기 0.3 적용 후 분홍으로 구분), Stage 5(베란다, 거미줄 격자 앞에서도 구분). 모키 자세 7종(`Moki_*.png`), 인간 공격 3단계(`Sandbox_Human_attack_*.png`), HUD 3해상도 정상. **결함 수정**: 툰 셰이더 변수 이름 중복(`lit`)으로 전체 마젠타 → 수정 후 컴파일 오류 검사 테스트 추가
 - 2026-10-01 M9 `Captures/2026-10-01_165113/` Stage 3~5: 침실(누운 인간·선풍기·옷장·침대 밑 은신처), 화장실(변기 위 고개 숙인 인간·유리 샤워 부스 안 증기), 베란다(취한 인간·테이블·거미줄 격자·연녹색 모기약 연무·모기향 받침과 연기·선풍기 머리 원판). CO₂ 바람 장면은 옅지만 바람 방향으로 기욺 → 인간을 헤드보드에서 10u 띄우고 촬영 시점을 날숨·바람 정면에 맞춤. 마젠타 없음. 작은 방(화장실) 전경 카메라가 벽에 가까움 — 아트 단계에서 포즈 조정
 - 2026-10-01 M8 `Captures/2026-10-01_160546/` 기체 표현: CO₂는 코에서 흩어지는 분홍 기체 줄기(노이즈로 일렁임, 소프트 파티클), 증기는 상자 윤곽 없는 뭉게 덩어리(가구 뒤 가리지 않음), 증기 안에서는 선명 시야가 줄어든 안개. 첫 시도(`160443`)에서 증기 윤곽이 상자 모양 → 가장자리 노이즈 침식으로 수정
@@ -94,7 +95,8 @@
 ## 반복 로그
 | 일시 | 마일스톤 | 한 일 | 증거 | 커밋 |
 |---|---|---|---|---|
-| 2026-10-05 | M13 | A 키 배치(Space/C/LShift)·흡혈 중 몸 고정·바람 소리 | Core 357 + EditMode 127 + PlayMode 22 통과 | (이 커밋) |
+| 2026-10-05 | M13 | B 카메라(붙은 면 피벗·완만 복귀·근접 숨김·외곽선 껍질 제한)·C 관망, 광분 빈도 측정(FrenzyStats) | Core 357 + EditMode 132 + PlayMode 22 통과, 캡처 검토 `2026-10-05_191556` | (이 커밋) |
+| 2026-10-05 | M13 | A 키 배치(Space/C/LShift)·흡혈 중 몸 고정·바람 소리 | Core 357 + EditMode 127 + PlayMode 22 통과 | ee66187 |
 | 2026-10-05 | M12 | G 마무리: 빌드·성능 재측정, GOAL D3 재체크, 최종 보고서 M12 반영, M12 종료 | 빌드 성공, 테스트 전부 통과 | (이 커밋) |
 | 2026-10-05 | M12 | F 포만 아이콘(추 모양 + 글자) | Core 353 + EditMode 126 + PlayMode 22 통과, 캡처 검토 | cce70a9 |
 | 2026-10-05 | M12 | I 공격 예고 동적 표현(TelegraphRing 셰이더, 손 접근 줄기) | Core 353 + EditMode 126 + PlayMode 22 통과, 캡처 검토 | 94686cf |

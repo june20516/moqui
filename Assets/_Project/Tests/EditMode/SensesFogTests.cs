@@ -48,6 +48,49 @@ namespace Moqui.Unity.Tests
             Assert.That(FogModel.ClearRange(settings, true), Is.EqualTo(settings.ClearRange * settings.SteamClearRangeMul).Within(Tolerance));
         }
 
+        /// <summary>
+        /// 관망 (M13): 붙은 지 perch.delay가 지나면 perch.blendTime에 걸쳐 선명·최대 흐림 거리가 배율만큼 넓어지고,
+        /// 떨어지면 같은 시간에 원래대로 돌아온다. 넓어진 범위가 셰이더 파라미터로 나간다.
+        /// </summary>
+        [Test]
+        public void Perch_AttachedAndStill_WidensClearAndFullRanges()
+        {
+            var settings = LoadSettings();
+            const float frame = 1f / 60f;
+            float perch = 0f;
+            float attachedSeconds = 0f;
+
+            for (float t = 0f; t < settings.PerchDelay - frame; t += frame)
+            {
+                attachedSeconds += frame;
+                perch = FogModel.StepPerch(settings, perch, attachedSeconds, true, frame);
+            }
+
+            Assert.That(perch, Is.EqualTo(0f), "no perch before the delay");
+
+            for (float t = 0f; t < settings.PerchBlendTime + (2f * frame); t += frame)
+            {
+                attachedSeconds += frame;
+                perch = FogModel.StepPerch(settings, perch, attachedSeconds, true, frame);
+            }
+
+            Assert.That(perch, Is.EqualTo(1f));
+            try
+            {
+                SensesFog.Apply(settings, Vector3.zero, false, perch);
+                Assert.That(Shader.GetGlobalFloat(SensesFog.ClearId), Is.EqualTo(settings.ClearRange * settings.PerchClearRangeMul).Within(Tolerance));
+                Assert.That(Shader.GetGlobalFloat(SensesFog.FullId), Is.EqualTo(settings.FogFullRange * settings.PerchFogFullRangeMul).Within(Tolerance));
+                Assert.That(settings.ClearRange * settings.PerchClearRangeMul, Is.LessThan(settings.FogFullRange * settings.PerchFogFullRangeMul));
+            }
+            finally
+            {
+                SensesFog.Disable();
+            }
+
+            perch = FogModel.StepPerch(settings, perch, 0f, false, settings.PerchBlendTime * 0.5f);
+            Assert.That(perch, Is.EqualTo(0.5f).Within(Tolerance), "fades back after detaching");
+        }
+
         [Test]
         public void Apply_SetsGlobalShaderParameters_FromPlayerOrigin()
         {

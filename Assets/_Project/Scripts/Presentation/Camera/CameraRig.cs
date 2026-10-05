@@ -40,16 +40,15 @@ namespace Moqui.Unity.Presentation
                 _controller.Toggle();
             }
 
-            if (_playerVisibility != null)
-            {
-                _playerVisibility.SetFirstPerson(_controller.IsFirstPerson);
-            }
-
             var player = _runner.Driver.Simulation.Player;
             Vector3? surfaceNormal = player.State == Core.Simulation.PlayerState.Attached ? player.Up.ToUnity() : (Vector3?)null;
             _controller.ConstrainLook(collector.Look, surfaceNormal);
             CameraPose pose = _controller.Update(Time.deltaTime, _runner.Driver.InterpolatedPlayerPosition, collector.Look.Yaw, collector.Look.Pitch, surfaceNormal);
             pose.ApplyTo(_camera);
+            if (_playerVisibility != null)
+            {
+                _playerVisibility.SetHidden(_controller.PlayerHidden);
+            }
         }
     }
 }

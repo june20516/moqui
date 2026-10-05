@@ -73,6 +73,78 @@ namespace Moqui.Unity.Tests
             Assert.That(Vector3.Distance(pose.Position, pivot), Is.EqualTo(_settings.Distance).Within(Tolerance));
         }
 
+        /// <summary>천장에 붙으면 피벗이 법선(아래) 쪽으로 가고, 카메라 구는 천장 안으로 들어가지 않는다 (M13).</summary>
+        [Test]
+        public void ThirdPerson_AttachedToCeiling_PivotFollowsSurfaceNormal()
+        {
+            var world = new CollisionWorld();
+            world.Add(CollisionShape.Box("ceiling", new System.Numerics.Vector3(0f, 252f, 0f), new System.Numerics.Vector3(200f, 2f, 200f), ShapeFlags.Obstacle | ShapeFlags.Attachable));
+            var controller = NewController(world, new MemoryPreferenceStore());
+            var player = new Vector3(0f, 250f - 0.42f, 0f);
+
+            CameraPose pose = RunFor(controller, _settings.PivotBlendTime + 0.1f, player, 0f, 0f, Vector3.down);
+            CameraPose worldUpPivot = new CameraPoseSolver(_settings, world).ThirdPerson(player, 0f, 0f);
+
+            Assert.That(pose.Position.y, Is.EqualTo(player.y - _settings.HeightOffset).Within(0.01f), "pivot moved below the body along the ceiling normal");
+            Assert.That(worldUpPivot.Position.y, Is.LessThanOrEqualTo(250f - _settings.CollisionRadius + Tolerance), "world-up pivot is pinned against the ceiling");
+            Assert.That(Vector3.Distance(pose.Position, player), Is.GreaterThan(_settings.HidePlayerDistance), "the body stays visible");
+        }
+
+        /// <summary>막히면 즉시 당기고, 다시 트이면 camera.returnSpeed로 천천히 물러난다 (M13, 화면 튐 방지).</summary>
+        [Test]
+        public void ThirdPerson_Blocked_PullsInAtOnce_ReturnsAtReturnSpeed()
+        {
+            var world = new CollisionWorld();
+            world.Add(CollisionShape.Box("wall", new System.Numerics.Vector3(0f, 0f, -3f), new System.Numerics.Vector3(50f, 50f, 0.5f), ShapeFlags.Obstacle));
+            var controller = NewController(world, new MemoryPreferenceStore());
+            var open = new Vector3(0f, 0f, 20f);
+            var nearWall = Vector3.zero;
+            Vector3 pivotOffset = Vector3.up * _settings.HeightOffset;
+
+            controller.Update(FrameTime, open, 0f, 0f);
+            CameraPose blocked = controller.Update(FrameTime, nearWall, 0f, 0f);
+            float blockedDistance = Vector3.Distance(blocked.Position, nearWall + pivotOffset);
+            Assert.That(blockedDistance, Is.LessThan(3f), "pulled in on the same frame");
+
+            CameraPose returning = controller.Update(FrameTime, open, 0f, 0f);
+            float returningDistance = Vector3.Distance(returning.Position, open + pivotOffset);
+            Assert.That(returningDistance, Is.EqualTo(blockedDistance + (_settings.ReturnSpeed * FrameTime)).Within(Tolerance));
+
+            CameraPose settled = RunFor(controller, _settings.Distance / _settings.ReturnSpeed, open, 0f, 0f);
+            Assert.That(Vector3.Distance(settled.Position, open + pivotOffset), Is.EqualTo(_settings.Distance).Within(Tolerance));
+        }
+
+        /// <summary>3인칭 카메라가 몸에 너무 가까우면 모키를 숨긴다. 트인 곳에서는 보인다 (M13, 검은 화면 방지).</summary>
+        [Test]
+        public void ThirdPerson_CameraCrampedAgainstBody_HidesPlayer()
+        {
+            var world = new CollisionWorld();
+            world.Add(CollisionShape.Box("ceiling", new System.Numerics.Vector3(0f, 252f, 0f), new System.Numerics.Vector3(200f, 2f, 200f), ShapeFlags.Obstacle));
+            var controller = NewController(world, new MemoryPreferenceStore());
+
+            RunFor(controller, 0.5f, new Vector3(0f, 100f, 0f), 0f, 0f);
+            Assert.That(controller.PlayerHidden, Is.False);
+
+            // 천장에 바짝 붙어 위를 올려다보면 뒤쪽(아래)로는 트여 있다 → 보임. 내려다보면 뒤쪽이 천장이라 카메라가 몸에 몰린다 → 숨김.
+            RunFor(controller, 0.5f, new Vector3(0f, 250f - 0.42f, 0f), 0f, -80f);
+            Assert.That(controller.PlayerHidden, Is.True);
+        }
+
+        /// <summary>
+        /// 툰 외곽선 두께가 시야 거리에 비례한다(비율 &lt; 1): 껍질이 늘 카메라보다 표면 쪽에 있어, 표면에 바짝 붙은 카메라가
+        /// 외곽선 뒷면에 덮여 까매지지 않는다 (M13).
+        /// </summary>
+        [Test]
+        public void ToonOutline_WidthScalesWithViewDistance()
+        {
+            var shader = Shader.Find("Moqui/Toon");
+            Assert.That(shader, Is.Not.Null);
+            int index = shader.FindPropertyIndex("_OutlineDistanceRatio");
+            Assert.That(index, Is.GreaterThanOrEqualTo(0));
+            float ratio = shader.GetPropertyDefaultFloatValue(index);
+            Assert.That(ratio, Is.GreaterThan(0f).And.LessThan(0.5f));
+        }
+
         [Test]
         public void Toggle_AfterSwitchTime_ReachesFirstPersonTargetThenBack()
         {
@@ -163,10 +235,10 @@ namespace Moqui.Unity.Tests
             bodyRenderer.shadowCastingMode = ShadowCastingMode.On;
             var visibility = root.AddComponent<PlayerViewVisibility>();
 
-            visibility.SetFirstPerson(true);
+            visibility.SetHidden(true);
             Assert.That(bodyRenderer.shadowCastingMode, Is.EqualTo(ShadowCastingMode.ShadowsOnly));
 
-            visibility.SetFirstPerson(false);
+            visibility.SetHidden(false);
             Assert.That(bodyRenderer.shadowCastingMode, Is.EqualTo(ShadowCastingMode.On));
             Object.DestroyImmediate(root);
         }
@@ -202,13 +274,13 @@ namespace Moqui.Unity.Tests
             return new CameraController(_settings, new CameraPoseSolver(_settings, world), store);
         }
 
-        private static CameraPose RunFor(CameraController controller, float seconds, Vector3 player, float yaw, float pitch)
+        private static CameraPose RunFor(CameraController controller, float seconds, Vector3 player, float yaw, float pitch, Vector3? surfaceNormal = null)
         {
             CameraPose pose = default;
             int frames = Mathf.CeilToInt(seconds / FrameTime);
             for (int i = 0; i < frames; i++)
             {
-                pose = controller.Update(FrameTime, player, yaw, pitch);
+                pose = controller.Update(FrameTime, player, yaw, pitch, surfaceNormal);
             }
 
             return pose;

@@ -19,6 +19,9 @@
 | camera.pitchLimit | ±85° | |
 | camera.defaultView | ThirdPerson | 저장 데이터가 없을 때 |
 | camera.switchTime | 0.25s | 시점 전환 보간 |
+| camera.returnSpeed | 12u/s | 벽에 막혀 당겨진 3인칭 카메라가 원래 거리로 돌아가는 속도. 당길 때는 즉시 (M13) |
+| camera.pivotBlendTime | 0.2s | 피벗 기준 방향(월드 위 ↔ 붙은 면 법선)이 바뀔 때 보간 시간 (M13) |
+| camera.hidePlayerDistance | 1.5u | 3인칭 카메라가 플레이어 중심에서 이보다 가까우면 모키를 숨긴다(그림자만) (M13) |
 | camera.fp.eyeOffset | (0, 0.15, 0.1)u | 캐릭터 머리 기준 로컬 오프셋. 충돌 구 반지름 안 |
 | camera.fp.fov | 80° | 1인칭 수직 FOV |
 | camera.fp.nearClip | 0.01u | |
@@ -209,6 +212,10 @@
 | senses.fogFullRange | 160u | 최대 흐림 거리 (M12: 250 → 160) |
 | senses.fogMaxDensity | 0.88 | 최대 흐림에서 안개색 비율 (1 미만이어야 큰 가구 실루엣이 남는다, M12: 0.75 → 0.88) |
 | senses.fogBlurPixels | 6px | 최대 흐림에서 블러 반경 (1080p 기준, M12: 3 → 6) |
+| perch.delay | 0.5s | 붙은 뒤 관망이 시작되기까지 (M13) |
+| perch.blendTime | 1.0s | 관망 시야로 넓어지는/돌아오는 시간 (M13) |
+| perch.clearRangeMul | 3 | 관망 중 선명 거리 배율 (50 → 150u) (M13) |
+| perch.fogFullRangeMul | 2.5 | 관망 중 최대 흐림 거리 배율 (160 → 400u) (M13) |
 | senses.co2VisibleRange | 450u | CO₂ 흐름 표시 거리 |
 | senses.heatRange | 60u | 체온 표시 거리 |
 | senses.co2PuffInterval | 0.12s | 날숨 중 CO₂ 연기 덩이 생성 간격 |

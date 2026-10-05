@@ -16,6 +16,8 @@ namespace Moqui.Unity.Presentation
         private readonly CameraPoseSolver _solver;
         private readonly IPreferenceStore _preferences;
         private float _transition;
+        private Vector3 _pivotUp = Vector3.up;
+        private float _thirdPersonDistance = -1f;
 
         public CameraController(CameraSettings settings, CameraPoseSolver solver, IPreferenceStore preferences)
         {
@@ -32,6 +34,12 @@ namespace Moqui.Unity.Presentation
         public float Transition => _transition;
 
         public bool IsFirstPerson => View == CameraViewMode.FirstPerson;
+
+        /// <summary>
+        /// 자기 캐릭터를 숨겨야 하는가 (그림자만): 1인칭이거나, 3인칭 카메라가 좁은 곳에 몰려 플레이어에 너무 가까울 때 (M13).
+        /// 카메라가 모키 몸 안에 들어가면 외곽선 뒷면이 화면을 덮어 까맣게 보이기 때문이다.
+        /// </summary>
+        public bool PlayerHidden { get; private set; }
 
         public void Toggle()
         {
@@ -59,7 +67,11 @@ namespace Moqui.Unity.Presentation
             look.Set(yaw, pitch);
         }
 
-        /// <summary>이번 프레임의 카메라 포즈. 시점 전환은 위치와 FOV만 바꾸고 yaw/pitch는 그대로 쓴다.</summary>
+        /// <summary>
+        /// 이번 프레임의 카메라 포즈. 시점 전환은 위치와 FOV만 바꾸고 yaw/pitch는 그대로 쓴다.
+        /// 3인칭 (M13): 피벗 기준 방향은 붙어 있으면 표면 법선, 아니면 월드 위이며 camera.pivotBlendTime 동안 돌아간다.
+        /// 막혀서 당길 때는 즉시, 다시 물러날 때는 camera.returnSpeed로 천천히 (좁은 곳에서 화면이 튀지 않게).
+        /// </summary>
         public CameraPose Update(float deltaTime, Vector3 playerPosition, float yaw, float pitch, Vector3? surfaceNormal = null)
         {
             if (_settings.SwitchTime > 0f)
@@ -71,13 +83,28 @@ namespace Moqui.Unity.Presentation
                 _transition = 1f;
             }
 
-            CameraPose thirdPerson = _solver.ThirdPerson(playerPosition, yaw, pitch);
+            CameraPose thirdPerson = ThirdPerson(deltaTime, playerPosition, yaw, pitch, surfaceNormal ?? Vector3.up);
             CameraPose firstPerson = surfaceNormal.HasValue
                 ? _solver.FirstPersonAttached(playerPosition, yaw, pitch, surfaceNormal.Value)
                 : _solver.FirstPerson(playerPosition, yaw, pitch);
             CameraPose from = IsFirstPerson ? thirdPerson : firstPerson;
             CameraPose to = IsFirstPerson ? firstPerson : thirdPerson;
+            PlayerHidden = IsFirstPerson || Vector3.Distance(thirdPerson.Position, playerPosition) < _settings.HidePlayerDistance;
             return CameraPose.Lerp(from, to, Mathf.SmoothStep(0f, 1f, _transition));
+        }
+
+        private CameraPose ThirdPerson(float deltaTime, Vector3 playerPosition, float yaw, float pitch, Vector3 targetUp)
+        {
+            float maxRadians = _settings.PivotBlendTime > 0f ? Mathf.PI * deltaTime / _settings.PivotBlendTime : Mathf.PI;
+            _pivotUp = Vector3.RotateTowards(_pivotUp, targetUp.normalized, maxRadians, 0f).normalized;
+
+            Vector3 pivot = _solver.ThirdPersonPivot(playerPosition, _pivotUp);
+            Quaternion rotation = CameraPoseSolver.LookRotation(yaw, pitch);
+            float reach = _solver.ThirdPersonReach(pivot, rotation);
+            _thirdPersonDistance = _thirdPersonDistance < 0f || reach <= _thirdPersonDistance
+                ? reach
+                : Mathf.MoveTowards(_thirdPersonDistance, reach, _settings.ReturnSpeed * deltaTime);
+            return _solver.ThirdPersonAt(pivot, rotation, _thirdPersonDistance);
         }
 
         private CameraViewMode LoadView()

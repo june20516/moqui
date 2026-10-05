@@ -11,6 +11,7 @@
 - 카메라로부터 `senses.clearRange`까지는 선명하고, `senses.fogFullRange`에서 최대로 흐려진다 (깊이 기반 안개 + 블러, 툰 셰이딩과 어울리는 색 안개).
 - 최대 흐림에서도 큰 가구의 실루엣은 보여야 한다 (길을 잃지 않게).
 - 흐림 강도 (M12): 시작 위치에서 인간의 위치가 흐림만으로는 잘 드러나지 않고 CO₂ 흐름·체온 표시가 찾는 단서가 될 만큼 흐리게 한다. 확정값은 `spec/tuning.md` senses.* (clearRange 50, fogFullRange 160, fogMaxDensity 0.88, fogBlurPixels 6).
+- **관망 (M13):** 어디든 붙은 지 `perch.delay`가 지나면 `perch.blendTime`에 걸쳐 선명 거리가 `perch.clearRangeMul`배, 최대 흐림 거리가 `perch.fogFullRangeMul`배로 넓어진다(50 → 150u, 160 → 400u). 떨어지면 같은 시간에 돌아온다. 천장·벽에 붙어 방을 정찰하는 플레이에 보상을 준다 (D-055).
 - 스킬 "겹눈 각성"이 선명 범위를 늘리고, 증기 속에서는 `humid.steamClearRangeMul`배로 줄어든다 (spec/05).
 - 1인칭과 3인칭 모두 같은 거리 기준을 쓴다 (3인칭은 카메라가 아니라 캐릭터 기준 거리).
 
@@ -44,6 +45,8 @@
 - [x] 다섯 스테이지 시작 위치 캡처에서 인간은 흐림 속에 묻히고 CO₂ 흐름은 보이며, 큰 가구 실루엣은 남는다 (캡처 검토). (M12) — 증거: `Captures/2026-10-01_223838/Stage_stage0*_start.png`·`_overview.png` 검토: 인간은 흐림 속 희미한 형체, 머리 위 CO₂ 분홍 줄기는 또렷, 소파·테이블·침대 윤곽은 남음. tuning `senses.clearRange` 50·`fogFullRange` 160·`fogMaxDensity` 0.88·`fogBlurPixels` 6, EditMode `SensesFogTests`(값 연동) 통과
 - [x] 자국 점이 문 자리에 붙고 부위를 따라 움직인다 (Unity). (M12) — 증거: EditMode `SensesViewTests.BiteMark_DotAtTheBiteSpot_OnlyInsideHeatRange`, 캡처 `Captures/2026-10-01_223733/Stage_stage01_human_close.png`(손목 쪽 윗면의 붉은 점)
 - [x] 체온 표시가 부피 막이 아닌 얇은 윤곽/일렁이는 선으로 그려지고, 피부 형상보다 두껍지 않다 (Unity + 캡처 검토). (M12) — 증거: EditMode `SensesViewTests.Heat_IsThinShimmer_NotAVolumeAroundTheSkin`(셰이더 `Moqui/HeatShimmer`, 굵기 ≤ 피부 반지름 × 1.05, `senses.heatGlowScale` 1.04), 캡처 `Captures/2026-10-01_223733/Stage_stage01_human_close.png`(팔뚝 윤곽을 따라 흐르는 가는 선)
+- [x] 붙은 지 perch.delay 뒤 perch.blendTime에 걸쳐 선명·최대 흐림 거리가 넓어지고, 떨어지면 돌아온다 (Unity). (M13) — 증거: EditMode `SensesFogTests.Perch_AttachedAndStill_WidensClearAndFullRanges`
+- [x] 천장에 붙어 내려다보면 방과 인간이 보인다 (캡처 검토). (M13) — 증거: `Captures/2026-10-05_191556/Stage_stage01_ceiling_tp.png`·`_ceiling_fp.png`(관망 1: 소파·인간 피부색·CO₂·바닥까지 보임)
 
 ## 범위 외
 - 냄새(젖산 등) 별도 시각화, 색상 선호도 기반 타겟팅
