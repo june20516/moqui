@@ -29,6 +29,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Ints: []
     m_Floats:
+    - _AdditionalBandSoftness: 0.35
     - _AmbientStrength: 0.35
     - _Bands: 3
     - _OutlineDistanceRatio: 0.006

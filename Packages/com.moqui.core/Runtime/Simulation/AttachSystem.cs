@@ -84,10 +84,11 @@ namespace Moqui.Core.Simulation
         }
 
         /// <summary>지금 F를 누르면 붙을 지점과 법선 (착지 표시, gulf §2). 비행 중이 아니거나 없으면 거짓.</summary>
-        public bool TryGetTarget(Player player, out Vector3 point, out Vector3 normal)
+        public bool TryGetTarget(Player player, out Vector3 point, out Vector3 normal, out CollisionShape shape)
         {
             point = Vector3.Zero;
             normal = Vector3.UnitY;
+            shape = null;
             if (player.State != PlayerState.Flying || !_world.ClosestSurface(player.Position, _settings.SnapRange, ShapeFlags.Attachable, out var surface))
             {
                 return false;
@@ -95,6 +96,7 @@ namespace Moqui.Core.Simulation
 
             point = surface.Point;
             normal = surface.Normal;
+            shape = surface.Shape;
             return true;
         }
 

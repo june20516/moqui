@@ -64,6 +64,24 @@ namespace Moqui.Core.Tests.Data
             }
         }
 
+        /// <summary>쓰는 방은 환경광 색이 있고, 부위를 따라가는 조명은 그 방을 쓰는 레벨 인간의 실제 부위를 가리킨다 (gulf §13).</summary>
+        [Test]
+        public void UsedRooms_HaveAmbient_AttachPartsExistOnTheLevelHuman()
+        {
+            var source = FileSystemDataSource.ForRepoData();
+            var settings = Moqui.Core.Simulation.GameSettings.FromTuning(TuningLoader.Load(source));
+            foreach (string levelId in StageCatalog.Load(source).LevelIds)
+            {
+                var level = Loader.Load(levelId);
+                Assert.That(level.Room.Ambient, Is.Not.Null, $"{level.Room.Id} ambient");
+                var simulation = new Moqui.Core.Simulation.GameSimulation(settings, level.CreateSetup());
+                foreach (var light in level.Room.Lights.Where(l => l.AttachPart.Length > 0))
+                {
+                    Assert.That(simulation.Human.Shapes.ContainsKey(light.AttachPart), Is.True, $"{levelId}: {light.Id} follows {light.AttachPart}");
+                }
+            }
+        }
+
         [Test]
         public void SpotWithoutDirection_IsRejected()
         {

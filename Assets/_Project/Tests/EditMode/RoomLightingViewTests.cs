@@ -49,6 +49,25 @@ namespace Moqui.Unity.Tests
             Assert.That(block.GetFloat("_SelfIllumination"), Is.EqualTo(RoomLightingView.GlowSelfIllumination));
         }
 
+        /// <summary>휴대폰 빛은 손(오른 팔뚝 끝)을 따라가고, 방 환경광 색이 적용된다 (gulf §13).</summary>
+        [Test]
+        public void PhoneLight_FollowsTheHand_RoomAmbientApplied()
+        {
+            var tuning = Moqui.Core.Data.TuningLoader.Load(new UnityDataSource());
+            var level = new LevelLoader(new UnityDataSource()).Load("stage03");
+            var simulation = new Moqui.Core.Simulation.GameSimulation(Moqui.Core.Simulation.GameSettings.FromTuning(tuning), level.CreateSetup());
+            _root = new GameObject("RoomLightingTest");
+            var view = _root.AddComponent<RoomLightingView>();
+
+            view.Build(level.Room, null, simulation);
+
+            var phone = view.Lights.Single(l => l.name == "RoomLight_phone_screen");
+            Vector3 hand = simulation.Human.Shapes["forearmR"].PointB.ToUnity();
+            Assert.That(Vector3.Distance(phone.transform.position, hand + (Vector3.up * RoomLightingView.AttachLift)), Is.LessThan(1e-3f));
+            var ambient = level.Room.Ambient.Value;
+            Assert.That(RenderSettings.ambientLight.r, Is.EqualTo(ambient.X).Within(1e-3f));
+        }
+
         [TestCase(RoomLightFlicker.Lamp)]
         [TestCase(RoomLightFlicker.Tv)]
         [TestCase(RoomLightFlicker.Fluorescent)]

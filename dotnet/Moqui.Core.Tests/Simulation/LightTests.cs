@@ -36,6 +36,9 @@ namespace Moqui.Core.Tests.Simulation
             Run(simulation, PlayerCommand.None, SecondsToTicks(2f));
             Assert.That(simulation.Lights.IsOn(0), Is.False);
             Assert.That(simulation.Player.InLight, Is.False);
+            Assert.That(simulation.Lights.IsAboutToTurnOn(0, simulation.Tick, 0.5f), Is.False, "two seconds off: not yet");
+            Run(simulation, PlayerCommand.None, SecondsToTicks(0.6f));
+            Assert.That(simulation.Lights.IsAboutToTurnOn(0, simulation.Tick, 0.5f), Is.True, "within half a second of the schedule");
         }
 
         [Test]
@@ -53,6 +56,7 @@ namespace Moqui.Core.Tests.Simulation
             }
 
             Assert.That(simulation.Lights.IsOn(0), Is.False, "the human needs time to reach the switch");
+            Assert.That(simulation.Lights.IsAboutToTurnOn(0, simulation.Tick, 1f), Is.True, "about to turn on: the presentation can warn (gulf §8)");
             for (int i = 0; i < 4; i++)
             {
                 TestHumans.Provoke(simulation, 50f);

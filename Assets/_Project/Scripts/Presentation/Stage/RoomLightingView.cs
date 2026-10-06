@@ -31,6 +31,7 @@ namespace Moqui.Unity.Presentation.Stage
         private readonly List<Entry> _entries = new List<Entry>();
         private MaterialPropertyBlock _block;
         private bool _built;
+        private Moqui.Core.Simulation.GameSimulation _simulation;
 
         private sealed class Entry
         {
@@ -39,6 +40,7 @@ namespace Moqui.Unity.Presentation.Stage
             public Renderer Glow;
             public uint Seed;
             public Color BaseColor;
+            public Vector3 BasePosition;
         }
 
         /// <summary>만든 조명 (테스트·캡처용).</summary>
@@ -56,10 +58,21 @@ namespace Moqui.Unity.Presentation.Stage
             }
         }
 
-        /// <summary>방의 조명을 만든다. visuals는 LevelView가 만든 형상 ID → 그림 (빛나는 가구 찾기).</summary>
-        public void Build(RoomDefinition room, IReadOnlyDictionary<string, GameObject> visuals)
+        /// <summary>
+        /// 방의 조명을 만든다. visuals는 LevelView가 만든 형상 ID → 그림 (빛나는 가구 찾기).
+        /// simulation이 있으면 attachPart 조명이 그 인간 부위를 따라간다.
+        /// </summary>
+        public void Build(RoomDefinition room, IReadOnlyDictionary<string, GameObject> visuals, Moqui.Core.Simulation.GameSimulation simulation = null)
         {
             _block = new MaterialPropertyBlock();
+            _simulation = simulation;
+            if (room.Ambient.HasValue)
+            {
+                // 방마다 밤 공기의 색이 다르다 (gulf §13): 거실 남보라, 침실 짙은 남색, 화장실 차가운 청록, 베란다 도시빛 섞인 자주.
+                RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
+                RenderSettings.ambientLight = new Color(room.Ambient.Value.X, room.Ambient.Value.Y, room.Ambient.Value.Z);
+            }
+
             foreach (var definition in room.Lights)
             {
                 var light = new GameObject($"RoomLight_{definition.Id}").AddComponent<Light>();
@@ -87,7 +100,7 @@ namespace Moqui.Unity.Presentation.Stage
                     glow = glowObject.GetComponent<Renderer>();
                 }
 
-                _entries.Add(new Entry { Definition = definition, Light = light, Glow = glow, Seed = AmbientLightCurves.Seed(definition.Id), BaseColor = baseColor });
+                _entries.Add(new Entry { Definition = definition, Light = light, Glow = glow, Seed = AmbientLightCurves.Seed(definition.Id), BaseColor = baseColor, BasePosition = light.transform.position });
             }
 
             _built = true;
@@ -99,6 +112,7 @@ namespace Moqui.Unity.Presentation.Stage
         {
             foreach (var entry in _entries)
             {
+                entry.Light.transform.position = AttachedPosition(entry);
                 LightSample sample = AmbientLightCurves.Sample(entry.Definition.Flicker, time, entry.Seed);
                 Color color = entry.BaseColor * sample.Tint;
                 entry.Light.color = color;
@@ -113,6 +127,21 @@ namespace Moqui.Unity.Presentation.Stage
                 }
             }
         }
+
+        /// <summary>부위를 따라가는 조명: 첫 인간의 그 부위 캡슐 끝(손목 쪽)에서 조금 위. 부위가 없으면 고정 위치.</summary>
+        private Vector3 AttachedPosition(Entry entry)
+        {
+            string part = entry.Definition.AttachPart;
+            if (part.Length == 0 || _simulation == null || _simulation.Human == null || !_simulation.Human.Shapes.TryGetValue(part, out var shape))
+            {
+                return entry.BasePosition;
+            }
+
+            return shape.PointB.ToUnity() + (Vector3.up * AttachLift);
+        }
+
+        /// <summary>부위 끝에서 조명을 띄우는 높이 (u): 손에 든 화면 높이.</summary>
+        public const float AttachLift = 4f;
 
         private void Update()
         {

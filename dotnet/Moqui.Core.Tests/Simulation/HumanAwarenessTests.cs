@@ -113,5 +113,22 @@ namespace Moqui.Core.Tests.Simulation
             Assert.That(maxYaw, Is.LessThanOrEqualTo(60f + 1e-3f), "no overshoot");
             Assert.That(lastVelocity, Is.LessThan(speed * 0.5f), "slows down before stopping");
         }
+
+        /// <summary>머리가 향하려는 목표 각이 회전이 끝나기 전부터 보인다 (눈동자 선행, gulf §7·§12).</summary>
+        [Test]
+        public void Head_TargetIsKnownBeforeTheHeadArrives()
+        {
+            var definition = TestHumans.Seated(idleLookYaws: new[] { 60f, -60f });
+            var simulation = TestHumans.Simulation(TestHumans.FarBehind, human: definition);
+            bool sawLead = false;
+            for (int i = 0; i < SecondsToTicks(12f); i++)
+            {
+                simulation.Step(PlayerCommand.None);
+                var human = simulation.Human;
+                sawLead |= System.Math.Abs(human.HeadTargetYaw - human.HeadYaw) > 20f;
+            }
+
+            Assert.That(sawLead, Is.True, "the target is ahead of the head during a turn");
+        }
     }
 }

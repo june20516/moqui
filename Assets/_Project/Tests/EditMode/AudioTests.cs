@@ -120,6 +120,37 @@ namespace Moqui.Unity.Tests
             Assert.That(suck[AudioIds.SuckLoop].Playing, Is.True);
         }
 
+        /// <summary>고개 목표가 크게 바뀌는 순간 숨소리가 난다 (gulf §7).</summary>
+        [Test]
+        public void NeckTurn_WhenTheHeadTargetJumps()
+        {
+            Tuning tuning = TuningLoader.Load(new UnityDataSource());
+            var level = new LevelLoader(new UnityDataSource()).Load("stage02");
+            var simulation = new GameSimulation(GameSettings.FromTuning(tuning), level.CreateSetup());
+            var cues = new AudioCues();
+            simulation.Step(PlayerCommand.None);
+            cues.OneShots(simulation);
+
+            simulation.Human.HeadTargetYaw += AudioCues.NeckTurnDegrees + 5f;
+            Assert.That(cues.OneShots(simulation), Does.Contain(AudioIds.NeckTurn));
+            Assert.That(cues.OneShots(simulation), Does.Not.Contain(AudioIds.NeckTurn), "only once per jump");
+        }
+
+        /// <summary>정밀 비행 중 날갯소리는 작고 낮다 — 내 소리가 줄었다는 것이 들린다 (gulf §6).</summary>
+        [Test]
+        public void Loops_PrecisionFlight_QuieterLowerWings()
+        {
+            var simulation = CreateFlightSimulation();
+            float normalGain = AudioCues.Loops(simulation, MokiPose.Idle).First(loop => loop.Id == AudioIds.WingLoop).Gain;
+
+            simulation.Step(new PlayerCommand { PrecisionHeld = true });
+            var precise = AudioCues.Loops(simulation, MokiPose.Idle).First(loop => loop.Id == AudioIds.WingLoop);
+
+            Assert.That(normalGain, Is.EqualTo(1f));
+            Assert.That(precise.Gain, Is.EqualTo(AudioCues.PrecisionWingGain));
+            Assert.That(precise.Pitch, Is.LessThan(AudioCues.WingPitchIdle));
+        }
+
         /// <summary>바람에 밀리는 동안 바람 반복음이 세기에 따라 커지고 높아지며, 처음 밀릴 때 "휙"이 한 번 난다 (M13).</summary>
         [Test]
         public void Wind_LoopFollowsStrength_GustOnceOnEntering()

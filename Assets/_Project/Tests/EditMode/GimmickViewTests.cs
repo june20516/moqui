@@ -61,7 +61,7 @@ namespace Moqui.Unity.Tests
         public void AirConditionerVane_VisibleOnlyWhileOn()
         {
             Tuning tuning = TuningLoader.Load(new UnityDataSource());
-            var aircon = new FanDefinition("aircon", new System.Numerics.Vector3(0f, 200f, 0f), 180f, -20f, FanKind.AirConditioner, new FanSchedule(1f, 1f, 0f));
+            var aircon = new FanDefinition("aircon", new System.Numerics.Vector3(0f, 200f, 0f), 180f, -20f, FanKind.AirConditioner, new FanSchedule(1f, 3f, 0f));
             var gimmicks = new GimmickSetup(new[] { aircon }, null, null);
             var simulation = new GameSimulation(GameSettings.FromTuning(tuning), new SimulationSetup(new Moqui.Core.Collision.CollisionWorld(), new System.Numerics.Vector3(0f, 100f, 300f), gimmicks: gimmicks));
             var view = new GameObject("AirconView").AddComponent<GimmickView>();
@@ -77,6 +77,17 @@ namespace Moqui.Unity.Tests
 
             view.Render(FrameTime);
             Assert.That(view.FanHead("aircon").GetComponent<Renderer>().enabled, Is.False, "off after 1s");
+            Assert.That(view.FanOpening("aircon"), Is.False);
+
+            // 다시 켜지기 1초 전부터 송풍 날개가 반쯤 열린다 (gulf §8).
+            for (int i = 0; i < 120; i++)
+            {
+                simulation.Step(PlayerCommand.None);
+            }
+
+            view.Render(FrameTime);
+            Assert.That(view.FanOpening("aircon"), Is.True);
+            Assert.That(view.FanHead("aircon").GetComponent<Renderer>().enabled, Is.True, "opening before it blows");
         }
 
         /// <summary>조명은 켜진 동안만 점광원이 켜진다 (spec/06, M14).</summary>
@@ -85,7 +96,7 @@ namespace Moqui.Unity.Tests
         {
             Tuning tuning = TuningLoader.Load(new UnityDataSource());
             var center = new System.Numerics.Vector3(0f, 200f, 0f);
-            var lamp = new LightDefinition("lamp", center, center, new System.Numerics.Vector3(100f, 100f, 100f), new FanSchedule(1f, 1f, 0f), false);
+            var lamp = new LightDefinition("lamp", center, center, new System.Numerics.Vector3(100f, 100f, 100f), new FanSchedule(1f, 3f, 0f), false);
             var gimmicks = new GimmickSetup(null, null, null, new[] { lamp });
             var simulation = new GameSimulation(GameSettings.FromTuning(tuning), new SimulationSetup(new CollisionWorld(), new System.Numerics.Vector3(0f, 100f, 300f), gimmicks: gimmicks));
             var view = new GameObject("LampView").AddComponent<GimmickView>();
@@ -102,6 +113,30 @@ namespace Moqui.Unity.Tests
 
             view.Render(FrameTime);
             Assert.That(view.Lamps[0].enabled, Is.False);
+            Assert.That(view.LampWarming(0), Is.False);
+
+            // 켜지기 1초 전: 전구가 희미하게 깜빡이며 예열한다 (gulf §8).
+            for (int i = 0; i < 120; i++)
+            {
+                simulation.Step(PlayerCommand.None);
+            }
+
+            view.Render(FrameTime);
+            Assert.That(view.LampWarming(0), Is.True);
+            Assert.That(view.Lamps[0].intensity, Is.LessThan(1f), "dim while warming");
+        }
+
+        /// <summary>켜진 선풍기 원뿔 안으로 바람 줄기가 흐른다 (gulf §8).</summary>
+        [Test]
+        public void WindStreaks_FlowWhileFanIsOn()
+        {
+            for (int i = 0; i < 30; i++)
+            {
+                _simulation.Step(PlayerCommand.None);
+                _view.Render(FrameTime);
+            }
+
+            Assert.That(_view.ActiveStreaks, Is.GreaterThan(0));
         }
 
         [Test]

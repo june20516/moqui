@@ -148,6 +148,21 @@ MonoBehaviour:
     Volume: 0.5
     Loop: 0
     Bus: 0
+  - Id: sfx_switch_click
+    Clip: {fileID: 8300000, guid: 95f50234334d6874595e3eb2ddf9ff7a, type: 3}
+    Volume: 0.6
+    Loop: 0
+    Bus: 0
+  - Id: sfx_ac_motor
+    Clip: {fileID: 8300000, guid: 0de665c6562870a4983a5c995e37777a, type: 3}
+    Volume: 0.5
+    Loop: 0
+    Bus: 0
+  - Id: sfx_neck_turn
+    Clip: {fileID: 8300000, guid: 6e787b09062789944940879349917699, type: 3}
+    Volume: 0.35
+    Loop: 0
+    Bus: 0
   - Id: amb_stage1
     Clip: {fileID: 8300000, guid: 2334c35b8ff60a04a81ed7f30195299e, type: 3}
     Volume: 0.4

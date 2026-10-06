@@ -21,6 +21,31 @@ namespace Moqui.Unity.Presentation
         private Vector3 _glideFrom;
         private float _glideElapsed = float.PositiveInfinity;
         private Transform _landingMarker;
+        private Transform _wingLeft;
+        private Transform _wingRight;
+        private Vector3 _wingLeftRest;
+        private Vector3 _wingRightRest;
+        private float _wingFold;
+        private Player.ProximityCues _proximity;
+        private Light _wandLight;
+
+        /// <summary>흡혈 중 지팡이 하트 빛 (표현 전용, gulf §13 · 큐 wand.drink): 주변 피부를 분홍으로 물들인다.</summary>
+        public const float WandLightRange = 20f;
+        public const float WandLightIntensity = 0.6f;
+        private static readonly Color WandLightColor = new Color(1f, 0.45f, 0.7f);
+
+        /// <summary>지팡이 빛이 켜져 있는가 (테스트용).</summary>
+        public bool WandLightOn => _wandLight != null && _wandLight.enabled;
+
+        /// <summary>거리감 그림자·지면 효과 (gulf §4).</summary>
+        public Player.ProximityCues Proximity => _proximity;
+
+        /// <summary>정밀 비행 때 날개를 접는 각(도)과 반응 속도(1/s) (표현 전용, gulf §6).</summary>
+        public const float PrecisionWingFoldDegrees = 40f;
+        private const float WingFoldResponse = 12f;
+
+        /// <summary>지금 날개를 접은 정도 0~1 (테스트용).</summary>
+        public float WingFold => _wingFold;
 
         /// <summary>F 착지 때 붙을 곳까지 미끄러지는 시간 (표현 전용, gulf §2). Core는 즉시 붙는다.</summary>
         public const float SnapGlideSeconds = 0.15f;
@@ -84,12 +109,15 @@ namespace Moqui.Unity.Presentation
                 _wasAttached = true;
                 _hasRendered = true;
                 transform.SetPositionAndRotation(Glide(_glideFrom, attachedAt, _glideElapsed), AttachedRotation(player.Up.ToUnity(), player.Yaw));
+                RefreshProximity(simulation);
+                RefreshWandLight(simulation, Time.time);
                 return;
             }
 
             _wasAttached = false;
             _hasRendered = true;
             _glideElapsed = float.PositiveInfinity;
+            FoldWings(player.PrecisionHeld);
 
             Quaternion yaw = Quaternion.Euler(0f, player.Yaw, 0f);
             Vector3 localVelocity = Quaternion.Inverse(yaw) * player.Velocity.ToUnity();
@@ -99,6 +127,40 @@ namespace Moqui.Unity.Presentation
             float speedRatio = player.Velocity.Length() / simulation.Settings.Flight.Speed;
             Vector3 bob = Vector3.up * HoverBob(Time.time, speedRatio);
             transform.SetPositionAndRotation(_runner.Driver.InterpolatedPlayerPosition + bob, yaw * Quaternion.Euler(_lean.x, 0f, _lean.y));
+            RefreshProximity(simulation);
+            RefreshWandLight(simulation, Time.time);
+        }
+
+        /// <summary>
+        /// 정밀 비행: 날개를 뒤로 반쯤 접는다(애니메이터가 쓴 자세 위에 더한다). 조용히 나는 중이라는 것이 몸으로 보인다 (gulf §6).
+        /// </summary>
+        private void FoldWings(bool precise)
+        {
+            if (_wingLeft == null)
+            {
+                _wingLeft = transform.Find("MokiRig/WingPivotL/Wing");
+                _wingRight = transform.Find("MokiRig/WingPivotR/Wing");
+                _wingLeftRest = _wingLeft != null ? _wingLeft.localPosition : Vector3.zero;
+                _wingRightRest = _wingRight != null ? _wingRight.localPosition : Vector3.zero;
+            }
+
+            _wingFold = Mathf.Lerp(_wingFold, precise ? 1f : 0f, 1f - Mathf.Exp(-WingFoldResponse * Time.deltaTime));
+            float degrees = PrecisionWingFoldDegrees * _wingFold;
+            FoldWing(_wingLeft, _wingLeftRest, degrees);
+            FoldWing(_wingRight, _wingRightRest, -degrees);
+        }
+
+        /// <summary>날개 판을 날개 축(부모 피벗) 둘레로 돌린다. 매 프레임 절대값으로 쓰므로 애니메이터 상태와 무관하게 누적되지 않는다.</summary>
+        private static void FoldWing(Transform wing, Vector3 restPosition, float degrees)
+        {
+            if (wing == null)
+            {
+                return;
+            }
+
+            var fold = Quaternion.Euler(0f, degrees, 0f);
+            wing.localPosition = fold * restPosition;
+            wing.localRotation = fold;
         }
 
         /// <summary>착지 표시: 비행 중 F로 붙을 수 있으면 붙을 자리에 작은 분홍 원 (발밑 마법진 VFX 전 대용, spec/12 land.ready).</summary>
@@ -122,8 +184,35 @@ namespace Moqui.Unity.Presentation
             }
         }
 
+        /// <summary>흡혈 중(세션 + Suck 누름)이면 지팡이 하트가 1.2초 주기로 맥동하며 분홍 빛을 낸다.</summary>
+        public void RefreshWandLight(Core.Simulation.GameSimulation simulation, float time)
+        {
+            if (_wandLight == null)
+            {
+                _wandLight = new GameObject("WandHeartLight").AddComponent<Light>();
+                _wandLight.transform.SetParent(transform, false);
+                _wandLight.transform.localPosition = new Vector3(0f, 0.1f, 0.35f);
+                _wandLight.type = LightType.Point;
+                _wandLight.range = WandLightRange;
+                _wandLight.color = WandLightColor;
+                _wandLight.shadows = LightShadows.None;
+            }
+
+            var player = simulation.Player;
+            bool drinking = player.SuckSession != null && simulation.LastCommand.SuckHeld;
+            _wandLight.enabled = drinking;
+            _wandLight.intensity = WandLightIntensity * (0.75f + (0.25f * Mathf.Sin(2f * Mathf.PI * time / 1.2f)));
+        }
+
+        private void RefreshProximity(Core.Simulation.GameSimulation simulation)
+        {
+            _proximity ??= new Player.ProximityCues(null);
+            _proximity.Refresh(simulation, _runner.Driver.InterpolatedPlayerPosition, Time.deltaTime);
+        }
+
         private void OnDestroy()
         {
+            _proximity?.Destroy();
             if (_landingMarker != null)
             {
                 if (Application.isPlaying)

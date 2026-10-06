@@ -85,6 +85,7 @@ namespace Moqui.Core.Simulation
             perception.InstantGain *= hearingMul;
             LastPerception = perception;
             human.PlayerOccluded = perception.PlayerOccluded;
+            human.PlayerInEarZone = perception.InEarZone;
 
             // 물린 자국 수 n에 따른 경계 보정 (spec/04 §4).
             Awareness.GainMultiplier = _biteMarks.GainMultiplier(human.BiteMarkCount);

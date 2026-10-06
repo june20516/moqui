@@ -58,6 +58,86 @@ namespace Moqui.Unity.Tests
             Assert.That(PlayerView.Glide(from, to, float.PositiveInfinity), Is.EqualTo(to));
         }
 
+        /// <summary>모기 소리가 귀 근처에서 들리면 귀가 움찔하고, 졸면 움찔하지 않는다 (gulf §6).</summary>
+        [Test]
+        public void Ears_TwitchWhileInEarZone()
+        {
+            Tuning tuning = TuningLoader.Load(new UnityDataSource());
+            LevelDefinition level = new LevelLoader(new UnityDataSource()).Load("stage01");
+            var simulation = new GameSimulation(GameSettings.FromTuning(tuning), level.CreateSetup());
+            var human = simulation.Human;
+            _root = new GameObject("HumanViewTest");
+            var view = _root.AddComponent<HumanView>();
+            view.Build(human);
+
+            human.PlayerInEarZone = true;
+            human.Doze = DozeState.Awake;
+            view.Refresh(1);
+            Assert.That(view.EarsTwitching, Is.True);
+
+            human.PlayerInEarZone = false;
+            view.Refresh(2);
+            Assert.That(view.EarsTwitching, Is.False);
+        }
+
+        /// <summary>눈동자가 고개보다 먼저 목표 쪽으로 가고, 경계하면 머리 위에 표시가 뜬다 (gulf §7·§12).</summary>
+        [Test]
+        public void Eyes_LeadTheHead_AlertMarkerWhenSuspicious()
+        {
+            Tuning tuning = TuningLoader.Load(new UnityDataSource());
+            LevelDefinition level = new LevelLoader(new UnityDataSource()).Load("stage01");
+            var simulation = new GameSimulation(GameSettings.FromTuning(tuning), level.CreateSetup());
+            var human = simulation.Human;
+            _root = new GameObject("HumanViewTest");
+            var view = _root.AddComponent<HumanView>();
+            view.Build(human);
+
+            human.HeadTargetYaw = human.HeadYaw + 60f;
+            human.HeadTargetPitch = human.HeadPitch;
+            view.Refresh(1);
+            Assert.That(view.EyeLead.x, Is.EqualTo(1f).Within(1e-4f), "eyes go first, fully to the side");
+            Assert.That(view.AlertMarkerVisible, Is.False, "calm");
+
+            human.HeadTargetYaw = human.HeadYaw;
+            human.State = AwarenessState.Suspicious;
+            human.Awareness = 50f;
+            view.Refresh(2);
+            Assert.That(view.EyeLead.x, Is.EqualTo(0f).Within(1e-4f));
+            Assert.That(view.AlertMarkerVisible, Is.True);
+        }
+
+        /// <summary>날갯짓은 빠를수록 빠르고 정밀 비행이면 느리다. 흡혈 중이면 지팡이 하트가 분홍 빛을 낸다 (gulf §12·§13).</summary>
+        [Test]
+        public void FlapSpeed_FollowsSpeed_WandGlowsWhileDrinking()
+        {
+            Assert.That(MokiAnimator.FlapSpeed(MokiPose.Move, 1f, false), Is.GreaterThan(MokiAnimator.FlapSpeed(MokiPose.Idle, 0f, false)));
+            Assert.That(MokiAnimator.FlapSpeed(MokiPose.Idle, 0f, true), Is.LessThan(MokiAnimator.FlapSpeed(MokiPose.Idle, 0f, false)));
+            Assert.That(MokiAnimator.FlapSpeed(MokiPose.Suck, 1f, false), Is.EqualTo(1f));
+
+            Tuning tuning = TuningLoader.Load(new UnityDataSource());
+            LevelDefinition level = new LevelLoader(new UnityDataSource()).Load("stage01");
+            var simulation = new GameSimulation(GameSettings.FromTuning(tuning), level.CreateSetup());
+            simulation.HumanSystem.Reactions.ExtraMultiplier = 0f;
+            simulation.HumanSystem.SuckEvents.Enabled = false;
+            var shape = simulation.Human.Shapes["forearmR"];
+            var surface = Moqui.Core.Collision.ShapeGeometry.Closest(shape, shape.Center + (System.Numerics.Vector3.UnitX * 50f));
+            simulation.Player.Position = surface.Point + surface.Normal;
+            _root = new GameObject("PlayerViewTest");
+            var player = _root.AddComponent<PlayerView>();
+
+            player.RefreshWandLight(simulation, 0f);
+            Assert.That(player.WandLightOn, Is.False);
+
+            simulation.Step(new PlayerCommand { AttachPressed = true });
+            for (int i = 0; i < 3; i++)
+            {
+                simulation.Step(new PlayerCommand { SuckHeld = true });
+            }
+
+            player.RefreshWandLight(simulation, 0f);
+            Assert.That(player.WandLightOn, Is.True);
+        }
+
         [Test]
         public void HoverBob_LargestWhenStill_ZeroAtFullSpeed()
         {

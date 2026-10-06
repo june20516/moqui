@@ -21,7 +21,8 @@
 ## 큐 목록
 | 큐 ID | 종류 | 언제 | 무엇을 알리나 | 지금(글자) | 향후 모델·VFX (`spec/assets/vfx/moki-cues.md`) |
 |---|---|---|---|---|---|
-| `land.ready` | 지속 | 비행 중 붙을 수 있는 표면이 착지 범위 안 | 지금 F로 앉을 수 있다 (피드포워드) | 사뿐? | 발끝을 내밀고 치맛자락이 표면 쪽으로, 발밑에 작은 마법진 그림자 |
+| `wand.aim` | 지속 | 비행 중 F로 붙을 곳이 맨살(흡혈 가능 부위) | 여기에 꽂을 수 있다 (피드포워드, gulf §3) | 콕? | 지팡이 끝을 내밀고 하트 보석이 반짝, 맨살 쪽으로 몸이 살짝 기욺 |
+| `land.ready` | 지속 | 비행 중 붙을 수 있는 표면이 착지 범위 안(맨살이 아님) | 지금 F로 앉을 수 있다 (피드포워드) | 사뿐? | 발끝을 내밀고 치맛자락이 표면 쪽으로, 발밑에 작은 마법진 그림자 |
 | `land` | 한 번 | 부착 | 앉았다 | 사뿐 | 무릎을 굽혀 착지, 리본이 흔들림, 표면에 반짝이 몇 개 |
 | `land.miss` | 한 번 | F를 눌렀지만 붙을 표면이 없음 | 너무 멀다 | 허공… | 발끝이 허공을 딛고 휘청 |
 | `detach` | 한 번 | 이탈 | 떠났다 | 폴짝 | 표면을 차고 날아오름, 날개 펼침 |
@@ -42,4 +43,4 @@
 ## 수용 기준
 - [x] 각 큐가 정해진 조건에서 나오고, 지속 큐는 조건이 끝나면 사라진다 (Unity). (M14) — 증거: EditMode `MokiCueTests.LandingAndWand_CuesFollowTheAction`, `ClothAndMiss_CuesExplainWhyNothingHappened`
 - [x] 표시기를 바꿔 끼워도 큐를 내는 코드는 그대로다(표시기 인터페이스, 글자 표시기가 기본) (Unity). (M14) — 증거: `IMokiCuePresenter`(테스트는 기록용 표시기로 같은 큐를 받음), EditMode `MokiCueTests.TextPresenter_OneShotFades_LoopStaysUntilOff`, `EveryCue_HasTextForTheTextPresenter`
-- [x] 모든 큐가 `spec/assets/vfx/moki-cues.md`에 모델·VFX 요구로 정리되어 있다 (문서 검사). (M14) — 증거: `spec/assets/vfx/moki-cues.md`(17종 전부: 길이·애니메이션·VFX·소리)
+- [x] 모든 큐가 `spec/assets/vfx/moki-cues.md`에 모델·VFX 요구로 정리되어 있다 (문서 검사). (M14) — 증거: `spec/assets/vfx/moki-cues.md`(18종 전부: 길이·애니메이션·VFX·소리), EditMode `MokiCueTests.EveryCue_IsSpecifiedInVfxDoc`

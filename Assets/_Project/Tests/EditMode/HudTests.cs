@@ -84,6 +84,18 @@ namespace Moqui.Unity.Tests
             Assert.That(_view.DashAim.gameObject.activeSelf, Is.False);
         }
 
+        /// <summary>정밀 비행 중 가장자리가 조용히 어두워진다 (gulf §6).</summary>
+        [Test]
+        public void PrecisionFlight_DarkensScreenEdges()
+        {
+            Present();
+            Assert.That(_view.PrecisionVignette.gameObject.activeSelf, Is.False);
+
+            _simulation.Step(new PlayerCommand { PrecisionHeld = true });
+            Present();
+            Assert.That(_view.PrecisionVignette.gameObject.activeSelf, Is.True);
+        }
+
         [Test]
         public void ModelValues_AreReflectedInHudElements()
         {

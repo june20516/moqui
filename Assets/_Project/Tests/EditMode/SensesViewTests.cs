@@ -67,8 +67,10 @@ namespace Moqui.Unity.Tests
             _view.Render(FrameTime);
             float near = _view.HeatIntensity(SiteId);
 
-            Assert.That(far, Is.EqualTo(0.25f).Within(Tolerance));
-            Assert.That(near, Is.EqualTo(0.75f).Within(Tolerance));
+            // 거리 세기(0.25·0.75)에 숨결 일렁임 배율이 곱해진다 (gulf §3).
+            float breath = SensesView.HeatBreathFactor(_simulation.Human.BreathPhase);
+            Assert.That(far, Is.EqualTo(0.25f * breath).Within(Tolerance));
+            Assert.That(near, Is.EqualTo(0.75f * breath).Within(Tolerance));
             Assert.That(_view.HeatGlow(SiteId).transform.position, Is.EqualTo(Site.Shape.Center.ToUnity()), "glow follows the site");
         }
 

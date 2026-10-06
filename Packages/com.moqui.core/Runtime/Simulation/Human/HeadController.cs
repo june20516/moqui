@@ -30,6 +30,8 @@ namespace Moqui.Core.Simulation
         {
             float yaw = ClampYaw(targetYaw);
             float pitch = ClampPitch(targetPitch);
+            human.HeadTargetYaw = yaw;
+            human.HeadTargetPitch = pitch;
             float accel = _settings.TurnAccelTime > 0f ? degreesPerSecond / _settings.TurnAccelTime : float.PositiveInfinity;
             float yawVelocity = human.HeadYawVelocity;
             float pitchVelocity = human.HeadPitchVelocity;

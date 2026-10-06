@@ -252,6 +252,11 @@ namespace Moqui.Core.Simulation
 
         public float HeadPitch { get; set; }
 
+        /// <summary>머리가 지금 향하려는 각 (yaw/pitch, 한계 적용 후). 눈동자가 머리보다 먼저 이쪽을 본다 (표현, gulf §7·§12).</summary>
+        public float HeadTargetYaw { get; set; }
+
+        public float HeadTargetPitch { get; set; }
+
         /// <summary>머리 회전 각속도 (°/s, 가감속, M14).</summary>
         public float HeadYawVelocity { get; set; }
 
@@ -317,6 +322,9 @@ namespace Moqui.Core.Simulation
 
         /// <summary>Yellow Zone 안이지만 장애물에 시야가 막힘 (HUD "가려짐").</summary>
         public bool PlayerOccluded { get; set; }
+
+        /// <summary>이번 틱 모기 소리가 귀 근접 구역에서 들린다 (표현: 귀 움찔, 모키 큐 heard, gulf §6).</summary>
+        public bool PlayerInEarZone { get; set; }
 
         public int FrenzyCount { get; set; }
 

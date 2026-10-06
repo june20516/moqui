@@ -305,6 +305,27 @@ def sfx_footstep(rng):
     scuff = decay(lowpass(noise(0.18, rng), 900.0), 30.0)
     return mix(thump, gain(scuff, 0.4))
 
+def sfx_switch_click(rng):
+    # 벽 스위치 딸깍: 아주 짧은 플라스틱 클릭 두 겹.
+    click = decay(highpass(noise(0.05, rng), 2500.0), 120.0)
+    body = decay(tone(1800.0, 0.04), 90.0)
+    return mix(click, gain(body, 0.4), offset(gain(click, 0.5), 0.03))
+
+
+def sfx_ac_motor(rng):
+    # 에어컨 시동: 낮은 모터음이 올라오고 송풍 날개가 열리는 미끄러짐.
+    hum = envelope(modulate(sweep(70.0, 110.0, 0.9, saw), lambda t: 0.6 + 0.4 * math.sin(2 * math.pi * 30 * t)), 0.3, 0.3)
+    slide = envelope(lowpass(noise(0.9, rng), 700.0), 0.2, 0.4)
+    return mix(gain(lowpass(hum, 400.0), 0.8), gain(slide, 0.35))
+
+
+def sfx_neck_turn(rng):
+    # 고개를 돌리기 직전 짧은 숨 + 옷깃 스침.
+    breath = envelope(highpass(lowpass(noise(0.35, rng), 1600.0), 300.0), 0.08, 0.2)
+    rustle = decay(lowpass(noise(0.2, rng), 2500.0), 14.0)
+    return mix(gain(breath, 0.7), offset(gain(rustle, 0.3), 0.1))
+
+
 # ---- 환경음 (4초 루프) ----
 
 def tv_murmur(rng, seconds=4.2):
@@ -414,6 +435,9 @@ SOUNDS = {
     'sfx_wind_loop': (sfx_wind_loop, 0.45),
     'sfx_wind_gust': (sfx_wind_gust, 0.6),
     'sfx_footstep': (sfx_footstep, 0.6),
+    'sfx_switch_click': (sfx_switch_click, 0.6),
+    'sfx_ac_motor': (sfx_ac_motor, 0.5),
+    'sfx_neck_turn': (sfx_neck_turn, 0.4),
     'amb_stage1': (amb_stage1, 0.35),
     'amb_stage2': (amb_stage2, 0.35),
     'amb_stage3': (amb_stage3, 0.4),

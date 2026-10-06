@@ -22,6 +22,11 @@ namespace Moqui.Unity.Presentation
         private const float EyeDepth = 0.82f;
         private const float EyeSize = 0.28f;
 
+        /// <summary>귀 (표현 전용, gulf §6): 머리 옆 작은 판. 모기 소리가 귀 근처에서 들리면 움찔한다.</summary>
+        private const float EarSize = 0.32f;
+        private const float EarTwitchDegrees = 25f;
+        private const float EarTwitchHz = 9f;
+
         private static readonly Color SkinColor = new Color(0.86f, 0.70f, 0.58f);
         private static readonly Color EyeColor = new Color(0.15f, 0.12f, 0.22f);
         private static readonly Color SafeHeadColor = new Color(0.45f, 0.75f, 0.45f);
@@ -46,6 +51,24 @@ namespace Moqui.Unity.Presentation
         private Transform _swatterHandle;
         private Transform _torso;
         private readonly List<Transform> _eyes = new List<Transform>();
+        private readonly List<Transform> _ears = new List<Transform>();
+        private readonly List<Vector3> _eyeRest = new List<Vector3>();
+        private float _headRadius;
+        private Transform _alertMarker;
+
+        /// <summary>눈동자 선행 (gulf §7·§12): 머리 목표와 지금 머리의 각 차이 45°에서 최대로, 머리 반지름 대비 이만큼 옮긴다.</summary>
+        public const float EyeLeadFullDegrees = 45f;
+        public const float EyeLeadSide = 0.1f;
+        public const float EyeLeadUp = 0.06f;
+
+        /// <summary>지금 눈동자가 앞서 보는 정도 (−1~1, 오른쪽·위가 +, 테스트용).</summary>
+        public Vector2 EyeLead { get; private set; }
+
+        /// <summary>머리 위 경계 표시가 보이는가 (테스트용).</summary>
+        public bool AlertMarkerVisible => _alertMarker != null && _alertMarker.gameObject.activeSelf;
+
+        /// <summary>지금 귀가 움찔하는 중인가 (테스트용).</summary>
+        public bool EarsTwitching { get; private set; }
         private float _nextBlink;
         private System.Random _blinkRandom;
 
@@ -130,6 +153,9 @@ namespace Moqui.Unity.Presentation
             _face.SetPositionAndRotation(_human.HeadCenter.ToUnity(), Quaternion.LookRotation(forward, faceUp));
             WorldView.Tint(_headRenderer, HeadColor(_human.State));
             RefreshBreathAndBlink(tick * Moqui.Core.Simulation.GameSimulation.DeltaTime);
+            RefreshEars(tick * Moqui.Core.Simulation.GameSimulation.DeltaTime);
+            RefreshEyeLead();
+            RefreshAlertMarker();
 
             RefreshAttack(tick);
             RefreshSwatter();
@@ -163,6 +189,48 @@ namespace Moqui.Unity.Presentation
             {
                 Vector3 scale = eye.localScale;
                 eye.localScale = new Vector3(scale.x, EyesClosed ? scale.x * 0.15f : scale.x, scale.z);
+            }
+        }
+
+        /// <summary>
+        /// 눈동자 선행 (gulf §7·§12): 고개가 돌기 전에 눈이 먼저 목표 쪽으로 간다. 고개를 돌리기 직전의 예고이고, 인간이 어디를 보려는지 읽힌다.
+        /// </summary>
+        private void RefreshEyeLead()
+        {
+            float yaw = Mathf.Clamp(Mathf.DeltaAngle(_human.HeadYaw, _human.HeadTargetYaw) / EyeLeadFullDegrees, -1f, 1f);
+            float pitch = Mathf.Clamp((_human.HeadTargetPitch - _human.HeadPitch) / EyeLeadFullDegrees, -1f, 1f);
+            EyeLead = new Vector2(yaw, pitch);
+            for (int i = 0; i < _eyes.Count; i++)
+            {
+                _eyes[i].localPosition = _eyeRest[i] + new Vector3(yaw * EyeLeadSide * _headRadius, pitch * EyeLeadUp * _headRadius, 0f);
+            }
+        }
+
+        /// <summary>머리 위 경계 표시: 의심·광분이면 그 상태 색, 경계가 높을수록 크다. 평온이면 숨긴다 (gulf §7).</summary>
+        private void RefreshAlertMarker()
+        {
+            bool alert = _human.State != Moqui.Core.Simulation.AwarenessState.Safe;
+            _alertMarker.gameObject.SetActive(alert);
+            if (!alert)
+            {
+                return;
+            }
+
+            float fill = Mathf.Clamp01(_human.Awareness / 100f);
+            _alertMarker.position = _human.HeadCenter.ToUnity() + (Vector3.up * (_headRadius * 1.9f));
+            _alertMarker.localScale = Vector3.one * (_headRadius * (0.25f + (0.2f * fill)));
+            WorldView.Tint(_alertMarker.GetComponent<Renderer>(), HeadColor(_human.State));
+        }
+
+        /// <summary>모기 소리가 귀 근처에서 들리는 동안 귀가 빠르게 움찔한다 (gulf §6).</summary>
+        private void RefreshEars(float seconds)
+        {
+            EarsTwitching = _human.PlayerInEarZone && !_human.IsAsleep;
+            float angle = EarsTwitching ? EarTwitchDegrees * Mathf.Abs(Mathf.Sin(2f * Mathf.PI * EarTwitchHz * seconds)) : 0f;
+            for (int i = 0; i < _ears.Count; i++)
+            {
+                float side = i == 0 ? -1f : 1f;
+                _ears[i].localRotation = Quaternion.Euler(0f, side * angle, side * angle * 0.5f);
             }
         }
 
@@ -287,6 +355,12 @@ namespace Moqui.Unity.Presentation
 
         private void BuildFace(float headRadius)
         {
+            _headRadius = headRadius;
+
+            // 머리 위 경계 표시: 의심·광분일 때 그 사람 색으로 (누가 나를 경계하는지, gulf §7).
+            _alertMarker = CreateMarker(PrimitiveType.Sphere, "AlertMarker", transform);
+            _alertMarker.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            _alertMarker.gameObject.SetActive(false);
             _face = new GameObject("Face").transform;
             _face.SetParent(transform, false);
             foreach (float side in new[] { -1f, 1f })
@@ -296,6 +370,16 @@ namespace Moqui.Unity.Presentation
                 eye.localScale = Vector3.one * (EyeSize * headRadius);
                 WorldView.Tint(eye.GetComponent<Renderer>(), EyeColor);
                 _eyes.Add(eye);
+                _eyeRest.Add(eye.localPosition);
+            }
+
+            foreach (float side in new[] { -1f, 1f })
+            {
+                Transform ear = CreateMarker(PrimitiveType.Sphere, side < 0f ? "EarL" : "EarR", _face);
+                ear.localPosition = new Vector3(side * 0.98f, 0.05f, -0.05f) * headRadius;
+                ear.localScale = new Vector3(0.12f, 0.36f, 0.26f) * (EarSize * headRadius / 0.32f);
+                WorldView.Tint(ear.GetComponent<Renderer>(), SkinColor);
+                _ears.Add(ear);
             }
 
             Transform nose = CreateMarker(PrimitiveType.Cube, "HeadDirection", _face);

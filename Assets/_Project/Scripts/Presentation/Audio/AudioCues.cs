@@ -34,6 +34,10 @@ namespace Moqui.Unity.Presentation.Audio
         public const float WingPitchIdle = 0.85f;
         public const float WingPitchRange = 0.45f;
 
+        /// <summary>정밀 비행 날갯소리: 작고 낮게 (내 소리가 줄었다는 것이 들리게, gulf §6).</summary>
+        public const float PrecisionWingGain = 0.4f;
+        public const float PrecisionWingPitchMul = 0.85f;
+
         /// <summary>바람 세기(바람 속도 ÷ fan.windSpeed)가 이 값을 넘으면 바람에 밀리는 것으로 본다 (M13).</summary>
         public const float WindAudibleStrength = 0.05f;
 
@@ -45,6 +49,15 @@ namespace Moqui.Unity.Presentation.Audio
         private readonly Dictionary<Human, AttackPhase> _lastAttackPhases = new Dictionary<Human, AttackPhase>();
         private readonly Dictionary<Human, float> _lastBreathPhases = new Dictionary<Human, float>();
         private readonly Dictionary<Human, int> _lastSteps = new Dictionary<Human, int>();
+        private readonly Dictionary<Human, float> _lastHeadTargets = new Dictionary<Human, float>();
+        private readonly List<bool> _lastLightsOn = new List<bool>();
+        private readonly HashSet<string> _openingFans = new HashSet<string>();
+
+        /// <summary>이만큼 이상 고개 목표가 바뀌면 "고개를 돌리려는" 숨소리를 낸다 (°, gulf §7).</summary>
+        public const float NeckTurnDegrees = 30f;
+
+        /// <summary>에어컨 시동 소리는 켜지기 이만큼 전에 난다 (s, gulf §8).</summary>
+        public const float AcLeadSeconds = 1f;
         private int _lastToxinTier;
         private bool _decoyWasActive;
         private int _lastDropCount;
@@ -150,6 +163,7 @@ namespace Moqui.Unity.Presentation.Audio
                 AddHumanCues(human, ids);
             }
 
+            AddEnvironmentCues(simulation, ids);
             return ids;
         }
 
@@ -158,7 +172,9 @@ namespace Moqui.Unity.Presentation.Audio
         {
             var player = simulation.Player;
             bool flying = pose == MokiPose.Idle || pose == MokiPose.Move || pose == MokiPose.Dash;
-            yield return new LoopCue(AudioIds.WingLoop, flying, WingPitch(player.Velocity.Length(), simulation.Settings.Flight.Speed));
+            bool precise = player.PrecisionHeld;
+            float wingPitch = WingPitch(player.Velocity.Length(), simulation.Settings.Flight.Speed) * (precise ? PrecisionWingPitchMul : 1f);
+            yield return new LoopCue(AudioIds.WingLoop, flying, wingPitch, precise ? PrecisionWingGain : 1f);
             yield return new LoopCue(AudioIds.SuckLoop, pose == MokiPose.Suck);
             yield return new LoopCue(AudioIds.Steam, player.InSteam);
 
@@ -191,8 +207,53 @@ namespace Moqui.Unity.Presentation.Audio
             return WingPitchIdle + (WingPitchRange * ratio);
         }
 
+        /// <summary>조명이 켜지고 꺼질 때 딸깍, 에어컨이 켜지기 1초 전 모터 시동 (gulf §8).</summary>
+        private void AddEnvironmentCues(GameSimulation simulation, List<string> ids)
+        {
+            var lights = simulation.Lights;
+            for (int i = 0; i < lights.Lights.Count; i++)
+            {
+                bool on = lights.IsOn(i);
+                if (i < _lastLightsOn.Count && _lastLightsOn[i] != on)
+                {
+                    ids.Add(AudioIds.SwitchClick);
+                }
+
+                if (i < _lastLightsOn.Count)
+                {
+                    _lastLightsOn[i] = on;
+                }
+                else
+                {
+                    _lastLightsOn.Add(on);
+                }
+            }
+
+            var fans = simulation.Fans;
+            foreach (var fan in fans.Fans)
+            {
+                bool opening = fan.Kind == FanKind.AirConditioner && !fans.IsOn(fan, simulation.Tick) && fans.IsOn(fan, simulation.Tick + SimulationTime.ToTicks(AcLeadSeconds));
+                if (opening && _openingFans.Add(fan.Id))
+                {
+                    ids.Add(AudioIds.AcMotor);
+                }
+                else if (!opening)
+                {
+                    _openingFans.Remove(fan.Id);
+                }
+            }
+        }
+
         private void AddHumanCues(Human human, List<string> ids)
         {
+            // 고개를 크게 돌리려는 순간 짧은 숨·옷깃 소리 (눈동자 선행과 함께 예고, gulf §7).
+            if (_lastHeadTargets.TryGetValue(human, out float lastTarget) && System.Math.Abs(DeltaAngle(lastTarget, human.HeadTargetYaw)) >= NeckTurnDegrees && !human.IsAsleep)
+            {
+                ids.Add(AudioIds.NeckTurn);
+            }
+
+            _lastHeadTargets[human] = human.HeadTargetYaw;
+
             var attack = human.Attack;
             _lastAttackPhases.TryGetValue(human, out var lastPhase);
             if (attack.Phase == AttackPhase.Active && lastPhase != AttackPhase.Active)
@@ -222,6 +283,21 @@ namespace Moqui.Unity.Presentation.Audio
             }
 
             _lastSteps[human] = step;
+        }
+
+        private static float DeltaAngle(float from, float to)
+        {
+            float delta = (to - from) % 360f;
+            if (delta > 180f)
+            {
+                delta -= 360f;
+            }
+            else if (delta < -180f)
+            {
+                delta += 360f;
+            }
+
+            return delta;
         }
 
         private static string HitSound(AttackKind kind)

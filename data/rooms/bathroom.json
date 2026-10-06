@@ -29,8 +29,10 @@
 
     { "id": "vent", "type": "box", "center": [60, 248, 100], "size": [30, 4, 30], "flags": ["obstacle", "attachable"] }
   ],
+  "ambient": [0.3, 0.33, 0.4],
   "lights": [
     { "id": "bathroom_fluorescent", "type": "point", "position": [0, 238, 0], "color": [0.85, 0.95, 1.0], "intensity": 0.7, "range": 320, "flicker": "fluorescent" },
-    { "id": "mirror", "type": "point", "position": [95, 200, -30], "color": [1.0, 0.95, 0.85], "intensity": 0.4, "range": 120, "flicker": "fluorescent" }
+    { "id": "mirror", "type": "point", "position": [95, 200, -30], "color": [1.0, 0.95, 0.85], "intensity": 0.4, "range": 120, "flicker": "fluorescent" },
+    { "id": "phone_screen", "type": "point", "position": [0, 60, 0], "color": [0.75, 0.85, 1.0], "intensity": 0.7, "range": 80, "flicker": "phone", "attachPart": "forearmR" }
   ]
 }

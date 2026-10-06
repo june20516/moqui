@@ -151,7 +151,10 @@ namespace Moqui.Core.Simulation
         public bool CanAttach => _attach.HasTarget(Player);
 
         /// <summary>지금 F를 누르면 붙을 지점 (착지 표시, gulf §2).</summary>
-        public bool TryGetAttachTarget(out Vector3 point, out Vector3 normal) => _attach.TryGetTarget(Player, out point, out normal);
+        public bool TryGetAttachTarget(out Vector3 point, out Vector3 normal) => _attach.TryGetTarget(Player, out point, out normal, out _);
+
+        /// <summary>지금 F를 누르면 붙을 형상 (맨살 겨눔 큐 wand.aim, gulf §3). 없으면 null.</summary>
+        public CollisionShape AttachTargetShape => _attach.TryGetTarget(Player, out _, out _, out var shape) ? shape : null;
 
         public WaterSystem Water { get; }
 

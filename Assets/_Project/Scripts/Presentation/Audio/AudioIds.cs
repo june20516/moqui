@@ -63,6 +63,11 @@ namespace Moqui.Unity.Presentation.Audio
         public const string WindLoop = "sfx_wind_loop";
         public const string WindGust = "sfx_wind_gust";
         public const string Footstep = "sfx_footstep";
+
+        /// <summary>환경 예고 (gulf §7·§8): 조명 스위치, 에어컨 시동, 고개 돌리기 직전 숨.</summary>
+        public const string SwitchClick = "sfx_switch_click";
+        public const string AcMotor = "sfx_ac_motor";
+        public const string NeckTurn = "sfx_neck_turn";
         public const string BgmTitle = "bgm_title";
         public const string BgmStage = "bgm_stage";
         public const int StageCount = 5;
@@ -96,6 +101,9 @@ namespace Moqui.Unity.Presentation.Audio
             new AudioDefinition(WindLoop, AudioBus.Sfx, true, 0.5f),
             new AudioDefinition(WindGust, AudioBus.Sfx, false, 0.6f),
             new AudioDefinition(Footstep, AudioBus.Sfx, false, 0.5f),
+            new AudioDefinition(SwitchClick, AudioBus.Sfx, false, 0.6f),
+            new AudioDefinition(AcMotor, AudioBus.Sfx, false, 0.5f),
+            new AudioDefinition(NeckTurn, AudioBus.Sfx, false, 0.35f),
             new AudioDefinition(Ambience(1), AudioBus.Ambience, true, 0.4f),
             new AudioDefinition(Ambience(2), AudioBus.Ambience, true, 0.4f),
             new AudioDefinition(Ambience(3), AudioBus.Ambience, true, 0.45f),

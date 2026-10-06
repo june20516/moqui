@@ -72,13 +72,19 @@ namespace Moqui.Unity.Tests
         [Test]
         public void LandingAndWand_CuesFollowTheAction()
         {
+            PlaceNear("torso");
+            Step(PlayerCommand.None);
+            Assert.That(_presenter.Loops, Does.Contain(MokiCueIds.LandReady), "can land on the clothes (feedforward)");
+            Assert.That(_presenter.Loops, Does.Not.Contain(MokiCueIds.WandAim), "clothes are not bare skin");
+
             PlaceNear("forearmR");
             Step(PlayerCommand.None);
-            Assert.That(_presenter.Loops, Does.Contain(MokiCueIds.LandReady), "can land here (feedforward)");
+            Assert.That(_presenter.Loops, Does.Contain(MokiCueIds.WandAim), "bare skin: the wand reacts (gulf §3)");
+            Assert.That(_presenter.Loops, Does.Not.Contain(MokiCueIds.LandReady));
 
             Step(new PlayerCommand { AttachPressed = true });
             Assert.That(_presenter.Played, Does.Contain(MokiCueIds.Land));
-            Assert.That(_presenter.Loops, Does.Not.Contain(MokiCueIds.LandReady));
+            Assert.That(_presenter.Loops, Does.Not.Contain(MokiCueIds.WandAim));
 
             Step(new PlayerCommand { SuckHeld = true }, 3);
             Assert.That(_presenter.Played, Does.Contain(MokiCueIds.WandIn));
@@ -106,6 +112,17 @@ namespace Moqui.Unity.Tests
             Step(new PlayerCommand { AttachPressed = true });
             Step(new PlayerCommand { SuckHeld = true });
             Assert.That(_presenter.Played, Does.Contain(MokiCueIds.WandCloth), "clothed body part");
+        }
+
+        /// <summary>모든 큐가 모델·VFX 요구 문서에 있다 (spec/12 수용 기준).</summary>
+        [Test]
+        public void EveryCue_IsSpecifiedInVfxDoc()
+        {
+            string doc = System.IO.File.ReadAllText(System.IO.Path.Combine(Application.dataPath, "..", "spec", "assets", "vfx", "moki-cues.md"));
+            foreach (string id in MokiCueCatalog.All.Keys)
+            {
+                Assert.That(doc, Does.Contain($"| `{id}` |"), id);
+            }
         }
 
         [Test]

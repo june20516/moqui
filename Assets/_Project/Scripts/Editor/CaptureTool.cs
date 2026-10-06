@@ -97,7 +97,7 @@ namespace Moqui.Unity.Editor
             var materials = UnityEngine.Object.FindAnyObjectByType<LevelMaterials>();
             var visuals = LevelView.Build(level, simulation.World, null, materials);
             // 방 분위기 조명 (spec/assets/lighting.md): 캡처는 t=0 상태로 고정된다.
-            new GameObject("RoomLighting").AddComponent<RoomLightingView>().Build(level.Room, visuals);
+            new GameObject("RoomLighting").AddComponent<RoomLightingView>().Build(level.Room, visuals, simulation);
             var humanView = UnityEngine.Object.FindAnyObjectByType<HumanView>();
             humanView.Build(simulation.Human);
             var senses = new SensesSettings(tuning);
@@ -105,6 +105,7 @@ namespace Moqui.Unity.Editor
             sensesView.Bind(simulation, senses, visuals, materials);
             var gimmickView = UnityEngine.Object.FindAnyObjectByType<Moqui.Unity.Presentation.Gimmicks.GimmickView>();
             gimmickView.Bind(simulation, senses, materials);
+            gimmickView.BindNets(visuals);
             foreach (var dispenser in simulation.Toxin.Dispensers)
             {
                 // 기믹 검토용: 자동 분사기 연무를 미리 하나 띄운다.

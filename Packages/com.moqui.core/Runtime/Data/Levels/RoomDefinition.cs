@@ -31,6 +31,9 @@ namespace Moqui.Core.Data.Levels
         /// <summary>분위기 조명 (표현 전용, M14). 없으면 빈 목록.</summary>
         public IReadOnlyList<RoomLightDefinition> Lights { get; }
 
+        /// <summary>방 환경광 색 (선형 RGB 0~1, 표현 전용, gulf §13). 없으면 null(장면 기본값).</summary>
+        public Vector3? Ambient { get; private set; }
+
         public static string FilePath(string id)
         {
             return $"rooms/{id}.json";
@@ -56,7 +59,13 @@ namespace Moqui.Core.Data.Levels
                 lights.Add(RoomLightDefinition.Parse(item));
             }
 
-            return new RoomDefinition(root.Get("id").String(), root.Get("size").Vector3(), shapes, lights);
+            var room = new RoomDefinition(root.Get("id").String(), root.Get("size").Vector3(), shapes, lights);
+            if (root.Has("ambient"))
+            {
+                room.Ambient = root.Get("ambient").Vector3();
+            }
+
+            return room;
         }
     }
 }

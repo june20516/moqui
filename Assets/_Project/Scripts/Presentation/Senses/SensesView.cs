@@ -20,6 +20,16 @@ namespace Moqui.Unity.Presentation.Senses
 
         private readonly List<Renderer> _co2Pool = new List<Renderer>();
         private readonly Dictionary<string, Renderer> _heatGlows = new Dictionary<string, Renderer>();
+
+        /// <summary>체온 윤곽의 숨결 일렁임 (표현 전용, gulf §3): 들숨 꼭대기에서 굵기 +2%, 밝기는 들숨일수록 진하다(최대 25% 차이).</summary>
+        public const float HeatBreathGrow = 0.02f;
+        public const float HeatBreathAlpha = 0.25f;
+
+        /// <summary>숨 위상(0~1) → 0(날숨 끝)~1(들숨 꼭대기).</summary>
+        public static float BreathPulse(float breathPhase) => 0.5f - (0.5f * Mathf.Cos(2f * Mathf.PI * breathPhase));
+
+        /// <summary>체온 윤곽 밝기에 곱하는 숨결 배율 (날숨 끝 1 − HeatBreathAlpha ~ 들숨 꼭대기 1).</summary>
+        public static float HeatBreathFactor(float breathPhase) => 1f - HeatBreathAlpha + (HeatBreathAlpha * BreathPulse(breathPhase));
         private readonly List<Renderer> _biteDots = new List<Renderer>();
         private readonly Dictionary<string, float> _heatIntensity = new Dictionary<string, float>();
         private readonly Dictionary<string, Renderer> _shadowCues = new Dictionary<string, Renderer>();
@@ -218,10 +228,13 @@ namespace Moqui.Unity.Presentation.Senses
                 }
 
                 // 체온은 피부를 거의 덮지 않는 얇은 윤곽(림·아지랑이 셰이더)이다 (M12).
+                // 맨살은 숨 쉬듯 일렁인다: 숨 주기에 맞춰 윤곽이 조금 부풀고 밝아진다 (gulf §3).
+                float breath = BreathPulse(human.BreathPhase);
                 WorldView.ApplyPose(site.Shape, glow.transform);
                 Vector3 scale = glow.transform.localScale;
-                glow.transform.localScale = new Vector3(scale.x * _settings.HeatGlowScale, scale.y, scale.z * _settings.HeatGlowScale);
-                SetAlpha(glow, intensity);
+                float grow = _settings.HeatGlowScale + (HeatBreathGrow * breath);
+                glow.transform.localScale = new Vector3(scale.x * grow, scale.y, scale.z * grow);
+                SetAlpha(glow, intensity * HeatBreathFactor(human.BreathPhase));
             }
 
         }

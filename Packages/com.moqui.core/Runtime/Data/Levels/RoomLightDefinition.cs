@@ -70,6 +70,11 @@ namespace Moqui.Core.Data.Levels
         /// <summary>빛 무늬 텍스처 애셋 ID (spec/assets). 없으면 빈 문자열.</summary>
         public string Cookie { get; set; } = string.Empty;
 
+        /// <summary>
+        /// 이 인간 부위(캡슐)의 끝(b)을 따라간다 (예: 휴대폰 화면 빛이 손을 따라 얼굴을 아래에서 비춤, gulf §13). 없으면 빈 문자열(고정 위치).
+        /// </summary>
+        public string AttachPart { get; set; } = string.Empty;
+
         public static RoomLightDefinition Parse(JsonAccess json)
         {
             var light = new RoomLightDefinition
@@ -109,6 +114,11 @@ namespace Moqui.Core.Data.Levels
             if (json.Has("cookie"))
             {
                 light.Cookie = json.Get("cookie").String();
+            }
+
+            if (json.Has("attachPart"))
+            {
+                light.AttachPart = json.Get("attachPart").String();
             }
 
             if (light.Intensity < 0f || light.Range <= 0f)

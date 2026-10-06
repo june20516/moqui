@@ -83,6 +83,11 @@ namespace Moqui.Unity.UI.Hud
 
         public Image ToxinVignette { get; private set; }
 
+        /// <summary>정밀 비행 가장자리 어둠 (gulf §6).</summary>
+        public Image PrecisionVignette { get; private set; }
+
+        public static readonly Color PrecisionVignetteColor = new Color(0.05f, 0.04f, 0.12f, 0.35f);
+
         /// <summary>중독 게이지 눈금 (tier1·tier2·tier3).</summary>
         public System.Collections.Generic.IReadOnlyList<RectTransform> ToxinTicks => _toxinTicks;
 
@@ -159,6 +164,9 @@ namespace Moqui.Unity.UI.Hud
             Stretch(Vignette.rectTransform);
             ToxinVignette = CreateImage("ToxinVignette", Root, HudSprites.Vignette, Color.clear);
             Stretch(ToxinVignette.rectTransform);
+            PrecisionVignette = CreateImage("PrecisionVignette", Root, HudSprites.Vignette, PrecisionVignetteColor);
+            Stretch(PrecisionVignette.rectTransform);
+            PrecisionVignette.gameObject.SetActive(false);
 
             BuildTop();
             BuildEdges();
@@ -473,6 +481,7 @@ namespace Moqui.Unity.UI.Hud
             ItchRing.fillAmount = state.ItchFraction;
             Crosshair.gameObject.SetActive(state.CrosshairVisible);
             DashAim.gameObject.SetActive(state.DashAimVisible);
+            PrecisionVignette.gameObject.SetActive(state.PrecisionVignette);
             SuckWarningText.gameObject.SetActive(state.SuckWarning != HudSuckWarning.None);
             SuckWarningText.text = SuckWarningLabel(state.SuckWarning);
             Color warningColor = state.SuckWarning == HudSuckWarning.Riding ? RidingColor : ItchColor;

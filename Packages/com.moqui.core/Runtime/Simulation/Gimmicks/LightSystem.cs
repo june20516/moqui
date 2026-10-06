@@ -112,6 +112,26 @@ namespace Moqui.Core.Simulation
 
         public bool IsOn(int index) => _on[index];
 
+        /// <summary>
+        /// 곧 켜지는가 (gulf §8 예고): 경계로 켜지는 조명은 경계가 시작된 뒤 switchDelay 동안, 주기 조명은 켜지기 leadSeconds 전부터.
+        /// 이미 켜져 있으면 거짓.
+        /// </summary>
+        public bool IsAboutToTurnOn(int index, int tick, float leadSeconds)
+        {
+            if (_on[index])
+            {
+                return false;
+            }
+
+            var light = _lights[index];
+            if (light.Schedule != null)
+            {
+                return light.Schedule.IsOn((tick + SimulationTime.ToTicks(leadSeconds)) * GameSimulation.DeltaTime);
+            }
+
+            return light.OnWhenAlert && _alertSinceTick != Player.NeverTick;
+        }
+
         /// <summary>틱마다: 인간 상태(직전 틱)와 주기로 켜짐을 정한다.</summary>
         public void Step(IReadOnlyList<Human> humans, int tick)
         {

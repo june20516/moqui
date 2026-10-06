@@ -17,6 +17,7 @@ namespace Moqui.Unity.Presentation
         public const string WandGrip = "wand.grip";
         public const string WandYank = "wand.yank";
         public const string WandCloth = "wand.cloth";
+        public const string WandAim = "wand.aim";
         public const string Freeze = "freeze";
         public const string Dislodged = "dislodged";
         public const string Heard = "heard";
@@ -61,6 +62,7 @@ namespace Moqui.Unity.Presentation
             new MokiCueDefinition(MokiCueIds.WandGrip, true, 0f, "버텨!"),
             new MokiCueDefinition(MokiCueIds.WandYank, false, 0.3f, "확!"),
             new MokiCueDefinition(MokiCueIds.WandCloth, false, 1f, "천…"),
+            new MokiCueDefinition(MokiCueIds.WandAim, true, 0f, "콕?"),
             new MokiCueDefinition(MokiCueIds.Freeze, true, 0f, "쉿…"),
             new MokiCueDefinition(MokiCueIds.Dislodged, false, 0.3f, "앗!"),
             new MokiCueDefinition(MokiCueIds.Heard, false, 2f, "윙…?"),
@@ -192,7 +194,10 @@ namespace Moqui.Unity.Presentation
                 _wasInEarZone[human] = inEar;
             }
 
-            SetLoop(MokiCueIds.LandReady, player.State == PlayerState.Flying && simulation.CanAttach, presenter);
+            // 붙을 곳이 맨살이면 지팡이 하트가 반응(wand.aim), 아니면 그냥 앉을 수 있음(land.ready) (gulf §2·§3).
+            bool aimingSkin = player.State == PlayerState.Flying && IsBareSkin(simulation, simulation.AttachTargetShape);
+            SetLoop(MokiCueIds.WandAim, aimingSkin, presenter);
+            SetLoop(MokiCueIds.LandReady, player.State == PlayerState.Flying && simulation.CanAttach && !aimingSkin, presenter);
             SetLoop(MokiCueIds.WandDrink, drinking && !shifting, presenter);
             SetLoop(MokiCueIds.WandGrip, drinking && shifting, presenter);
             SetLoop(MokiCueIds.Freeze, session && !command.SuckHeld && glance, presenter);
@@ -211,6 +216,24 @@ namespace Moqui.Unity.Presentation
             }
 
             return oneShots;
+        }
+
+        private static bool IsBareSkin(GameSimulation simulation, Moqui.Core.Collision.CollisionShape shape)
+        {
+            if (shape == null)
+            {
+                return false;
+            }
+
+            foreach (var human in simulation.Humans)
+            {
+                if (human.Owns(shape))
+                {
+                    return human.TryGetSite(shape, out _);
+                }
+            }
+
+            return false;
         }
 
         private static bool OnClothedBody(GameSimulation simulation)

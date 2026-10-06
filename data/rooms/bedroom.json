@@ -27,8 +27,9 @@
     { "id": "ceiling_light", "type": "sphere", "center": [0, 232, 20], "radius": 14, "flags": ["obstacle", "attachable"] },
     { "id": "door_frame", "type": "box", "center": [120, 210, -198], "size": [80, 6, 4], "flags": ["obstacle", "attachable"] }
   ],
+  "ambient": [0.22, 0.23, 0.4],
   "lights": [
-    { "id": "phone_screen", "type": "point", "position": [0, 95, 70], "color": [0.75, 0.85, 1.0], "intensity": 0.8, "range": 90, "flicker": "phone" },
+    { "id": "phone_screen", "type": "point", "position": [0, 95, 70], "color": [0.75, 0.85, 1.0], "intensity": 0.8, "range": 90, "flicker": "phone", "attachPart": "forearmR" },
     { "id": "moonlight_window", "type": "spot", "position": [-198, 200, 40], "direction": [1, -0.6, 0.1], "color": [0.55, 0.66, 1.0], "intensity": 0.6, "range": 500, "spotAngle": 45, "flicker": "none", "shadows": true, "cookie": "tex-light-cookie-window" },
     { "id": "hallway_leak", "type": "point", "position": [120, 180, -215], "color": [1.0, 0.8, 0.55], "intensity": 0.35, "range": 200, "flicker": "lamp" },
     { "id": "bedside", "type": "point", "position": [115, 75, 170], "color": [1.0, 0.72, 0.42], "intensity": 0.6, "range": 160, "flicker": "lamp" }

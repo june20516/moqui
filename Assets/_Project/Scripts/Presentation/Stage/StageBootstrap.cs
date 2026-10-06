@@ -52,10 +52,11 @@ namespace Moqui.Unity.Presentation.Stage
             Level = new LevelLoader(new UnityDataSource()).Load(RequestedLevelId);
             var simulation = new GameSimulation(GameSettings.FromTuning(tuning), Level.CreateSetup(RequestedSkills, RequestedSeed));
             var visuals = LevelView.Build(Level, simulation.World, transform, _materials);
-            gameObject.AddComponent<RoomLightingView>().Build(Level.Room, visuals);
+            gameObject.AddComponent<RoomLightingView>().Build(Level.Room, visuals, simulation);
             var senses = new SensesSettings(tuning);
             _senses.Bind(simulation, senses, visuals, _materials);
             _gimmicks.Bind(simulation, senses, _materials);
+            _gimmicks.BindNets(visuals);
             _runner.Begin(tuning, simulation);
             RequestedDriverSetup?.Invoke(_runner.Driver);
             if (Level.Tutorial.Count > 0)

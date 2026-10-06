@@ -94,9 +94,17 @@
           },
           "cookie": {
             "type": "string"
+          },
+          "attachPart": {
+            "type": "string",
+            "description": "이 인간 부위(캡슐) 끝을 따라간다 (gulf §13)"
           }
         }
       }
+    },
+    "ambient": {
+      "$ref": "#/$defs/vector3",
+      "description": "방 환경광 색 (선형 RGB 0~1, 표현 전용, gulf §13)"
     }
   },
   "$defs": {

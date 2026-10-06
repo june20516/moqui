@@ -30,6 +30,7 @@
     { "id": "shadow_behind_ac", "type": "box", "center": [220, 40, -110], "size": [8, 76, 46], "flags": ["shadowZone"] },
     { "id": "spray_dispenser", "type": "box", "center": [180, 150, -147], "size": [16, 24, 6], "flags": ["obstacle", "attachable"] }
   ],
+  "ambient": [0.31, 0.26, 0.36],
   "lights": [
     { "id": "city_glow", "type": "spot", "position": [0, 140, -165], "direction": [0, -0.2, 1], "color": [1.0, 0.6, 0.35], "intensity": 0.6, "range": 450, "spotAngle": 120, "flicker": "city" },
     { "id": "moonlight_sky", "type": "spot", "position": [0, 240, -160], "direction": [0.2, -0.7, 1], "color": [0.55, 0.66, 1.0], "intensity": 0.5, "range": 500, "spotAngle": 40, "flicker": "none", "shadows": true },

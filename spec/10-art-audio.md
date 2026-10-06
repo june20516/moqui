@@ -30,6 +30,9 @@
 | sfx_spray / sfx_toxin | 분사음 / 중독 단계 진입음 | CC0 또는 합성 |
 | sfx_breath | 인간 숨소리 (CO₂ 표현과 동기) | CC0 |
 | sfx_dislodge | 튕겨남 | 합성 가능 |
+| sfx_switch_click | 조명 스위치 딸깍 (켜짐·꺼짐, gulf §8) | 합성 |
+| sfx_ac_motor | 에어컨 시동 모터 (켜지기 1초 전, gulf §8) | 합성 |
+| sfx_neck_turn | 고개를 크게 돌리기 직전 짧은 숨·옷깃 (gulf §7) | 합성 |
 | sfx_decoy | 미끼 마법 날갯소리 | 합성 가능 |
 | sfx_drop_trap / sfx_escape | 물방울 갇힘/탈출 | CC0 또는 합성 |
 | sfx_ui_* | 선택/확인/취소 | CC0 |
