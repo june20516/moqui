@@ -24,7 +24,6 @@ namespace Moqui.Core.Meta
     public sealed class SaveData
     {
         public const int CurrentFormatVersion = 1;
-        public const int StageCount = 5;
 
         public int FormatVersion { get; set; } = CurrentFormatVersion;
 
@@ -49,10 +48,16 @@ namespace Moqui.Core.Meta
             return Stages.TryGetValue(levelId, out var record) ? record : null;
         }
 
-        /// <summary>Stage 1은 처음부터, 나머지는 이전 스테이지를 클리어해야 열린다 (spec/08).</summary>
-        public bool IsUnlocked(int stageNumber)
+        /// <summary>목록의 첫 스테이지는 처음부터, 나머지는 목록에서 바로 앞 스테이지를 클리어해야 열린다 (spec/08, D-061).</summary>
+        public bool IsUnlocked(string levelId, StageCatalog catalog)
         {
-            return stageNumber == 1 || (stageNumber > 1 && stageNumber <= StageCount && (Record(RewardCalculator.LevelId(stageNumber - 1))?.Cleared ?? false));
+            if (!catalog.Contains(levelId))
+            {
+                return false;
+            }
+
+            string previous = catalog.Previous(levelId);
+            return previous == null || (Record(previous)?.Cleared ?? false);
         }
 
         /// <summary>클리어를 기록하고 보상을 더한다. 최고 시간·최소 자국은 더 좋은 값만, 광분 0회는 한 번이라도 달성하면 유지.</summary>

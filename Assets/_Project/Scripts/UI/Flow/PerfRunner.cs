@@ -19,7 +19,8 @@ namespace Moqui.Unity.UI.Flow
         public const string Argument = "-moquiPerf";
         public const float WarmupSeconds = 3f;
         public const float MeasureSeconds = 10f;
-        public static readonly string[] LevelIds = { "stage01", "stage02", "stage03", "stage04", "stage05" };
+        /// <summary>측정할 레벨: 스테이지 목록 전체 (D-061).</summary>
+        public static System.Collections.Generic.IEnumerable<string> LevelIds => Moqui.Unity.Data.StageCatalogs.Repo.LevelIds;
 
         private string _reportPath;
 

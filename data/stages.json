@@ -1,0 +1,38 @@
+{
+  "formatVersion": 1,
+  "chapters": [
+    {
+      "id": "ch1",
+      "title": "1장 · 거실",
+      "ambience": "amb_stage1",
+      "stages": [
+        { "level": "stage01", "title": "거실 · TV 보다 조는 인간" },
+        { "level": "stage02", "title": "거실 · TV 보는 인간", "ambience": "amb_stage2" }
+      ]
+    },
+    {
+      "id": "ch2",
+      "title": "2장 · 침실",
+      "ambience": "amb_stage3",
+      "stages": [
+        { "level": "stage03", "title": "열대야 침실 · 누워 휴대폰 보는 인간" }
+      ]
+    },
+    {
+      "id": "ch3",
+      "title": "3장 · 물가",
+      "ambience": "amb_stage4",
+      "stages": [
+        { "level": "stage04", "title": "화장실 · 볼일 보는 인간" }
+      ]
+    },
+    {
+      "id": "ch4",
+      "title": "4장 · 베란다",
+      "ambience": "amb_stage5",
+      "stages": [
+        { "level": "stage05", "title": "베란다 술자리 · 맥주 마시는 인간" }
+      ]
+    }
+  ]
+}

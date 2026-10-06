@@ -17,7 +17,8 @@ namespace Moqui.Core.Tests.Data
     {
         private const float TableTolerance = 5f;
 
-        private static readonly string[] AllLevels = { "stage01", "stage02", "stage03", "stage04", "stage05" };
+        /// <summary>목록(data/stages.json)의 모든 레벨 (레벨을 추가하면 자동으로 검사된다, D-061).</summary>
+        private static IEnumerable<string> AllLevels => Moqui.Core.Meta.StageCatalog.Load(FileSystemDataSource.ForRepoData()).LevelIds;
 
         // JsonSchema.Net은 $id로 스키마를 전역 등록하므로 같은 스키마를 두 번 읽지 않는다.
         private static readonly System.Lazy<JsonSchema> RoomSchema = new System.Lazy<JsonSchema>(() => JsonSchema.FromText(File.ReadAllText(Path.Combine(RepoPaths.Data, "schema", "room.schema.json"))));

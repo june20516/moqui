@@ -376,11 +376,12 @@
 | meta.carefulBiteMax | 2 | 신중한 흡혈 기준 자국 수 |
 | meta.carefulBiteBonus | +40 | |
 | meta.parTimeBonus | +30 | 기준 시간 이내 |
-| meta.parTime.stage1 | 150s | 튜토리얼 |
-| meta.parTime.stage2 | 120s | |
-| meta.parTime.stage3 | 150s | |
-| meta.parTime.stage4 | 150s | |
-| meta.parTime.stage5 | 180s | |
+| meta.parTime.default | 150s | 레벨별 키가 없을 때 기준 시간 (M14: 키 = meta.parTime.(레벨 ID)) |
+| meta.parTime.stage01 | 150s | 튜토리얼 |
+| meta.parTime.stage02 | 120s | |
+| meta.parTime.stage03 | 150s | |
+| meta.parTime.stage04 | 150s | |
+| meta.parTime.stage05 | 180s | |
 | skill.cost.A | 60 / 120 / 200 | |
 | skill.cost.B | 80 / 160 / 260 | |
 

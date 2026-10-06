@@ -22,7 +22,6 @@ namespace Moqui.Unity.Tests
     /// </summary>
     public class FullFlowPlayModeTests : InputTestFixture
     {
-        private const int StageCount = 5;
         private const int SettleFrames = 10;
         private const int MaxLoadFrames = 600;
         private const int MaxNavigationPresses = 12;
@@ -89,19 +88,23 @@ namespace Moqui.Unity.Tests
 
             yield return WaitForScene(ScreenId.StageSelect);
 
-            for (int stage = 1; stage <= StageCount; stage++)
+            // 스테이지 목록(data/stages.json) 순서대로 전부 (레벨을 추가하면 자동으로 포함, D-061).
+            var catalog = GameSession.Current.Catalog;
+            foreach (var stage in catalog.Stages)
             {
-                string levelId = $"stage{stage:00}";
+                string levelId = stage.LevelId;
                 var select = Object.FindAnyObjectByType<StageSelectScreen>();
-                Assert.That(select.StageButtons[stage - 1].interactable, Is.True, $"{levelId} unlocked");
-                yield return NavigateAndSubmit(select.StageButtons[stage - 1]);
+                var button = select.ButtonFor(levelId);
+                Assert.That(button, Is.Not.Null, levelId);
+                Assert.That(button.interactable, Is.True, $"{levelId} unlocked");
+                yield return NavigateAndSubmit(button);
                 yield return WaitForScene(ScreenId.Stage);
                 Assert.That(Object.FindAnyObjectByType<StageBootstrap>().Level.Id, Is.EqualTo(levelId));
 
                 var screen = Object.FindAnyObjectByType<StageScreen>();
                 yield return ClearStage(screen);
 
-                if (stage < StageCount)
+                if (!catalog.IsLast(levelId))
                 {
                     Assert.That(screen.EndingButton.gameObject.activeSelf, Is.False, $"{levelId}: no ending yet");
                     yield return NavigateAndSubmit(screen.StageSelectButton);
@@ -109,13 +112,13 @@ namespace Moqui.Unity.Tests
                 }
                 else
                 {
-                    Assert.That(screen.EndingButton.gameObject.activeSelf, Is.True, "first stage 5 clear unlocks the ending");
+                    Assert.That(screen.EndingButton.gameObject.activeSelf, Is.True, "first clear of the last stage unlocks the ending");
                     yield return NavigateAndSubmit(screen.EndingButton);
                     yield return WaitForScene(ScreenId.Ending);
                 }
             }
 
-            Assert.That(GameSession.Current.Save.Stages.Count, Is.EqualTo(StageCount), "every stage record saved");
+            Assert.That(GameSession.Current.Save.Stages.Count, Is.EqualTo(catalog.Stages.Count), "every stage record saved");
         }
 
         /// <summary>흡혈 게이지를 채워 클리어시키고 Result가 뜰 때까지 기다린다.</summary>

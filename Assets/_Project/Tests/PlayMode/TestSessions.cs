@@ -31,11 +31,11 @@ namespace Moqui.Unity.Tests
     /// <summary>PlayMode 테스트용 게임 세션.</summary>
     public static class TestSessions
     {
-        /// <summary>메모리 저장소 세션으로 바꾼다. levelExists가 null이면 모든 레벨이 있다고 본다.</summary>
-        public static void UseMemorySession(Func<string, bool> levelExists = null)
+        /// <summary>메모리 저장소 세션으로 바꾼다. 스테이지 목록은 게임 데이터(data/stages.json) 그대로.</summary>
+        public static void UseMemorySession()
         {
             Tuning tuning = TuningLoader.Load(new UnityDataSource());
-            GameSession.Replace(new GameSession(tuning, new SaveStore(new MemorySaveStorage()), new MemoryPreferenceStore(), levelExists ?? (_ => true)));
+            GameSession.Replace(new GameSession(tuning, new SaveStore(new MemorySaveStorage()), new MemoryPreferenceStore(), StageCatalogs.Repo));
         }
     }
 }

@@ -47,7 +47,7 @@ namespace Moqui.Unity.Tests
 
         [UnityTest]
         public IEnumerator ClearScenario_InStageScene_MatchesHeadlessCore_NoErrorLogs(
-            [Values("stage01_clear", "stage02_clear", "stage03_clear", "stage04_clear", "stage05_clear")] string scenarioId)
+            [ValueSource(typeof(CatalogLevels), nameof(CatalogLevels.ClearScenarios))] string scenarioId)
         {
             var source = new UnityDataSource();
             string file = $"scenarios/{scenarioId}.json";

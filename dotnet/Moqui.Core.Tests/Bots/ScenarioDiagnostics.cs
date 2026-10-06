@@ -59,9 +59,9 @@ namespace Moqui.Core.Tests.Bots
         public void FrenzyStats()
         {
             var source = FileSystemDataSource.ForRepoData();
-            for (int stage = 1; stage <= 5; stage++)
+            foreach (string levelId in Moqui.Core.Meta.StageCatalog.Load(source).LevelIds)
             {
-                string scenarioId = $"stage{stage:00}_clear";
+                string scenarioId = $"{levelId}_clear";
                 string file = ScenarioDefinition.FilePath(scenarioId);
                 var scenario = ScenarioDefinition.Parse(source.ReadText(file), file);
                 var level = new LevelLoader(source).Load(scenario.LevelId);

@@ -50,7 +50,8 @@ namespace Moqui.Unity.Editor
         private const float MokiSampleFraction = 0.3f;
         private const int AttackWaitSeconds = 3;
         private const float AttackCameraDistance = 170f;
-        private static readonly string[] StageLevelIds = { "stage01", "stage02", "stage03", "stage04", "stage05" };
+        /// <summary>캡처할 레벨: 스테이지 목록 전체 (D-061).</summary>
+        private static System.Collections.Generic.IReadOnlyList<string> StageLevelIds => StageCatalogs.Repo.LevelIds.ToList();
 
         [MenuItem("Moqui/Capture All")]
         public static void CaptureAll()
@@ -240,7 +241,7 @@ namespace Moqui.Unity.Editor
         public static void CaptureMenus(string outputDirectory)
         {
             Tuning tuning = TuningLoader.Load(new UnityDataSource());
-            var session = new GameSession(tuning, new SaveStore(new MemoryStorage()), new MemoryPreferenceStore(), id => id == "stage01" || id == "stage02");
+            var session = new GameSession(tuning, new SaveStore(new MemoryStorage()), new MemoryPreferenceStore(), StageCatalogs.Repo);
             session.Save.BloodPoints = 340;
             session.Save.SkillLevels[SkillCatalog.SwiftWings] = 1;
             session.Save.Stages["stage01"] = new StageRecord { Cleared = true, BestSeconds = 128.4f, NoFrenzy = true, MinBiteMarks = 2 };

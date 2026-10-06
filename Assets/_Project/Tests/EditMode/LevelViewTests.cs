@@ -13,12 +13,7 @@ namespace Moqui.Unity.Tests
     public class LevelViewTests
     {
         private const float Tolerance = 1e-3f;
-
-        [TestCase("stage01")]
-        [TestCase("stage02")]
-        [TestCase("stage03")]
-        [TestCase("stage04")]
-        [TestCase("stage05")]
+        [TestCaseSource(typeof(StageCatalogs), nameof(StageCatalogs.LevelIdList))]
         public void Build_Level_OneVisualPerShapeIdWithMatchingPose(string levelId)
         {
             LevelDefinition level = new LevelLoader(new UnityDataSource()).Load(levelId);

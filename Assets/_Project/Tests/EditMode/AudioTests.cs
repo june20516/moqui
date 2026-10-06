@@ -72,10 +72,13 @@ namespace Moqui.Unity.Tests
                 Assert.That(sources, Does.Contain($"AudioIds.{constant.Name}"), constant.Name);
             }
 
-            for (int stage = 1; stage <= AudioIds.StageCount; stage++)
+            // 환경음은 스테이지 목록(장·스테이지)에서 정하고, 카탈로그에 있는 소리여야 한다 (D-061).
+            foreach (string levelId in StageCatalogs.Repo.LevelIds)
             {
-                Assert.That(AudioIds.AmbienceForLevel($"stage0{stage}"), Is.EqualTo(AudioIds.Ambience(stage)));
+                Assert.That(AudioIds.All, Does.Contain(AudioIds.AmbienceForLevel(levelId)), levelId);
             }
+
+            Assert.That(AudioIds.AmbienceForLevel("stage02"), Is.EqualTo(AudioIds.Ambience(2)), "a stage can override its chapter");
 
             Assert.That(AudioIds.AmbienceForLevel("sandbox"), Is.Null);
         }

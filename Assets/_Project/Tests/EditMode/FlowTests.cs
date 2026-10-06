@@ -62,7 +62,7 @@ namespace Moqui.Unity.Tests
             _tuning = TuningLoader.Load(new UnityDataSource());
             _storage = new MemoryStorage();
             _preferences = new MemoryPreferenceStore();
-            _session = new GameSession(_tuning, new SaveStore(_storage), _preferences, id => id == "stage01" || id == "stage02");
+            _session = new GameSession(_tuning, new SaveStore(_storage), _preferences, StageCatalogs.Repo);
             _navigator = new FakeNavigator();
             _flow = new ScreenFlow(_session, _navigator);
         }
@@ -128,10 +128,15 @@ namespace Moqui.Unity.Tests
             var select = Screen<StageSelectScreen>();
             Assert.That(select.StageButtons[0].interactable, Is.True);
             Assert.That(select.StageButtons[1].interactable, Is.False, "stage 2 locked");
-            Assert.That(select.StageButtons[2].interactable, Is.False, "no data yet");
+            Assert.That(select.ChapterIndex, Is.EqualTo(0), "opens on the chapter in progress");
+            select.NextChapterButton.onClick.Invoke();
+            Assert.That(select.ChapterIndex, Is.EqualTo(1));
+            Assert.That(select.StageButtons[0].interactable, Is.False, "next chapter locked");
+            select.PreviousChapterButton.onClick.Invoke();
 
             select.StageButtons[1].onClick.Invoke();
-            Assert.That(_flow.StartStage(2), Is.False);
+            Assert.That(_flow.StartStage("stage02"), Is.False);
+            Assert.That(_flow.StartStage("notInCatalog"), Is.False);
             Assert.That(_navigator.Loaded, Is.Empty, "locked stage does not load");
 
             _session.SelectedLevelId = "stage01";
@@ -169,9 +174,9 @@ namespace Moqui.Unity.Tests
             var select = Screen<StageSelectScreen>();
             Assert.That(select.Skills.IsOpen, Is.True, "Result → Skills opens the skills panel");
 
-            _session.SelectedLevelId = "stage05";
+            _session.SelectedLevelId = StageCatalogs.Repo.Stages[StageCatalogs.Repo.Stages.Count - 1].LevelId;
             var final = _flow.CompleteStage(StageOutcome.Cleared, FastClean(), null, 30f);
-            Assert.That(final.UnlocksEnding, Is.True, "stage 5 first clear → ending");
+            Assert.That(final.UnlocksEnding, Is.True, "last stage in the catalog, first clear → ending");
             Assert.That(_flow.CompleteStage(StageOutcome.Cleared, FastClean(), null, 30f).UnlocksEnding, Is.False, "only the first clear");
             _flow.OpenEnding();
             Assert.That(_navigator.Last, Is.EqualTo(ScreenId.Ending));
@@ -208,7 +213,7 @@ namespace Moqui.Unity.Tests
             Assert.That(saved.EquippedActive, Is.EqualTo(SkillCatalog.DecoyCharm));
             Assert.That(saved.BloodPoints, Is.EqualTo(0));
 
-            _flow.StartStage(1);
+            _flow.StartStage("stage01");
             Assert.That(StageBootstrap.RequestedSkills.Level(SkillCatalog.SwiftWings), Is.EqualTo(1));
             Assert.That(StageBootstrap.RequestedSkills.EquippedActive, Is.EqualTo(SkillCatalog.DecoyCharm));
         }

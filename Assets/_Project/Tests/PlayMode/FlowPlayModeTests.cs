@@ -27,7 +27,7 @@ namespace Moqui.Unity.Tests
             base.Setup();
 
             // 실제 save.json·PlayerPrefs를 건드리지 않도록 메모리 세션으로 바꾼다.
-            TestSessions.UseMemorySession(id => id == "stage01" || id == "stage02");
+            TestSessions.UseMemorySession();
         }
 
         public override void TearDown()

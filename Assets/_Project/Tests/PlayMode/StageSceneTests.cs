@@ -19,7 +19,7 @@ namespace Moqui.Unity.Tests
         private const int WarmupFrames = 30;
 
         [UnityTest]
-        public IEnumerator Stage_Play_BuildsRequestedLevel([Values("stage01", "stage02", "stage03", "stage04", "stage05")] string levelId)
+        public IEnumerator Stage_Play_BuildsRequestedLevel([ValueSource(typeof(CatalogLevels), nameof(CatalogLevels.LevelIds))] string levelId)
         {
             StageBootstrap.RequestedLevelId = levelId;
             string previousHints = PlayerPrefs.GetString(TutorialHints.PreferenceKey, "1");

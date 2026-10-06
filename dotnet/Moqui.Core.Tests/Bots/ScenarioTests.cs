@@ -10,7 +10,9 @@ namespace Moqui.Core.Tests.Bots
     /// <summary>시나리오 봇 (tech/verification.md §3): data/scenarios/*.json을 재생하고 expect와 비교한다.</summary>
     public class ScenarioTests
     {
-        private static readonly string[] Scenarios = { "stage01_clear", "stage01_detect", "stage02_clear", "stage02_detect", "stage03_clear", "stage03_detect", "stage04_clear", "stage04_detect", "stage05_clear", "stage05_detect" };
+        /// <summary>목록(data/stages.json)의 모든 레벨에 클리어 봇과 발각 봇이 있어야 한다 (레벨을 추가하면 자동으로 검사된다, D-061).</summary>
+        private static System.Collections.Generic.IEnumerable<string> Scenarios => Moqui.Core.Meta.StageCatalog.Load(FileSystemDataSource.ForRepoData()).LevelIds
+            .SelectMany(levelId => new[] { $"{levelId}_clear", $"{levelId}_detect" });
 
         [TestCaseSource(nameof(Scenarios))]
         public void Scenario_MeetsExpectationOnEnoughSeeds(string scenarioId)

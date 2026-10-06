@@ -55,20 +55,21 @@ namespace Moqui.Unity.UI.Flow
             _navigator.Load(ScreenId.StageSelect);
         }
 
-        public bool CanStart(int stageNumber)
+        /// <summary>목록에 있고 열린 스테이지만 시작할 수 있다 (D-061).</summary>
+        public bool CanStart(string levelId)
         {
-            return _session.Save.IsUnlocked(stageNumber) && _session.LevelAvailable(stageNumber);
+            return _session.Save.IsUnlocked(levelId, _session.Catalog);
         }
 
-        /// <summary>잠긴 스테이지나 데이터가 없는 스테이지는 시작하지 않는다.</summary>
-        public bool StartStage(int stageNumber)
+        /// <summary>잠긴 스테이지나 목록에 없는 스테이지는 시작하지 않는다.</summary>
+        public bool StartStage(string levelId)
         {
-            if (!CanStart(stageNumber))
+            if (!CanStart(levelId))
             {
                 return false;
             }
 
-            _session.SelectedLevelId = RewardCalculator.LevelId(stageNumber);
+            _session.SelectedLevelId = levelId;
             LoadStage();
             return true;
         }
@@ -84,13 +85,12 @@ namespace Moqui.Unity.UI.Flow
         public StageOutcomeInfo CompleteStage(StageOutcome outcome, StageResult result, DeathCause? cause, float seconds)
         {
             string levelId = _session.SelectedLevelId;
-            int stageNumber = RewardCalculator.StageNumber(levelId);
             var info = new StageOutcomeInfo { LevelId = levelId, Outcome = outcome, DeathCause = cause, Seconds = seconds };
             if (outcome == StageOutcome.Cleared)
             {
                 bool firstClear = !(_session.Save.Record(levelId)?.Cleared ?? false);
-                info.Reward = _session.Rewards.Compute(stageNumber, result);
-                info.UnlocksEnding = firstClear && stageNumber == SaveData.StageCount;
+                info.Reward = _session.Rewards.Compute(levelId, result);
+                info.UnlocksEnding = firstClear && _session.Catalog.IsLast(levelId);
                 _session.Save.RecordClear(levelId, result, info.Reward);
             }
 

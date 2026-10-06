@@ -32,10 +32,9 @@ namespace Moqui.Unity.UI.Flow
     /// </summary>
     public sealed class GameSession
     {
-        private readonly Func<string, bool> _levelExists;
-
-        public GameSession(Tuning tuning, SaveStore store, IPreferenceStore preferences, Func<string, bool> levelExists)
+        public GameSession(Tuning tuning, SaveStore store, IPreferenceStore preferences, StageCatalog catalog)
         {
+            Catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
             BaseTuning = tuning;
             Store = store;
             Save = store.Load();
@@ -43,8 +42,10 @@ namespace Moqui.Unity.UI.Flow
             Settings = new UserSettings(preferences);
             Shop = new SkillShop(tuning);
             Rewards = new RewardCalculator(tuning);
-            _levelExists = levelExists;
         }
+
+        /// <summary>스테이지 목록 (data/stages.json, D-061).</summary>
+        public StageCatalog Catalog { get; }
 
         public static GameSession Current { get; private set; }
 
@@ -74,7 +75,7 @@ namespace Moqui.Unity.UI.Flow
             if (Current == null)
             {
                 var source = new UnityDataSource();
-                Current = new GameSession(TuningLoader.Load(source), new SaveStore(new FileSaveStorage()), new PlayerPrefsStore(), id => LevelExists(source, id));
+                Current = new GameSession(TuningLoader.Load(source), new SaveStore(new FileSaveStorage()), new PlayerPrefsStore(), StageCatalogs.Repo);
                 Current.Settings.ApplyToEngine();
             }
 
@@ -86,12 +87,6 @@ namespace Moqui.Unity.UI.Flow
             Current = session;
         }
 
-        /// <summary>레벨 데이터가 있는가 (Stage 3~5 데이터는 M9).</summary>
-        public bool LevelAvailable(int stageNumber)
-        {
-            return _levelExists(RewardCalculator.LevelId(stageNumber));
-        }
-
         public void Persist()
         {
             Store.Save(Save);
@@ -100,11 +95,6 @@ namespace Moqui.Unity.UI.Flow
         public void ResetData()
         {
             Save = Store.Reset();
-        }
-
-        private static bool LevelExists(UnityDataSource source, string levelId)
-        {
-            return System.IO.File.Exists(System.IO.Path.Combine(source.Root, LevelDefinition.FilePath(levelId)));
         }
     }
 }

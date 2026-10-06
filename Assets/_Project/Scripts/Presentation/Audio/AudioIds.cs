@@ -110,16 +110,10 @@ namespace Moqui.Unity.Presentation.Audio
         /// <summary>스테이지 환경음 (1: TV, 2: TV, 3: 선풍기, 4: 환풍기·물소리, 5: 풀벌레).</summary>
         public static string Ambience(int stageNumber) => $"amb_stage{stageNumber}";
 
-        /// <summary>"stage03" 같은 레벨 ID의 환경음. 번호를 읽지 못하면 null.</summary>
+        /// <summary>레벨의 환경음: 스테이지 목록(data/stages.json)의 스테이지 또는 장 환경음. 목록에 없으면 null (D-061).</summary>
         public static string AmbienceForLevel(string levelId)
         {
-            const string prefix = "stage";
-            if (levelId == null || !levelId.StartsWith(prefix) || !int.TryParse(levelId.Substring(prefix.Length), out int number))
-            {
-                return null;
-            }
-
-            return number >= 1 && number <= StageCount ? Ambience(number) : null;
+            return levelId != null && Moqui.Unity.Data.StageCatalogs.Repo.Contains(levelId) ? Moqui.Unity.Data.StageCatalogs.Repo.AmbienceOf(levelId) : null;
         }
     }
 }

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Moqui.Core.Meta;
 using Moqui.Core.Simulation;
+using Moqui.Core.Tests.Support;
 using NUnit.Framework;
 using static Moqui.Core.Tests.Support.TestSimulations;
 
@@ -47,14 +48,14 @@ namespace Moqui.Core.Tests.Meta
         {
             var tuning = Tuning;
             var calculator = new RewardCalculator(tuning);
-            float par = calculator.ParTime(2);
+            float par = calculator.ParTime("stage02");
             int carefulMax = tuning.GetInt("meta.carefulBiteMax");
             var result = new StageResult(
                 SimulationTime.ToTicks(withinPar ? par - 1f : par + 1f),
                 noFrenzy ? 0 : 1,
                 careful ? carefulMax : carefulMax + 1);
 
-            var reward = calculator.Compute(2, result);
+            var reward = calculator.Compute("stage02", result);
 
             int expected = tuning.GetInt("meta.clearReward")
                 + (noFrenzy ? tuning.GetInt("meta.noFrenzyBonus") : 0)
@@ -113,23 +114,25 @@ namespace Moqui.Core.Tests.Meta
         {
             var save = new SaveData();
             var calculator = new RewardCalculator(Tuning);
-            Assert.That(save.IsUnlocked(1), Is.True);
-            Assert.That(save.IsUnlocked(2), Is.False);
+            var catalog = StageCatalog.Load(FileSystemDataSource.ForRepoData());
+            Assert.That(save.IsUnlocked("stage01", catalog), Is.True);
+            Assert.That(save.IsUnlocked("stage02", catalog), Is.False);
 
             var slow = new StageResult(SimulationTime.ToTicks(200f), 2, 4);
-            save.RecordClear("stage01", slow, calculator.Compute(1, slow));
+            save.RecordClear("stage01", slow, calculator.Compute("stage01", slow));
             var fast = new StageResult(SimulationTime.ToTicks(100f), 0, 1);
-            save.RecordClear("stage01", fast, calculator.Compute(1, fast));
+            save.RecordClear("stage01", fast, calculator.Compute("stage01", fast));
             var middle = new StageResult(SimulationTime.ToTicks(150f), 1, 3);
-            save.RecordClear("stage01", middle, calculator.Compute(1, middle));
+            save.RecordClear("stage01", middle, calculator.Compute("stage01", middle));
 
             var record = save.Record("stage01");
-            Assert.That(save.IsUnlocked(2), Is.True);
-            Assert.That(save.IsUnlocked(3), Is.False);
+            Assert.That(save.IsUnlocked("stage02", catalog), Is.True);
+            Assert.That(save.IsUnlocked("stage03", catalog), Is.False);
+            Assert.That(save.IsUnlocked("notInCatalog", catalog), Is.False);
             Assert.That(record.BestSeconds, Is.EqualTo(100f).Within(0.01f));
             Assert.That(record.NoFrenzy, Is.True);
             Assert.That(record.MinBiteMarks, Is.EqualTo(1));
-            Assert.That(save.BloodPoints, Is.EqualTo(calculator.Compute(1, slow).Total + calculator.Compute(1, fast).Total + calculator.Compute(1, middle).Total), "paid every clear");
+            Assert.That(save.BloodPoints, Is.EqualTo(calculator.Compute("stage01", slow).Total + calculator.Compute("stage01", fast).Total + calculator.Compute("stage01", middle).Total), "paid every clear");
         }
 
         [Test]

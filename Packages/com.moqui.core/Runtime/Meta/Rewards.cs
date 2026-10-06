@@ -36,34 +36,19 @@ namespace Moqui.Core.Meta
             _tuning = tuning;
         }
 
-        public float ParTime(int stageNumber)
+        /// <summary>기준 시간: meta.parTime.(레벨 ID)가 있으면 그것, 없으면 meta.parTime.default (새 레벨은 키를 추가하지 않아도 된다).</summary>
+        public float ParTime(string levelId)
         {
-            return _tuning.GetFloat($"meta.parTime.stage{stageNumber}");
+            string key = $"meta.parTime.{levelId}";
+            return _tuning.Contains(key) ? _tuning.GetFloat(key) : _tuning.GetFloat("meta.parTime.default");
         }
 
-        public RewardBreakdown Compute(int stageNumber, StageResult result)
+        public RewardBreakdown Compute(string levelId, StageResult result)
         {
             int noFrenzy = result.FrenzyCount == 0 ? _tuning.GetInt("meta.noFrenzyBonus") : 0;
             int careful = result.BiteMarkCount <= _tuning.GetInt("meta.carefulBiteMax") ? _tuning.GetInt("meta.carefulBiteBonus") : 0;
-            int par = result.ClearSeconds <= ParTime(stageNumber) ? _tuning.GetInt("meta.parTimeBonus") : 0;
+            int par = result.ClearSeconds <= ParTime(levelId) ? _tuning.GetInt("meta.parTimeBonus") : 0;
             return new RewardBreakdown(_tuning.GetInt("meta.clearReward"), noFrenzy, careful, par);
-        }
-
-        /// <summary>레벨 ID "stage03" → 3.</summary>
-        public static int StageNumber(string levelId)
-        {
-            const string prefix = "stage";
-            if (!levelId.StartsWith(prefix, StringComparison.Ordinal) || !int.TryParse(levelId.Substring(prefix.Length), out int number))
-            {
-                throw new ArgumentException($"Not a stage level id: '{levelId}'", nameof(levelId));
-            }
-
-            return number;
-        }
-
-        public static string LevelId(int stageNumber)
-        {
-            return $"stage{stageNumber:00}";
         }
     }
 }
