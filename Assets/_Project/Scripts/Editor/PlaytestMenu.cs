@@ -57,8 +57,15 @@ namespace Moqui.Unity.Editor
                 spec = TuningPromotion.ReplaceInSpec(spec, pair.Key, pair.Value);
             }
 
-            File.WriteAllText(tuningPath, json);
-            File.WriteAllText(specPath, spec);
+            // 두 파일이 어긋나지 않게: 먼저 둘 다 임시 파일에 쓰고, 성공하면 교체한다.
+            string tuningTemp = tuningPath + ".tmp";
+            string specTemp = specPath + ".tmp";
+            File.WriteAllText(tuningTemp, json);
+            File.WriteAllText(specTemp, spec);
+            File.Copy(tuningTemp, tuningPath, true);
+            File.Copy(specTemp, specPath, true);
+            File.Delete(tuningTemp);
+            File.Delete(specTemp);
         }
 
         [MenuItem(MenuRoot + "덮어쓰기 지우기")]

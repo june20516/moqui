@@ -93,11 +93,14 @@ namespace Moqui.Unity.Presentation
 
         public static void Tint(Renderer renderer, Color color)
         {
-            var block = new MaterialPropertyBlock();
-            renderer.GetPropertyBlock(block);
-            block.SetColor(BaseColorId, color);
-            renderer.SetPropertyBlock(block);
+            // 매 프레임 여러 번 불리므로 블록 하나를 재사용한다(Get으로 채우고 바로 Set으로 넘기므로 안전).
+            _tintBlock ??= new MaterialPropertyBlock();
+            renderer.GetPropertyBlock(_tintBlock);
+            _tintBlock.SetColor(BaseColorId, color);
+            renderer.SetPropertyBlock(_tintBlock);
         }
+
+        private static MaterialPropertyBlock _tintBlock;
 
         private static Color ColorFor(string id)
         {

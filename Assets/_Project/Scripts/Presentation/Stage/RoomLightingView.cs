@@ -32,6 +32,10 @@ namespace Moqui.Unity.Presentation.Stage
         private MaterialPropertyBlock _block;
         private bool _built;
         private Moqui.Core.Simulation.GameSimulation _simulation;
+        private static Texture2D _windowCookie;
+        private bool _ambientChanged;
+        private UnityEngine.Rendering.AmbientMode _previousAmbientMode;
+        private Color _previousAmbient;
 
         private sealed class Entry
         {
@@ -64,10 +68,14 @@ namespace Moqui.Unity.Presentation.Stage
         /// </summary>
         public void Build(RoomDefinition room, IReadOnlyDictionary<string, GameObject> visuals, Moqui.Core.Simulation.GameSimulation simulation = null)
         {
+            Clear();
             _block = new MaterialPropertyBlock();
             _simulation = simulation;
             if (room.Ambient.HasValue)
             {
+                _previousAmbientMode = RenderSettings.ambientMode;
+                _previousAmbient = RenderSettings.ambientLight;
+                _ambientChanged = true;
                 // 방마다 밤 공기의 색이 다르다 (gulf §13): 거실 남보라, 침실 짙은 남색, 화장실 차가운 청록, 베란다 도시빛 섞인 자주.
                 RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
                 RenderSettings.ambientLight = new Color(room.Ambient.Value.X, room.Ambient.Value.Y, room.Ambient.Value.Z);
@@ -75,6 +83,12 @@ namespace Moqui.Unity.Presentation.Stage
 
             foreach (var definition in room.Lights)
             {
+                // 같은 ID의 기믹 조명(스위치·주기, spec/06)이 있으면 그것이 이 빛을 맡는다: 꺼진 스위치가 켜져 보이면 안 된다.
+                if (IsGimmickLight(simulation, definition.Id))
+                {
+                    continue;
+                }
+
                 var light = new GameObject($"RoomLight_{definition.Id}").AddComponent<Light>();
                 light.transform.SetParent(transform, false);
                 light.transform.position = definition.Position.ToUnity();
@@ -143,6 +157,56 @@ namespace Moqui.Unity.Presentation.Stage
         /// <summary>부위 끝에서 조명을 띄우는 높이 (u): 손에 든 화면 높이.</summary>
         public const float AttachLift = 4f;
 
+        private static bool IsGimmickLight(Moqui.Core.Simulation.GameSimulation simulation, string id)
+        {
+            if (simulation == null)
+            {
+                return false;
+            }
+
+            foreach (var gimmick in simulation.Lights.Lights)
+            {
+                if (gimmick.Id == id)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>만든 조명을 지우고 바꾼 환경광을 되돌린다 (다시 Build하거나 파괴될 때).</summary>
+        private void Clear()
+        {
+            foreach (var entry in _entries)
+            {
+                if (entry.Light != null)
+                {
+                    if (Application.isPlaying)
+                    {
+                        Destroy(entry.Light.gameObject);
+                    }
+                    else
+                    {
+                        DestroyImmediate(entry.Light.gameObject);
+                    }
+                }
+            }
+
+            _entries.Clear();
+            if (_ambientChanged)
+            {
+                RenderSettings.ambientMode = _previousAmbientMode;
+                RenderSettings.ambientLight = _previousAmbient;
+                _ambientChanged = false;
+            }
+        }
+
+        private void OnDestroy()
+        {
+            Clear();
+        }
+
         private void Update()
         {
             if (_built)
@@ -162,7 +226,14 @@ namespace Moqui.Unity.Presentation.Stage
                 return null;
             }
 
-            return CreateWindowCookie(CookieSize);
+            // 모든 창 조명이 같은 무늬 하나를 나눠 쓴다(조명마다 만들면 텍스처가 쌓인다).
+            if (_windowCookie == null)
+            {
+                _windowCookie = CreateWindowCookie(CookieSize);
+                _windowCookie.hideFlags = HideFlags.DontSave;
+            }
+
+            return _windowCookie;
         }
 
         /// <summary>2×3 창살(창틀 두께 6%) + 가장자리로 갈수록 어두워지는 창 무늬. 흰색 = 빛이 지나감.</summary>

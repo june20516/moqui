@@ -170,11 +170,6 @@
     }
   ],
   "lights": [
-    {
-      "id": "lantern_switch",
-      "position": [0, 120, 10],
-      "area": { "center": [60, 80, 40], "size": [160, 160, 160] },
-      "schedule": { "on": 8, "off": 8 }
-    }
+    { "id": "lantern", "position": [0, 120, 10], "area": { "center": [60, 80, 40], "size": [160, 160, 160] }, "schedule": { "on": 8, "off": 8 } }
   ]
 }

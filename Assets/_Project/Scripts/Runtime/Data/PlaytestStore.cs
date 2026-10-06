@@ -36,7 +36,28 @@ namespace Moqui.Unity.Data
         /// <summary>
         /// 덮어쓰기를 쓰는가: 배치 모드(자동 테스트·캡처·성능 측정)에서는 쓰지 않아 결과가 개발자 PC의 파일에 흔들리지 않는다.
         /// </summary>
-        public static bool IsActive => ActiveOverride ?? !Application.isBatchMode;
+        public static bool IsActive => ActiveOverride ?? (IsAvailable && !Application.isBatchMode);
+
+        /// <summary>
+        /// 플레이 검증 도구를 쓸 수 있는 빌드인가: 에디터, 개발 빌드, 또는 실행 인자 -playtest.
+        /// 출시 빌드에서 저장 폴더의 파일이 게임 수치를 바꾸지 않게 한다.
+        /// </summary>
+        public static bool IsAvailable => Application.isEditor || Debug.isDebugBuild || HasPlaytestArgument();
+
+        public const string PlaytestArgument = "-playtest";
+
+        private static bool HasPlaytestArgument()
+        {
+            foreach (string argument in Environment.GetCommandLineArgs())
+            {
+                if (string.Equals(argument, PlaytestArgument, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         /// <summary>테스트가 켜고 끄는 재정의. null이면 배치 모드 여부를 따른다.</summary>
         public static bool? ActiveOverride { get; set; }
@@ -49,20 +70,25 @@ namespace Moqui.Unity.Data
             return Read(OverridesPath);
         }
 
-        public void Save(PlaytestOverrides overrides)
+        /// <summary>저장한다. 실패하면 이유(파일 잠김·권한)를 돌려주고 LastError에도 남긴다. 성공하면 null.</summary>
+        public string Save(PlaytestOverrides overrides)
         {
-            Write(OverridesPath, overrides);
+            return Write(OverridesPath, overrides);
         }
 
-        public void AppendLog(string line)
+        /// <summary>기록 한 줄을 덧붙인다. 실패하면 이유, 성공(또는 줄 없음)이면 null.</summary>
+        public string AppendLog(string line)
         {
             if (line == null)
             {
-                return;
+                return null;
             }
 
-            System.IO.Directory.CreateDirectory(Directory);
-            File.AppendAllText(LogPath, line + "\n");
+            return Guard(() =>
+            {
+                System.IO.Directory.CreateDirectory(Directory);
+                File.AppendAllText(LogPath, line + "\n");
+            });
         }
 
         public string PresetPath(string slot)
@@ -80,9 +106,9 @@ namespace Moqui.Unity.Data
             return Read(PresetPath(slot));
         }
 
-        public void SavePreset(string slot, PlaytestOverrides overrides)
+        public string SavePreset(string slot, PlaytestOverrides overrides)
         {
-            Write(PresetPath(slot), overrides);
+            return Write(PresetPath(slot), overrides);
         }
 
         private PlaytestOverrides Read(string path)
@@ -97,19 +123,37 @@ namespace Moqui.Unity.Data
             {
                 return PlaytestOverrides.Parse(File.ReadAllText(path));
             }
-            catch (DataFormatException exception)
+            catch (Exception exception) when (exception is DataFormatException || exception is IOException || exception is UnauthorizedAccessException)
             {
-                // 깨진 파일 때문에 게임이 멈추지 않게 덮어쓰기 없이 진행하고, 이유는 패널·로그에 보인다.
+                // 깨지거나 잠긴 파일 때문에 게임이 멈추지 않게 덮어쓰기 없이 진행하고, 이유는 패널·로그에 보인다.
                 LastError = exception.Message;
                 Debug.LogWarning($"[Playtest] {path}: {exception.Message}");
                 return new PlaytestOverrides();
             }
         }
 
-        private void Write(string path, PlaytestOverrides overrides)
+        private string Write(string path, PlaytestOverrides overrides)
         {
-            System.IO.Directory.CreateDirectory(Directory);
-            File.WriteAllText(path, overrides.ToJson());
+            return Guard(() =>
+            {
+                System.IO.Directory.CreateDirectory(Directory);
+                File.WriteAllText(path, overrides.ToJson());
+            });
+        }
+
+        private string Guard(Action action)
+        {
+            try
+            {
+                action();
+                return null;
+            }
+            catch (Exception exception) when (exception is IOException || exception is UnauthorizedAccessException)
+            {
+                LastError = exception.Message;
+                Debug.LogWarning($"[Playtest] {exception.Message}");
+                return exception.Message;
+            }
         }
     }
 

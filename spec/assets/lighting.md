@@ -14,7 +14,7 @@
 ## 2. 구조
 | 단계 | 위치 | 하는 일 |
 |---|---|---|
-| 데이터 | `data/rooms/*.json` `lights[]` | id, type(point·spot), position, direction, color, intensity, range, spotAngle, flicker, shadows, glowShape, cookie |
+| 데이터 | `data/rooms/*.json` `lights[]` | id, type(point·spot), position, direction, color, intensity, range, spotAngle, flicker, shadows, glowShape, cookie, attachPart. 방 단위 `ambient` |
 | 읽기 | Core `RoomLightDefinition`(Unity 비의존) | 검사: 세기 ≥ 0, 범위 > 0, 스포트는 방향 필요 |
 | 표현 | Unity `RoomLightingView` | Unity Light 생성(스포트 안쪽 원뿔 55%, 그림자 진하기 0.75), 매 프레임 `AmbientLightCurves`로 세기·색 변화, 발광 형상 칠하기 |
 | 셰이더 | `Moqui/Toon` | 주 조명 + 추가 조명(Forward+ 클러스터 루프, 추가 조명 그림자, 쿠키) |
@@ -90,8 +90,12 @@
 
 | 애셋 ID | 쓰는 곳 | 요구 |
 |---|---|---|
-| `light-pendant` | 1장 식탁 펜던트(`dining-lamp`) | 따뜻한 백색, 켜질 때 0.1초 두 번 깜빡이고 켜짐(백열 예열), 켜지면 바닥에 둥근 빛 경계 |
-| `light-ceiling` | 2장 천장 등(`ceiling-light`) | 백색, 켜질 때 형광 점등(0.3초 동안 2~3회 깜빡) |
+| `light-ceiling` | stage09·12 천장등(`ceiling-light`, 경계하면 켜짐) | 백색, 켜질 때 형광 점등(0.3초 동안 2~3회 깜빡) |
+| `light-bedside` | stage10 협탁 스탠드(주기) | 따뜻한 주황, 켜고 꺼질 때 딸깍 |
+| `light-lantern` | stage20 캠핑 등불(주기) | 주황, 켜질 때 서서히 밝아짐 |
+| `light-pendant` | (예비) 식탁 펜던트(`dining-lamp`) — 아직 이 조명을 쓰는 스테이지 없음 | 따뜻한 백색, 켜질 때 0.1초 두 번 깜빡이고 켜짐 |
+
+같은 ID의 방 분위기 조명이 있으면 기믹 조명이 그 빛을 맡는다(`RoomLightingView`가 분위기 조명을 만들지 않음): 꺼진 스위치가 켜져 보이지 않게 한다 (리뷰 M14).
 | (공통) | 켜기 예고 | 켜지기 전 팔이 스위치로 뻗는 동작 + 딸깍 소리(gulf §8), 켜지면 은신처 표시가 빛에 씻겨 옅어짐 |
 
 ## 6. 필요한 텍스처·VFX (애셋 인덱스에 등록됨)

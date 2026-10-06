@@ -56,6 +56,11 @@ namespace Moqui.Core.Simulation
                 return false;
             }
 
+            if (player.LastReleaseTick != Player.NeverTick && !SimulationTime.HasElapsed(player.LastReleaseTick, tick, _settings.AutoLandDelay))
+            {
+                return false;
+            }
+
             if (!_world.ClosestSurface(player.Position, _settings.AttachRange, ShapeFlags.Attachable, out var surface))
             {
                 return false;
@@ -153,7 +158,7 @@ namespace Moqui.Core.Simulation
             }
 
             player.Anchor.Resolve(out _, out Vector3 normal);
-            return Vector3.Dot(Vector3.Normalize(direction), normal) > 0.1f;
+            return Vector3.Dot(direction, normal) > 0f;
         }
 
         /// <summary>부위 움직임으로 튕겨 나가야 하면 처리하고 참을 돌려준다.</summary>
@@ -168,7 +173,7 @@ namespace Moqui.Core.Simulation
 
             Vector3 direction = Vector3.Normalize(player.AnchorVelocity);
             string shapeId = player.Anchor.Shape.Id;
-            Release(player);
+            Release(player, tick);
             player.State = PlayerState.Dislodged;
             player.StunEndTick = tick + SimulationTime.ToTicks(_motion.DislodgeStun);
 
@@ -183,7 +188,7 @@ namespace Moqui.Core.Simulation
         {
             player.Anchor.Resolve(out _, out Vector3 normal);
             string shapeId = player.Anchor.Shape.Id;
-            Release(player);
+            Release(player, tick);
             player.State = PlayerState.Flying;
             var move = _mover.MoveStraight(player.Position, player.CollisionRadius, normal * _settings.DetachOffset, ShapeFlags.Solid);
             player.Position = move.Position;
@@ -197,8 +202,9 @@ namespace Moqui.Core.Simulation
             player.Up = normal;
         }
 
-        private static void Release(Player player)
+        private void Release(Player player, int tick)
         {
+            player.LastReleaseTick = tick;
             player.HoldAfterAutoLand = false;
             player.Anchor = null;
             player.Up = Vector3.UnitY;

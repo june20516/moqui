@@ -58,7 +58,7 @@
   - 각 SkinSite에서 반경 `hiding.cueRange` 안에 Shadow Zone 또는 시야 차단 지점이 최소 1개 있다 (도망칠 곳 보장).
 - 각 스테이지에 봇용 웨이포인트 경로(`BotRoute`)를 둔다 (`tech/verification.md` §3).
 
-## 방: 거실·주방 (`livingKitchen`) — 1장 (Stage 1, 2 공용, M14 D-058)
+## 방: 거실·주방 (`livingKitchen`) — 1장 (stage01·02·06·07·08 공용, M14 D-058)
 - 방: 800(X) × 260(Y) × 650(Z) — 기존 거실(500×250×400)의 약 1.6배. 서쪽은 거실, 동쪽은 주방, 남쪽은 현관 쪽 통로.
 - 거실 가구는 기존 거실 배치를 (−150, 0, +100)만큼 옮긴 것이다(소파·TV·커피 테이블·책장·스탠드·커튼·에어컨·화분). 책장은 거실과 주방 사이 칸막이 역할을 한다.
 - 주방·통로 가구 (중심 / 크기 W×H×D):
@@ -70,19 +70,19 @@
   | Kitchen Island | (240, 45, 40) | 140 × 90 × 70 | |
   | Dining Table | (250, 75, −220) | 120 × 4 × 80 | 다리 4개, 아래가 Shadow Zone, 의자 2개, 위에 매달린 등 |
   | Shoe Cabinet | (−60, 50, −310) | 120 × 100 × 30 | 남쪽 벽 |
-- Shadow Zone: 커피 테이블 아래, 책장 뒤, 커튼 뒤, 위 찬장 아래, 식탁 아래.
+- Shadow Zone: 소파 뒤(등받이와 벽 사이, D-069), 커피 테이블 아래, 책장 뒤, 커튼 뒤, 위 찬장 아래, 식탁 아래.
 - 인간 자리: 소파, 몸 중심 (−150, 45, 240), 정면 −Z (TV 방향).
 - 플레이어 시작: 남서 모서리 (−370, 120, −290). 접근 경로는 서쪽 벽(커튼·스탠드) 쪽과 주방(식탁·아일랜드·책장 뒤) 쪽 두 갈래.
 - 이전 거실(`livingRoom`, 500×250×400)은 M13까지 Stage 1·2에 쓰였다.
 
-## Stage 1 — TV 보다 조는 인간 (튜토리얼)
+## stage01 (1번) — TV 보다 조는 인간 (튜토리얼)
 - 방: `livingKitchen` (M14, 이전 `livingRoom`).
 - 인간: `DozeModifier` 적용 (spec/06). 대부분 눈을 감고 졸다가 가끔 깜빡 깬다. `canSpray` = 거짓.
   - 무작위 동작: 고개 떨구기, 몸 기울기, 팔 긁기 (튕겨남을 유발하는 큰 동작 없음).
-- 튜토리얼 안내 순서 (spec/08 §튜토리얼): 이동 → 시점 → 정밀 비행 → 대시 → 착지 → 은신처 → CO₂ 따라가기 → 흡혈 → 이탈.
+- 튜토리얼 안내 순서 (spec/08 §튜토리얼): 이동 → 시점 → 정밀 비행 → 대시 → 착지 → 은신처 → CO₂ 따라가기 → 흡혈 → 이탈 → 비행 방식(설정 안내, gulf §5).
 - 목적: 들켜도 크게 위험하지 않은 환경에서 기본 조작과 흡혈 흐름을 익힌다.
 
-## Stage 2 — TV 보는 인간 (튜토리얼성)
+## stage02 (2번) — TV 보는 인간 (튜토리얼성)
 - 방: `livingKitchen` (M14, 이전 `livingRoom`).
 - 인간: 깨어서 TV 시청. `canSpray` = 거짓.
   - Safe 행동: TV 응시. 6~10초마다 좌 또는 우로 60° 2초간 둘러봄.
@@ -90,7 +90,7 @@
 - 튜토리얼 안내: 시야 구역, 광분과 숨기, 착지/흡혈 반응 예고 피하기.
 - 목적: 들키면 광분한다는 것과 숨는 것의 가치를 배운다.
 
-## Stage 3 — 열대야 침실 (선풍기, 스프레이)
+## stage03 (6번) — 열대야 침실 (선풍기, 스프레이)
 - 방: 400 × 250 × 400.
 - 인간: 침대에 누워 휴대폰을 봄. 정면이 **위쪽(+Y)**이라 천장 쪽 시야가 넓다.
   - SkinSite: 양 팔뚝(forearm), 양 발등(footTop), 볼(cheek, Red Zone 인접).
@@ -100,7 +100,7 @@
 - 레이아웃 제약: 선풍기 바람이 침대 하단 SkinSite(발등)를 가리도록 배치해, 발등에 접근하려면 바람을 거스르거나 소음 마스킹을 활용해야 한다.
 - 시작 위치: 방문 상단 틈.
 
-## Stage 4 — 화장실 (물방울, 습기)
+## stage04 (11번) — 화장실 (물방울, 습기)
 - 방: 220 × 250 × 260 (좁은 공간).
 - 인간: 변기에 앉아 고개를 숙이고 휴대폰을 봄. 시선이 **아래 앞쪽**(pitch −35°)이라 머리 위와 뒤쪽이 사각이다. `canSpray` = 거짓.
   - SkinSite: 왼/오른 종아리(calf), 왼/오른 팔뚝(forearm), 뒷목(neck, 시야 밖이지만 민감).
@@ -113,7 +113,7 @@
 - 시작 위치: 환풍구.
 - 조명: 밝은 백색 조명.
 
-## Stage 5 — 베란다 술자리 (거미줄, 취한 타겟, 모기향)
+## stage05 (16번) — 베란다 술자리 (거미줄, 취한 타겟, 모기향)
 - 공간: 450 × 250 × 300, 한쪽 면은 방충망 창.
 - 인간: 낮은 테이블 앞 바닥에 앉아 맥주를 마심. `DrunkModifier` 적용. `canSpray` = 참.
   - SkinSite: 양 팔뚝(forearm), 목(neck), 양 정강이(calf).
@@ -125,14 +125,14 @@
 - 시작 위치: 방충망 찢어진 틈.
 
 ## 수용 기준
-- [x] `livingRoom` 방 데이터가 위 표의 좌표/크기를 ±5u 안에서 따르고, Stage 1·2가 같은 방 데이터를 참조한다 (Core: 레벨 데이터 검사). — 증거: `LevelDataTests.LivingRoom_BoxFurniture_MatchesSpecTableWithin5u`(8개 가구), `LivingRoom_RoundFurniture_MatchesSpecTableWithin5u`, `LivingRoom_ShadowZones_UnderTableBehindShelfBehindCurtain`, `Stage1And2_ReferenceTheSameLivingRoom` (D-037 커튼 조정)
-- [x] 다섯 스테이지 모두 공통 규칙의 레벨 데이터 검사를 통과한다 (Core). — 증거: `LevelDataTests.Level_PassesCommonLevelChecks`(stage01~05), `Level_AllFurnitureHasObstacleFlag`, `DataFiles_MatchJsonSchemas`
+- [x] 레거시 `livingRoom` 방 데이터가 M7 표의 좌표/크기를 ±5u 안에서 따르고(테스트 기준 방), stage01·02가 같은 방 데이터(`livingKitchen`)를 참조한다 (Core: 레벨 데이터 검사). — 증거: `LevelDataTests.LivingRoom_BoxFurniture_MatchesSpecTableWithin5u`(8개 가구), `LivingRoom_RoundFurniture_MatchesSpecTableWithin5u`, `LivingRoom_ShadowZones_UnderTableBehindShelfBehindCurtain`, `Stage1And2_ReferenceTheSameLivingKitchen` (D-037 커튼 조정)
+- [x] (M13까지, M14에서 아래 20스테이지 기준으로 대체) 다섯 스테이지 모두 공통 규칙의 레벨 데이터 검사를 통과한다 (Core). — 증거: `LevelDataTests.Level_PassesCommonLevelChecks`(stage01~05), `Level_AllFurnitureHasObstacleFlag`, `DataFiles_MatchJsonSchemas`
 - [x] `glass` 형상은 충돌은 하지만 시야를 막지 않는다 (Core). — 증거: `LevelDataTests.Glass_BlocksMovementButNotLineOfSight`
 - [x] Unity 씬의 시각 오브젝트가 레벨 데이터의 모든 형상 ID와 1:1로 대응한다 (Unity). — 증거: EditMode `LevelViewTests.Build_Level_OneVisualPerShapeIdWithMatchingPose`(stage01·02), PlayMode `StageSceneTests.Stage_Play_BuildsRequestedLevel`(stage01·02)
 - [x] 각 스테이지의 클리어 봇이 성공한다 (Core 헤드리스 봇, `tech/verification.md` §3). — 증거: `ScenarioTests` stage01 5/5, stage02 4/5, stage03 4/5, stage04 4/5(스킬 구성, D-048), stage05 5/5. 발각 봇 stage01~05 5/5
 - [x] 20스테이지 모두 레벨 검사·클리어 봇(4/5 이상)·발각 봇(5/5)을 통과한다 (Core). (M14) — 증거: `LevelDataTests`(목록의 모든 레벨), `ScenarioTests`(stage01~20 클리어 4~5/5, 발각 5/5)
 - [x] 봇이 쓰는 스킬은 목록 순서대로 앞 스테이지의 최소 보상으로 살 수 있다 (Core). (M14) — 증거: `EconomyTests.BotSkills_AreAffordableFromMinimumClearRewardsOfEarlierStages`
-- [x] 각 스테이지의 대표 캡처 4장(전경, 시작 위치, 인간 근접, Shadow Zone 내부)이 생성된다. — 증거: `Captures/2026-10-01_152614/Stage_stage01·02_*.png`(M7), `Captures/2026-10-01_165113/Stage_stage03~05_*.png`, 에셋 적용 후 다섯 스테이지 `Captures/2026-10-01_173131/Stage_*.png`(각 4장 + 1인칭)
+- [x] 각 스테이지의 대표 캡처 4장(전경, 시작 위치, 인간 근접, Shadow Zone 내부)이 생성된다. — 증거: M14 20스테이지 `Captures/2026-10-07_010050/Stage_stage*_*.png`(근접 캡처는 몸통에서 팔 바깥쪽 시점, 걷는 인간 포함), 이전: `Captures/2026-10-01_152614/Stage_stage01·02_*.png`(M7), `Captures/2026-10-01_165113/Stage_stage03~05_*.png`, 에셋 적용 후 다섯 스테이지 `Captures/2026-10-01_173131/Stage_*.png`(각 4장 + 1인칭)
 
 ## 범위 외
 - 절차적 레벨 생성 (스테이지 추가는 데이터로, 위 "레벨 추가 방법")

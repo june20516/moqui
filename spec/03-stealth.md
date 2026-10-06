@@ -32,7 +32,8 @@
 - [x] Shadow Zone 안에서 중독·젖은 날개·습기·탈진이 2배 빠르게 회복된다 (Core). — 증거: 탈진 `StaminaTests.Exhaustion_WhileHidden_RecoversTwiceAsFast`, 젖은 날개·습기 `WaterTests`(spec/05 "숨은 상태에서 젖은 날개 시간과 습기 게이지가 2배" 항목), 중독 `GimmickTests`(spec/06 "숨은 상태에서 중독이 2배" 항목)
 - [x] 부착 상태에서는 비행 소음이 발생하지 않는다 (Core: 반경 안 인간 경계 증가 0). — 증거: `StealthTests.Attached_NearEars_NoFlightNoise`
 - [x] 부착 상태의 시각 증가율이 비부착 대비 0.3배이다 (Core). — 증거: `StealthTests.Attached_InYellowZone_VisionRateIs03Times`
-- [x] 2u보다 먼 표면에서는 부착되지 않는다 (Core). — 증거: `AttachTests.Attach_SurfaceFartherThan2u_DoesNotAttach`, `Attach_NonAttachableSurface_DoesNotAttach`
+- [x] `attach.snapRange`(8u, M14 전에는 2u)보다 먼 표면에서는 부착되지 않는다 (Core). — 증거: `AttachTests.Attach_SnapsWithinSnapRange_NotBeyond`, `Attach_NonAttachableSurface_DoesNotAttach`
+- [x] 떼거나 튕긴 뒤 `attach.autoLandDelay` 동안은 자동 착지하지 않는다 (Core). (M14) — 증거: `AttachTests.AfterDetaching_NoImmediateAutoLand`
 - [x] 부착 시 캐릭터 up 벡터가 표면 법선과 5° 이내로 정렬된다 (Core). — 증거: `AttachTests.Attach_WithinRange_AttachesAlignedToNormal`
 - [x] 레벨 데이터의 모든 가구 형상에 obstacle 플래그가 있다 (Core: 레벨 데이터 검사). — 증거: `LevelDataTests.Level_AllFurnitureHasObstacleFlag`(stage01·02), `Validator_FurnitureWithoutObstacleFlag_Reported`
 - [x] 벽 옆면과 천장 아랫면에 부착되고, 부착 중 위치가 표면에서 떨어지지 않는다 (Core). (M12) — 증거: `AttachTests.Attach_CeilingAndWallSide_StaysOnSurface`(천장·벽 옆면, 2초 유지)

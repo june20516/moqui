@@ -66,6 +66,26 @@ namespace Moqui.Core.Tests.Simulation
             Assert.That(far.Player.State, Is.EqualTo(PlayerState.Flying));
         }
 
+        /// <summary>F로 뗀 직후에는 누르던 정밀 비행·표면 쪽 입력으로 바로 다시 붙지 않는다 (attach.autoLandDelay, 리뷰 M14).</summary>
+        [Test]
+        public void AfterDetaching_NoImmediateAutoLand()
+        {
+            var world = new CollisionWorld();
+            world.Add(CollisionShape.Box("wall", new Vector3(0, 0, 10), new Vector3(200, 200, 1), ShapeFlags.Obstacle | ShapeFlags.Attachable));
+            var simulation = WithWorld(world, new Vector3(0, 0, 9f - 1.5f));
+            simulation.Step(Attach);
+            Assert.That(simulation.Player.State, Is.EqualTo(PlayerState.Attached));
+
+            var pushing = new PlayerCommand { Move = new Vector2(0f, 1f), PrecisionHeld = true };
+            simulation.Step(new PlayerCommand { AttachPressed = true, Move = pushing.Move, PrecisionHeld = true });
+            Assert.That(simulation.Player.State, Is.EqualTo(PlayerState.Flying));
+            Run(simulation, pushing, SecondsToTicks(Settings.Attach.AutoLandDelay * 0.8f));
+            Assert.That(simulation.Player.State, Is.EqualTo(PlayerState.Flying), "within the delay");
+
+            Run(simulation, pushing, SecondsToTicks(Settings.Attach.AutoLandDelay));
+            Assert.That(simulation.Player.State, Is.EqualTo(PlayerState.Attached), "after the delay the precise push lands again");
+        }
+
         /// <summary>정밀 비행으로 표면 쪽으로 날다 닿으면 F 없이 내려앉는다. 일반 비행·스치듯 지나가기는 붙지 않는다 (gulf §2, D-066).</summary>
         [TestCase(true, 0f, 1f, true)]
         [TestCase(false, 0f, 1f, false)]

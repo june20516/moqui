@@ -84,8 +84,20 @@ namespace Moqui.Unity.UI.Flow
         /// <summary>저장하고 기록한 뒤 다시 시작한다.</summary>
         public void SaveAndRestart()
         {
-            _store.Save(Session.Working);
-            _store.AppendLog(Session.Commit(DateTime.UtcNow, _levelId()));
+            string error = _store.Save(Session.Working);
+            if (error != null)
+            {
+                // 저장이 안 되면 다시 시작하지 않는다(새 값이 적용되지 않으므로). 패널은 열린 채 이유를 보인다.
+                Refresh($"저장 실패: {error}");
+                return;
+            }
+
+            string logError = _store.AppendLog(Session.Commit(DateTime.UtcNow, _levelId()));
+            if (logError != null)
+            {
+                Debug.LogWarning($"[Playtest] log not written: {logError}");
+            }
+
             _restart?.Invoke();
         }
 
@@ -151,8 +163,8 @@ namespace Moqui.Unity.UI.Flow
 
         private void SavePreset(string slot)
         {
-            _store.SavePreset(slot, Session.Working);
-            Refresh($"프리셋 {slot} 저장");
+            string error = _store.SavePreset(slot, Session.Working);
+            Refresh(error == null ? $"프리셋 {slot} 저장" : $"프리셋 {slot} 저장 실패: {error}");
         }
 
         private void LoadPreset(string slot)

@@ -164,6 +164,7 @@
     "attach.detachOffset": 2,
     "attach.snapRange": 8,
     "attach.autoLandAlign": 0.5,
+    "attach.autoLandDelay": 0.5,
 
     "site.forearm.sensitivity": 1.0,
     "site.forearm.bloodAmount": 1.0,

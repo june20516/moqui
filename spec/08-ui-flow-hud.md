@@ -8,9 +8,9 @@
 Title ─▶ Stage Select ─▶ Stage(Play) ─▶ Result ─┬▶ Skills ─▶ Stage Select
   │                          │                   └▶ Retry ─▶ Stage(Play)
   └▶ Settings                └▶ Pause ─▶ (Resume / Retry / Stage Select / Settings)
-Stage 5 첫 클리어 ─▶ Ending ─▶ Title
+마지막 스테이지(stage20) 첫 클리어 ─▶ Ending ─▶ Title
 ```
-- Stage Select: 이전 스테이지를 클리어해야 다음이 열린다. 클리어 기록(최고 시간, 광분 0회 여부, 최소 자국 수)을 표시한다. Stage Select에서도 Skills로 갈 수 있다.
+- Stage Select: 장별 페이지(1~4장, 이전/다음 장 버튼, D-061). 목록에서 바로 앞 스테이지를 클리어해야 다음이 열린다. 클리어 기록(최고 시간, 광분 0회 여부, 최소 자국 수)을 표시한다. Stage Select에서도 Skills로 갈 수 있다.
 - Skills: 스킬 트리(저항/능력치/연속 회피/마법봉/기타 탭), 현재 레벨과 다음 레벨 효과·비용, 액티브 장착 (spec/09).
 - Result: 클리어/실패, 사망 원인, 소요 시간, 획득 혈액 포인트 내역(spec/09).
 - Ending: 정지 이미지 1장 + 텍스트 3줄 + "Thanks for playing". 스킵 가능.
@@ -53,7 +53,7 @@ Stage 5 첫 클리어 ─▶ Ending ─▶ Title
 - 1인칭에서는 자기 캐릭터가 보이지 않으므로 젖은 날개 상태를 화면 가장자리 물방울 오버레이로도 보여준다.
 
 ## 수용 기준
-- [x] 위 흐름의 모든 전이가 동작한다 (Unity: UI 흐름 테스트 — 버튼 이벤트를 직접 호출). — 증거: 버튼 이벤트를 직접 호출). — 증거: EditMode `FlowTests.Title_ButtonsLeadToStageSelectSettingsResetAndQuit`, `StageSelect_LockedStagesCannotStart_UnlockAfterClear`, `Result_RecordsAndSaves_RetrySkillsStageSelectAndEnding`, `SceneIntegrityTests.BuildSettings_ScreenScenesInFlowOrder` (D-044)
+- [x] 위 흐름의 모든 전이가 동작한다 (Unity: UI 흐름 테스트 — 버튼 이벤트를 직접 호출). — 증거: EditMode `FlowTests.Title_ButtonsLeadToStageSelectSettingsResetAndQuit`, `StageSelect_LockedStagesCannotStart_UnlockAfterClear`, `Result_RecordsAndSaves_RetrySkillsStageSelectAndEnding`, `SceneIntegrityTests.BuildSettings_ScreenScenesInFlowOrder` (D-044)
 - [x] 잠긴 스테이지는 선택할 수 없다 (Unity). — 증거: `FlowTests.StageSelect_LockedStagesCannotStart_UnlockAfterClear`
 - [x] 게임패드만으로 Title부터 Stage 1 시작까지 갈 수 있다 (Unity: 가상 Gamepad). — 증거: PlayMode `FlowPlayModeTests.GamepadOnly_TitleToStage1`
 - [x] HUD 요소가 각 모델 값의 변화에 반영된다 (Unity: 값 주입 후 UI 상태 확인). — 증거: EditMode `HudTests.ModelValues_AreReflectedInHudElements`, `Satiety_HighlightedOnlyWhenSpeedMultiplierBelowThreshold`, `Prompts_FollowPlayerStateAndInputDevice`, Core `HudDataTests`(5개) (D-041)

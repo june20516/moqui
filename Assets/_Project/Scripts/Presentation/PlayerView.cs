@@ -109,6 +109,7 @@ namespace Moqui.Unity.Presentation
                 _wasAttached = true;
                 _hasRendered = true;
                 transform.SetPositionAndRotation(Glide(_glideFrom, attachedAt, _glideElapsed), AttachedRotation(player.Up.ToUnity(), player.Yaw));
+                FoldWings(false);
                 RefreshProximity(simulation);
                 RefreshWandLight(simulation, Time.time);
                 return;

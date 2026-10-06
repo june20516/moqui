@@ -113,6 +113,12 @@ namespace Moqui.Unity.UI.Hud
 
         private void RefreshFrenzyMoment()
         {
+            // 판이 끝나면(결과 화면) 느린 화면을 더 걸지 않는다.
+            if (_runner.Driver.Simulation.Outcome != Moqui.Core.Simulation.StageOutcome.InProgress)
+            {
+                Frenzy.Cancel();
+            }
+
             Time.timeScale = Frenzy.Update(Time.unscaledTime, Time.timeScale);
             _view.FrenzyCauseText.gameObject.SetActive(Frenzy.TextVisible);
             if (Frenzy.TextVisible)

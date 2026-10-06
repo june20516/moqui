@@ -68,6 +68,25 @@ namespace Moqui.Unity.Tests
             Assert.That(RenderSettings.ambientLight.r, Is.EqualTo(ambient.X).Within(1e-3f));
         }
 
+        /// <summary>기믹 조명(스위치·주기)과 같은 ID의 분위기 조명은 만들지 않고, 다시 Build해도 조명이 겹치지 않는다 (리뷰 M14).</summary>
+        [Test]
+        public void GimmickOwnedLight_IsSkipped_RebuildDoesNotDuplicate()
+        {
+            var tuning = Moqui.Core.Data.TuningLoader.Load(new UnityDataSource());
+            var level = new LevelLoader(new UnityDataSource()).Load("stage10");
+            var simulation = new Moqui.Core.Simulation.GameSimulation(Moqui.Core.Simulation.GameSettings.FromTuning(tuning), level.CreateSetup());
+            _root = new GameObject("RoomLightingTest");
+            var view = _root.AddComponent<RoomLightingView>();
+
+            view.Build(level.Room, null, simulation);
+            int count = view.Lights.Count;
+            view.Build(level.Room, null, simulation);
+
+            Assert.That(view.Lights.Any(l => l.name == "RoomLight_bedside"), Is.False, "the bedside switch light owns it");
+            Assert.That(view.Lights.Count, Is.EqualTo(count));
+            Assert.That(count, Is.EqualTo(level.Room.Lights.Count - 1));
+        }
+
         [TestCase(RoomLightFlicker.Lamp)]
         [TestCase(RoomLightFlicker.Tv)]
         [TestCase(RoomLightFlicker.Fluorescent)]

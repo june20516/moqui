@@ -110,6 +110,11 @@ namespace Moqui.Core.Data
                         throw keyJson.Error($"range [{min}, {max}] must be increasing and contain the current value {value}");
                     }
 
+                    if ((max - min) / PlaytestSession.StepsPerRange < PlaytestOverrides.Resolution)
+                    {
+                        throw keyJson.Error($"range [{min}, {max}] is too narrow: one step must be at least {PlaytestOverrides.Resolution}");
+                    }
+
                     keys.Add(new PlaytestKey(key, min, max));
                 }
 
@@ -128,6 +133,9 @@ namespace Moqui.Core.Data
     {
         public const string FileName = "playtest.json";
         public const int SupportedFormatVersion = 1;
+
+        /// <summary>기록·저장 해상도 (소수 4자리, <see cref="Format"/>).</summary>
+        public const double Resolution = 1e-4;
 
         private readonly SortedDictionary<string, double> _values = new SortedDictionary<string, double>(StringComparer.Ordinal);
 
@@ -198,7 +206,7 @@ namespace Moqui.Core.Data
             foreach (var pair in _values)
             {
                 builder.Append(first ? "\n" : ",\n");
-                builder.Append("    \"").Append(pair.Key).Append("\": ").Append(Format(pair.Value));
+                builder.Append("    ").Append(Quote(pair.Key)).Append(": ").Append(Format(pair.Value));
                 first = false;
             }
 
@@ -239,7 +247,40 @@ namespace Moqui.Core.Data
 
         public static string Format(double value)
         {
-            return value.ToString("0.####", CultureInfo.InvariantCulture);
+            string text = value.ToString("0.####", CultureInfo.InvariantCulture);
+            return text == "-0" ? "0" : text;
+        }
+
+        /// <summary>JSON 문자열 리터럴 (따옴표·역슬래시·제어 문자 이스케이프).</summary>
+        public static string Quote(string text)
+        {
+            var builder = new StringBuilder(text.Length + 2);
+            builder.Append('"');
+            foreach (char c in text)
+            {
+                switch (c)
+                {
+                    case '"':
+                        builder.Append("\\\"");
+                        break;
+                    case '\\':
+                        builder.Append("\\\\");
+                        break;
+                    default:
+                        if (c < ' ')
+                        {
+                            builder.Append("\\u").Append(((int)c).ToString("x4", CultureInfo.InvariantCulture));
+                        }
+                        else
+                        {
+                            builder.Append(c);
+                        }
+
+                        break;
+                }
+            }
+
+            return builder.Append('"').ToString();
         }
     }
 
@@ -256,9 +297,9 @@ namespace Moqui.Core.Data
             {
                 double from = before.Values.TryGetValue(key, out var b) ? b : baseTuning.GetFloat(key);
                 double to = after.Values.TryGetValue(key, out var a) ? a : baseTuning.GetFloat(key);
-                if (Math.Abs(from - to) > 1e-9)
+                if (Math.Abs(from - to) > PlaytestSession.SameValueTolerance)
                 {
-                    changes.Add($"\"{key}\": [{PlaytestOverrides.Format(from)}, {PlaytestOverrides.Format(to)}]");
+                    changes.Add($"{PlaytestOverrides.Quote(key)}: [{PlaytestOverrides.Format(from)}, {PlaytestOverrides.Format(to)}]");
                 }
             }
 
@@ -268,7 +309,7 @@ namespace Moqui.Core.Data
             }
 
             string time = utc.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
-            return $"{{\"time\": \"{time}\", \"level\": \"{levelId}\", \"changes\": {{{string.Join(", ", changes)}}}}}";
+            return $"{{\"time\": \"{time}\", \"level\": {PlaytestOverrides.Quote(levelId)}, \"changes\": {{{string.Join(", ", changes)}}}}}";
         }
     }
 
@@ -278,7 +319,8 @@ namespace Moqui.Core.Data
     /// </summary>
     public static class TuningPromotion
     {
-        private static readonly Regex FirstNumber = new Regex(@"\d+(?:\.\d+)?");
+        // 값 칸의 첫 숫자와 그 앞 부호(ASCII '-' 또는 문서에서 쓰는 '−').
+        private static readonly Regex FirstNumber = new Regex(@"(?<sign>[-−]?)(?<number>\d+(?:\.\d+)?)");
 
         /// <summary>tuning.json의 `"key": 숫자` 한 줄을 바꾼다. 키가 없거나 숫자 줄이 아니면 예외.</summary>
         public static string ReplaceInTuningJson(string json, string key, double value)
@@ -311,7 +353,7 @@ namespace Moqui.Core.Data
                     throw new DataFormatException($"spec/tuning.md: value cell of '{key}' has no number");
                 }
 
-                cells[2] = FirstNumber.Replace(cells[2], PlaytestOverrides.Format(value), 1);
+                cells[2] = FirstNumber.Replace(cells[2], match => SignedText(match.Groups["sign"].Value, value), 1);
                 lines[i] = string.Join("|", cells);
                 found++;
             }
@@ -323,6 +365,18 @@ namespace Moqui.Core.Data
 
             return string.Join(newline, lines);
         }
+
+        /// <summary>문서 표기 유지: 원래 '−'를 썼으면 음수도 '−'로 쓴다.</summary>
+        private static string SignedText(string originalSign, double value)
+        {
+            if (value >= 0d)
+            {
+                return PlaytestOverrides.Format(value);
+            }
+
+            string minus = originalSign == "−" ? "−" : "-";
+            return minus + PlaytestOverrides.Format(-value);
+        }
     }
 
     /// <summary>
@@ -333,14 +387,19 @@ namespace Moqui.Core.Data
     {
         public const int StepsPerRange = 20;
 
+        /// <summary>float 기본값과 double 덮어쓰기를 같은 값으로 보는 허용오차.</summary>
+        public const double SameValueTolerance = 1e-6;
+
         private readonly Tuning _baseTuning;
 
         public PlaytestSession(Tuning baseTuning, PlaytestKeyCatalog catalog, PlaytestOverrides saved)
         {
             _baseTuning = baseTuning;
             Catalog = catalog;
-            Saved = saved.Clone();
-            Working = saved.Clone();
+            // 목록 밖 키(실제로 적용되지 않는 값)는 패널에도 기록에도 넣지 않는다.
+            Working = new PlaytestOverrides();
+            LoadWorking(saved);
+            Saved = Working.Clone();
         }
 
         public PlaytestKeyCatalog Catalog { get; }
@@ -371,7 +430,7 @@ namespace Moqui.Core.Data
 
         public void Set(string key, double value)
         {
-            if (Math.Abs(value - BaseValue(key)) < 1e-6)
+            if (Math.Abs(value - BaseValue(key)) < SameValueTolerance)
             {
                 Working.Remove(key);
             }
@@ -408,7 +467,7 @@ namespace Moqui.Core.Data
 
         private static bool SameValues(PlaytestOverrides a, PlaytestOverrides b)
         {
-            return a.Count == b.Count && a.Values.All(pair => b.Values.TryGetValue(pair.Key, out var other) && Math.Abs(other - pair.Value) < 1e-9);
+            return a.Count == b.Count && a.Values.All(pair => b.Values.TryGetValue(pair.Key, out var other) && Math.Abs(other - pair.Value) < SameValueTolerance);
         }
     }
 }

@@ -1,3 +1,4 @@
+using System.Linq;
 using Moqui.Core.Data;
 using Moqui.Core.Data.Levels;
 using Moqui.Core.Simulation;
@@ -33,6 +34,34 @@ namespace Moqui.Unity.Tests
 
             Assert.That(moment.Update(0.1f, 0f), Is.EqualTo(0f), "pause wins");
             Assert.That(moment.Update(5f, 0f), Is.EqualTo(0f));
+        }
+
+        /// <summary>판이 끝나면 느린 화면을 취소한다: 결과 화면이 느려지지 않는다 (리뷰 M14).</summary>
+        [Test]
+        public void Cancel_StopsSlowMotionAndText()
+        {
+            var moment = new FrenzyMoment();
+            moment.Trigger(AwarenessCause.Sight, 0f);
+            moment.Cancel();
+
+            Assert.That(moment.Update(0.1f, 1f), Is.EqualTo(1f));
+            Assert.That(moment.TextVisible, Is.False);
+        }
+
+        [Test]
+        public void Timeline_Downsample_KeepsThePeakOfEachBucket()
+        {
+            var samples = new System.Collections.Generic.List<(float, AwarenessCause)>();
+            for (int i = 0; i < 1000; i++)
+            {
+                samples.Add((i == 537 ? 99f : 10f, i == 537 ? AwarenessCause.Hearing : AwarenessCause.Sight));
+            }
+
+            var bars = AwarenessTimeline.Downsample(samples, 200);
+
+            Assert.That(bars.Count, Is.EqualTo(200));
+            Assert.That(bars.Max(bar => bar.Awareness), Is.EqualTo(99f));
+            Assert.That(bars.Count(bar => bar.Cause == AwarenessCause.Hearing), Is.EqualTo(1));
         }
 
         [Test]

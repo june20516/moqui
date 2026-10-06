@@ -210,6 +210,7 @@
 | attach.detachOffset | 2u | 이탈 시 표면 법선 방향으로 떨어지는 거리 (spec/03, D-031) |
 | attach.snapRange | 8u | F 착지가 닿는 거리. 이 안의 가장 가까운 표면으로 미끄러져 붙는다 (gulf §2, M14) |
 | attach.autoLandAlign | 0.5 | 정밀 비행 자동 착지: 진행 방향과 표면 쪽(−법선) 코사인 하한 (gulf §2, M14) |
+| attach.autoLandDelay | 0.5s | 떼거나 튕긴 뒤 이 시간 동안은 자동 착지하지 않는다 (떼자마자 다시 붙지 않게, M14 리뷰) |
 
 ## site (부위 유형)
 | 키 | 민감도 | 혈액량 |

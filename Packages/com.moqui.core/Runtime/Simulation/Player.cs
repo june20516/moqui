@@ -61,6 +61,9 @@ namespace Moqui.Core.Simulation
         /// <summary>정밀 비행 자동 착지 직후, 이동 키를 놓기 전까지 그 입력으로 떨어지지 않는다 (gulf §2).</summary>
         public bool HoldAfterAutoLand { get; set; }
 
+        /// <summary>마지막으로 표면에서 떨어진 틱 (떼기·튕김·부착 대시). 자동 착지 지연에 쓴다.</summary>
+        public int LastReleaseTick { get; set; } = NeverTick;
+
         /// <summary>이번 틱 Suck 입력을 누르고 있는가 (흡혈 중 이벤트, D-056).</summary>
         public bool SuckHeld { get; set; }
 

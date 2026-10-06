@@ -106,6 +106,41 @@ namespace Moqui.Core.Tests.Data
             Assert.Throws<DataFormatException>(() => TuningPromotion.ReplaceInSpec(Spec, "missing.key", 1));
         }
 
+        /// <summary>값 칸의 부호를 지킨다: 문서의 '−' 표기, 양수↔음수 전환 (리뷰 M14).</summary>
+        [Test]
+        public void Promotion_HandlesSignedSpecValues()
+        {
+            const string Spec = "| a.b | −0.05 | x |\n| c.d | -5u | y |\n";
+
+            string spec = TuningPromotion.ReplaceInSpec(Spec, "a.b", -0.1);
+            spec = TuningPromotion.ReplaceInSpec(spec, "c.d", 3);
+
+            Assert.That(spec, Does.Contain("| a.b | −0.1 | x |"));
+            Assert.That(spec, Does.Contain("| c.d | 3u | y |"));
+            Assert.That(TuningPromotion.ReplaceInSpec(spec, "c.d", -2), Does.Contain("| c.d | -2u | y |"));
+            Assert.That(TuningPromotion.ReplaceInTuningJson("{ \"c.d\": -5 }", "c.d", 3), Does.Contain("\"c.d\": 3"));
+        }
+
+        /// <summary>목록 밖 키는 패널 세션에 들어오지 않고, 기록 JSON은 이스케이프된다 (리뷰 M14).</summary>
+        [Test]
+        public void Session_IgnoresUnknownSavedKeys_LogEscapesStrings()
+        {
+            var saved = new PlaytestOverrides();
+            saved.Set("world.gravity", 1);
+            saved.Set("not.a.key", 2);
+            saved.Set("flight.speed", 70);
+
+            var session = new PlaytestSession(RepoTuning, Catalog, saved);
+
+            Assert.That(session.Working.Values.Keys, Is.EqualTo(new[] { "flight.speed" }));
+            Assert.That(session.HasUnsavedChanges, Is.False);
+            Assert.That(PlaytestOverrides.Quote("a\"b\\c"), Is.EqualTo("\"a\\\"b\\\\c\""));
+            var after = new PlaytestOverrides();
+            after.Set("flight.speed", 70);
+            string line = PlaytestLog.Line(System.DateTime.UtcNow, "odd\"level", new PlaytestOverrides(), after, RepoTuning);
+            Assert.That(line, Does.Contain("\"level\": \"odd\\\"level\""));
+        }
+
         [Test]
         public void Promotion_OfEveryPlaytestKey_KeepsJsonAndSpecInAgreement()
         {

@@ -1,19 +1,20 @@
 # Moqui 최종 보고서
 
-작성 2026-10-01, 갱신 2026-10-05(M13 플레이테스트 반영 2). GOAL.md §2 완료 정의(D1~D9) 기준. 브랜치 `main`, 마일스톤 태그 `m0-done` ~ `m13-done`.
+작성 2026-10-01, 갱신 2026-10-07(M14 스테이지 확장·gulf 보완). GOAL.md §2 완료 정의(D1~D9) 기준. 브랜치 `main`, 마일스톤 태그 `m0-done` ~ `m14-done`.
 
 ## 1. 구현 요약
-PC용 3D 스텔스 비행 액션. 플레이어는 마법소녀 외형의 모기 "모키"로, 다섯 방의 인간에게서 들키지 않고 피를 빨아 흡혈 게이지 100%를 채운다.
+PC용 3D 스텔스 비행 액션. 플레이어는 개념상 모기, 보이는 모습은 마법소녀인 "모키"로, 4장 20스테이지(거실·침실·물가·베란다)의 인간에게서 들키지 않고 피를 빨아 흡혈 게이지 100%를 채운다.
 
 | 영역 | 내용 | 정본 |
 |---|---|---|
 | Core (엔진 독립 C#) | 3축 비행·대시·스태미나, 부착·은신(Shadow Zone), 인간 감지(시각 Yellow/Red Zone·청각·귀)·경계·광분·공격 3단계·반응, 흡혈 세션·부위·물린 자국·포만, 물방울 QTE·습기·젖은 날개, 기믹(선풍기·스프레이·모기향·거미줄·졸음·취함), 메타(혈액 포인트·스킬 14종·저장), 튜토리얼 판정, 시나리오 봇 | spec/00~09, 11 |
 | Unity 어댑터 | 입력(키보드/마우스·게임패드), 3인칭/1인칭 카메라, 레벨·인간·물·기믹 표현, 모기 감각(흐린 시야·CO₂·체온·은신처 표시), HUD, 화면 흐름(Title·StageSelect·Skills·Settings·Stage Pause/Result·Ending), 저장·설정 | spec/00, 08, 10, 11 |
-| 데이터 | `data/tuning.json`(모든 수치, 정본 문서 `spec/tuning.md`), 방 4종·레벨 5개·시나리오 10개(JSON + 스키마) | spec/07, tuning |
+| 데이터 | `data/tuning.json`(모든 수치, 정본 문서 `spec/tuning.md`), 스테이지 목록 `data/stages.json`, 방 4종(+레거시 1)·레벨 20개·시나리오 40개, 플레이 검증 키 `data/playtest-keys.json`(JSON + 스키마) | spec/07, tuning |
 | 에셋 | 공통 툰 셰이더(셀 3단·외곽선·반투명 변형), 기체 셰이더(SoftGas·VolumeFog), 밤 실내 팔레트·후처리, 모키(프리미티브 데포르메 + 애니메이터 7상태), 인간 얼굴·공격 팔, 사운드 33종 코드 합성(M13 바람 2종 추가) | spec/10, asset-pipeline |
-| 도구 | `Tools/`: run-tests, run-core-tests, build, build-sandboxes, capture, perf, gen_audio.py | tech/verification |
+| 도구 | `Tools/`: run-tests, run-core-tests, build, build-sandboxes, capture, perf, gen_audio.py, asset_specs.py(애셋 스펙·인덱스 생성). 에디터 메뉴 Moqui/Playtest | tech/verification |
+| 애셋 스펙 | 모델 48종·텍스처 38종·VFX 13종 문서와 인덱스(사용 스테이지 자동 계산), 조명 스펙, 모키 표현 큐 VFX 요구 | spec/assets, spec/12 |
 
-결정 기록 57건(`plan/decisions.md` D-001~D-057).
+결정 기록 70건(`plan/decisions.md` D-001~D-070).
 
 ### M12 플레이테스트 반영 (2026-10-05)
 | 피드백 | 반영 |
@@ -40,34 +41,44 @@ PC용 3D 스텔스 비행 액션. 플레이어는 마법소녀 외형의 모기 
 | 흡혈이 슴슴함 | 흡혈 중 이벤트 3종: 긁으러 오는 손(경고), 부위가 움직임(버티면 흡혈 1.5배), 시선(멈추고 얼기) + HUD 경고 |
 | 스테이지가 작음 | 계획만: `plan/stage-expansion.md`(넓은 방, 4장 × 5, 소개 → 조합 → 광분 → 응용). 사람 확정 후 M14 |
 
+### M14 스테이지 확장 · gulf 보완 (2026-10-06~07)
+| 영역 | 내용 |
+|---|---|
+| 스테이지 | 4장 × 5 = 20스테이지(spec/07 장 구성), 목록 데이터화(레벨 추가 = 데이터만), 장별 선택 화면 |
+| 신규 요소 | 걷는 인간, 조명 스위치, 모기장, 전기 모기채, 두 사람(광분 전염), 에어컨 타이머, 예민한 인간(시작 물린 자국) |
+| 실행·평가 간극(gulf) | 모키 표현 큐 18종(글자 이펙트, 표시기 교체 가능), 지팡이 대가, 스냅·정밀 자동 착지와 착지 표시, 비행 방식(호버/자유)·보는 방향 대시, 왜 들켰나(원인·느린 화면·결과 타임라인), 거리감 그림자·지면 먼지, 정밀 비행 소리·날개, 귀 움찔·눈동자 선행·경계 표시, 환경 예고(조명 예열·딸깍·에어컨 열림·바람 줄기·모기장 출렁), 물방울 막 (`plan/gulf-improvements.md`) |
+| 움직임·조명 | 머리·걷기 가감속, 걸음 출렁임, 호흡·깜빡임, 둥실거림, 날갯짓 박자. 방 분위기 조명 14개(실제 같은 흔들림), 툰 셰이더 추가 조명, 방별 환경광, 손 따라가는 휴대폰 빛, 지팡이 빛 |
+| 플레이 검증 | `playtest.json` 덮어쓰기, F10 조정 패널(프리셋·기록), 정본 올리기 메뉴 (에디터·개발 빌드·`-playtest`) |
+| 리뷰 | Core·Unity·문서 세 갈래 리뷰, 높음 0건, 중간·낮음 반영(D-070) |
+
 ## 2. 완료 정의 증거
 | 항목 | 상태 | 증거 |
 |---|---|---|
 | D1 빌드 | 충족 | `Tools/build.ps1` → `Builds/Windows/Moqui.exe`, result=Succeeded, errors 0, 예상 밖 경고 0 (알려진 URP 디버그 셰이더 경고 2건) |
-| D2 전 흐름 (키보드/마우스·게임패드) | 충족 | PlayMode `FullFlowPlayModeTests.TitleThroughAllStagesToEnding(KeyboardMouse/Gamepad)` — Title → Stage 1~5 → Ending을 장치 입력으로 진행 |
+| D2 전 흐름 (키보드/마우스·게임패드) | 충족 | PlayMode `FullFlowPlayModeTests.TitleThroughAllStagesToEnding(KeyboardMouse/Gamepad)` — Title → 목록의 20스테이지(장 페이지 넘김 포함) → Ending을 장치 입력으로 진행 |
 | D3 spec 수용 기준 | 충족 | spec/00~11 + asset-pipeline 모든 기준 `- [x]` + 증거 (M12·M13 추가 기준 포함) |
-| D4 테스트 | 충족 | Core 364 / EditMode 133 / PlayMode 22 전부 통과 |
-| D5 시나리오 봇 | 충족 | Core `ScenarioTests`: 클리어 봇 stage01 5/5, stage02 4/5, stage03 5/5, stage04 4/5, stage05 4/5 (기준 고정 시드 5개 중 4개 이상, M13 흡혈 중 이벤트 포함 — 봇은 시선이 오면 얼어 있는다). 발각 봇 다섯 스테이지 모두 5/5 Game Over(Attack) |
-| D6 봇 플레이스루 오류 로그 0 | 충족 | PlayMode `ScenarioSmokeTests`(다섯 클리어 봇을 Stage 씬 안에서 재생, 헤드리스와 결과·틱 일치, Error/Exception 0), 빌드 성능 실행 플레이어 로그 Error/Exception 0 |
+| D4 테스트 | 충족 | Core 505 / EditMode 192 / PlayMode 53 전부 통과 |
+| D5 시나리오 봇 | 충족 | Core `ScenarioTests`: 20스테이지 클리어 봇 모두 4/5 이상(stage03·04·08~14·16 5/5, 나머지 4/5), 발각 봇 20스테이지 모두 5/5 Game Over(Attack). 봇 스킬은 앞 스테이지 최소 보상으로 살 수 있음(`EconomyTests`) |
+| D6 봇 플레이스루 오류 로그 0 | 충족 | PlayMode `ScenarioSmokeTests`(목록의 20개 클리어 봇을 Stage 씬 안에서 재생, 헤드리스와 결과·틱 일치, Error/Exception 0), 빌드 성능 실행 플레이어 로그 Error/Exception 0 |
 | D7 에셋 패스 | 충족 | `Assets/_Project/CREDITS.md`(외부 에셋 0, 자체 제작물 목록), EditMode `CreditsTests`, 셰이더 컴파일 검사·모든 렌더러 `Moqui/*` 검사, 캡처 마젠타 없음 |
-| D8 대표 캡처 검토 | 충족 | `plan/progress.md` "캡처 검토 기록"(M7 Stage 1·2, M9 Stage 3~5, M10 다섯 스테이지 에셋 적용 후) |
+| D8 대표 캡처 검토 | 충족 | `plan/progress.md` "캡처 검토 기록"(M7~M10), M14 20스테이지 `Captures/2026-10-07_010050/`(조명·모기장·두 사람·걷는 인간 확인, 근접 캡처 시점 개선) |
 | D9 최종 보고서 | 충족 | 이 문서 |
 
-성능: `plan/perf-report.md` — 1920×1080, RTX 3060 Ti·i5-12400F, 다섯 스테이지 평균 약 1 ms, 60 fps 예산 초과 0% (M13 이후 재측정).
+성능: `plan/perf-report.md` — 1920×1080, RTX 3060 Ti·i5-12400F, 20스테이지 평균 1.1~1.3 ms(최대 8.4 ms), 60 fps 예산 초과 0% (M14 조명·추가 조명 그림자 포함 재측정, 플레이어 로그 Error/Exception 0).
 
 ## 3. 미해결 이슈
-- **밸런스(D-035, D-048):** 물린 자국이 쌓이면 자국 하한이 의심 해제선을 넘어 인간이 의심 상태에 고정될 수 있다. Stage 4 클리어 봇은 스킬(마취 타액 2·깃털 착지 2) 없이는 안정적으로 클리어하지 못한다. 수치 조정은 기획 판단이 필요해 그대로 두었다.
+- **밸런스(D-035, D-048, D-069):** 물린 자국이 쌓이면 자국 하한이 의심 해제선을 넘어 인간이 의심 상태에 고정될 수 있다. stage04(11번)는 마취 타액 2·깃털 착지 2, stage08(5번)은 마취 타액 2가 있어야 봇이 안정적으로 클리어한다. 체감 난이도는 플레이 검증 패널(F10)로 맞춘 뒤 정본으로 올리면 된다.
 - **에셋 품질(D-049):** 모키·인간·가구는 프리미티브 조합, 사운드는 코드 합성이다. 수용 기준은 충족하지만 상용 수준의 외형·음질은 아니다.
-- **걷는 인간·도구(M12 아이디어):** 광분한 인간의 걷기 추격, 파리채 등 도구는 범위 밖 확장 후보로 `plan/ideas.md`에 있다. 몸 구조(뼈대 포즈·루트 상태·몸동작 계획기)는 확장을 전제로 만들었다(D-053).
+- **애셋 대기(D-062, D-068):** 모키 동작·마법진 그림자·인간 의상·끊긴 그물·휴대폰 손 소켓 등은 애셋 스펙만 있고 지금은 프리미티브·글자 큐로 대신한다(`spec/assets/INDEX.md`, gulf 계획 "남은 것").
 - **글꼴(D-041):** 허용 라이선스 목록에 OFL이 없어 한글 글꼴을 번들하지 않고 OS 글꼴(맑은 고딕 등)을 실행 중에 쓴다. 한글 글꼴이 없는 OS에서는 글자가 대체 글꼴로 나온다.
-- **광분 빈도(D-057):** 광분은 이제 "시선에 들킨 실수"로 나온다. 신중하게 대응하면(시선 때 얼기) 여전히 드물다. 피할 수 없는 광분 스테이지는 M14 설계에서 다룬다.
+- **광분 빈도(D-057):** 광분은 "시선에 들킨 실수"로 나온다. M14에서 예민한 인간(7·19번)·모기채 친구로 광분을 견디는 스테이지를 두었고, 들킨 이유는 화면(원인 문구·결과 타임라인)으로 보인다.
 - **캡처 파일:** `Captures/`는 git에서 제외되어 있다(용량). 증거 경로는 로컬 기록이며 `Tools/capture.ps1`로 다시 만들 수 있다.
 - **성능 실행기:** `-moquiPerf` 측정은 정지 호버링이라 지금까지 사망한 적은 없지만, 인간에게 맞아 사망하면 결과 화면이 실제 저장 데이터에 기록할 수 있다(측정용 메모리 세션 미적용).
 - **성능 측정 조건:** 측정은 플레이어 정지 호버링 상태다(장면 렌더링 부하 위주). 다른 GPU에서는 `Tools/perf.ps1`로 다시 재야 한다.
 
 ## 4. 사람에게 넘길 항목
-1. 밸런스 결정: 자국 하한·의심 해제선(`biteMark.floorPerBite`·`biteMark.floorMax`, `awareness.suspiciousExit`)과 Stage 4 난이도 (`plan/progress.md` "사람 검토 권장"). M13에서 "반응 빗나감 → 경계 상승"을 시도했다가 이 하한 함정 때문에 철회했다(D-057).
-2. 스테이지 확장(M14) 계획 확정: `plan/stage-expansion.md` §7(스테이지 수, 신규 요소, 걷는 인간, 방 크기).
+1. 플레이 검증: 에디터나 개발 빌드에서 F10 패널로 체감 수치(비행·카메라·흡혈·인간 감각·움직임·감각/조명 41개)를 맞추고, 에디터 메뉴 Moqui/Playtest/정본으로 올리기 → `Tools/run-tests.ps1`.
+2. 밸런스 결정: 자국 하한·의심 해제선(`biteMark.floorPerBite`·`biteMark.floorMax`, `awareness.suspiciousExit`)과 11번(stage04)·5번(stage08) 난이도. M13에서 "반응 빗나감 → 경계 상승"을 시도했다가 이 하한 함정 때문에 철회했다(D-057).
 3. 라이선스 허용 목록에 OFL을 추가할지 → 추가하면 Pretendard/Noto Sans KR 번들 + TextMeshPro로 교체.
 4. 아트·사운드 교체(선택): VRoid 모키(Animator 파라미터 `State` 정수, 상태 7종 이름 고정), CC0/CC-BY 음원(`Audio/Generated` 대신 외부 파일 + CREDITS 행).
 5. 실제 플레이 감각 검토: 조작감·카메라·난이도는 테스트로 확인할 수 없으므로 사람이 직접 플레이해 보길 권한다.
@@ -76,5 +87,7 @@ PC용 3D 스텔스 비행 액션. 플레이어는 마법소녀 외형의 모기 
 - 에디터: `Assets/_Project/Scenes/Boot.unity`를 열고 Play.
 - 빌드: `powershell -File Tools/build.ps1` → `Builds/Windows/Moqui.exe`.
 - 테스트: `powershell -File Tools/run-tests.ps1` (Core → EditMode → PlayMode).
-- 성능: 빌드 후 `powershell -File Tools/perf.ps1`.
+- 성능: 빌드 후 `powershell -File Tools/perf.ps1` (게임 창이 열린다).
+- 플레이 검증: 에디터 Play 중 F10(빌드는 개발 빌드 또는 `Moqui.exe -playtest`). 애셋 스펙 재생성: `python Tools/asset_specs.py`.
+- 레벨 추가: spec/07 "스테이지 목록과 레벨 추가" (데이터만).
 - 오디오 재생성: `python Tools/gen_audio.py` 후 `Tools/build-sandboxes.ps1`(카탈로그 갱신).

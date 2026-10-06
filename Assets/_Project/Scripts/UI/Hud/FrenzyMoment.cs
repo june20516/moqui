@@ -65,6 +65,14 @@ namespace Moqui.Unity.UI.Hud
             }
         }
 
+        /// <summary>결과 화면처럼 느린 화면이 더는 필요 없을 때: 배율을 건드리지 않게 하고 문구도 끈다.</summary>
+        public void Cancel()
+        {
+            _slowing = false;
+            _startedAt = float.NegativeInfinity;
+            TextVisible = false;
+        }
+
         public void Trigger(AwarenessCause cause, float now)
         {
             Cause = cause;
@@ -104,6 +112,34 @@ namespace Moqui.Unity.UI.Hud
         private int _nextTick;
 
         public IReadOnlyList<(float Awareness, AwarenessCause Cause)> Samples => _samples;
+
+        /// <summary>표본이 maxBars보다 많으면 구간마다 경계가 가장 높은 표본 하나로 묶는다.</summary>
+        public static IReadOnlyList<(float Awareness, AwarenessCause Cause)> Downsample(IReadOnlyList<(float Awareness, AwarenessCause Cause)> samples, int maxBars)
+        {
+            if (samples.Count <= maxBars)
+            {
+                return samples;
+            }
+
+            var bars = new List<(float, AwarenessCause)>(maxBars);
+            for (int bar = 0; bar < maxBars; bar++)
+            {
+                int from = bar * samples.Count / maxBars;
+                int to = (bar + 1) * samples.Count / maxBars;
+                var best = samples[from];
+                for (int i = from + 1; i < to; i++)
+                {
+                    if (samples[i].Awareness > best.Awareness)
+                    {
+                        best = samples[i];
+                    }
+                }
+
+                bars.Add(best);
+            }
+
+            return bars;
+        }
 
         public void Observe(GameSimulation simulation)
         {

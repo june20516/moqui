@@ -17,7 +17,7 @@
 - [x] B4. 전기 모기채(Core + 표현): 광분 도구, 넓은 판정 (spec/02 §7) — Core 완료(`BodyAttackTests.Swatter_*` 3), 표현(채 모델) EditMode `HumanBodyViewTests.Companion_HasItsOwnView_SwatterFollowsToolTip`
 - [x] B5. 두 사람(Core): 인간 여럿, 광분 전염 (spec/02) — Core 완료(`CompanionTests` 3), 표현(인간별 뷰·체온·CO₂·자국·HUD 예고·소리) EditMode `HumanBodyViewTests.Companion_HasItsOwnView_SwatterFollowsToolTip`
 - [x] B6. 에어컨 타이머(Core + 표현): 주기적 강풍 (spec/06) — Core 완료(`GimmickTests.AirConditioner_*`), 표현(송풍 날개) 작성, Unity 테스트 통과
-- [x] C0. 표현 기반 (D-062) — 증거: 모키 표현 큐(spec/12, EditMode `MokiCueTests` 4), 애셋 스펙 47종·텍스처 37·VFX 12(`spec/assets`, Core `AssetIndexTests`), gulf 보완 계획(`plan/gulf-improvements.md`)
+- [x] C0. 표현 기반 (D-062) — 증거: 모키 표현 큐(spec/12, EditMode `MokiCueTests` 5), 애셋 스펙 47종·텍스처 37·VFX 12(`spec/assets`, Core `AssetIndexTests`), gulf 보완 계획(`plan/gulf-improvements.md`)
 - [x] C1. 자연스러운 움직임: 머리 회전 가감속, 걷기 가감속·몸 흔들림, 호흡, 미세 움직임 (D-063) — 증거: Core `HumanAwarenessTests.Head_IdlePattern_EasesInAndOut_NoOvershoot`·`WalkTests`, EditMode `HumanBodyViewTests.Breath_SwellsTorso_AsleepClosesEyes`·`HoverBob_LargestWhenStill_ZeroAtFullSpeed`
 - [x] C2. 조명 디테일: 방 분위기 조명(TV·스탠드·달빛·형광등·도시 불빛) + 자연스러운 깜빡임, 조명 스펙(`spec/assets/lighting.md`) (D-064) — 증거: Core `RoomLightingTests`, EditMode `RoomLightingViewTests`, 캡처 검토
 - [x] C3. 플레이 검증 변수 구조(`playtest.json`, 다시 읽기, 패널) (D-065) — 증거: Core `PlaytestTests` 10, EditMode `PlaytestStoreTests` 3, PlayMode `FlowPlayModeTests.Playtest_OverrideApplies_PanelPausesAndSaveRestartsWithNewValue`
@@ -26,7 +26,7 @@
 - [x] E. 3장 물가 5스테이지 — 증거: stage04·13·14·15·16(증기·분사기·전기 모기채·시선), 봇 4~5/5
 - [x] F. 4장 베란다 5스테이지 — 증거: stage05·17·18·19·20(거미줄·두 사람·모기채·주기 조명), 봇 4/5
 - [x] G. 흐름·저장·경제: 장별 스테이지 선택, 기록 키 확장(기존 기록 유지), 혈액 포인트·스킬 비용, 전 흐름 테스트 — 증거: 구조(D-061, `StageCatalogTests`·`FlowTests`·전 흐름 PlayMode), 경제(D-069, Core `EconomyTests`, spec/09 §1)
-- [ ] H. 마무리: 빌드·성능·spec 체크·최종 보고서
+- [x] H. 마무리: 빌드·성능·spec 체크·최종 보고서 — 증거: 빌드 Succeeded(오류 0, 알려진 경고 2), 성능 20스테이지 평균 1.1~1.3 ms·예산 초과 0%(`plan/perf-report.md`), 세 갈래 리뷰 반영(D-070), spec 근거 정합성 점검, `plan/final-report.md` M14 갱신
 
 ## M7 버티컬 슬라이스 리포트 (2026-10-01, 사람 검토 권장)
 **할 수 있는 것:** Unity 에디터에서 `Assets/_Project/Scenes/Stage.unity`를 열고 Play하면 Stage 1(조는 인간)이 시작된다. `StageBootstrap.RequestedLevelId`로 stage02를 고를 수 있으며, 화면 흐름(타이틀·스테이지 선택)은 M8에서 붙인다. 빌드 실행 파일은 아직 Boot 씬만 연다.
@@ -94,7 +94,8 @@
 ## 반복 로그
 | 일시 | 마일스톤 | 한 일 | 증거 | 커밋 |
 |---|---|---|---|---|
-| 2026-10-07 | M14 | C~G 20스테이지: 새 레벨 15개(조명 스위치·모기장·전기 모기채·두 사람·걷는 인간·에어컨·예민한 인간), 클리어·발각 봇 30개, 소파 뒤 은신처, `startBiteMarks`, NetGap 검사, 경제 검사, 비행 방식 튜토리얼, 근접 캡처 개선 (D-069) | Core 501 + EditMode 189 + PlayMode 53 통과, 봇 클리어 4~5/5·발각 5/5, 20스테이지 캡처 검토 | (이 커밋) |
+| 2026-10-07 | M14 | H 마무리: 빌드·성능(20스테이지)·세 갈래 리뷰 반영(플레이 검증 빌드 제한·입출력 예외, 자동 착지 지연, 정본 올리기 부호, 기믹 조명 중복, 쿠키 공유, 느린 화면 취소, Tint 할당 제거 등, D-070)·문서 정합성·최종 보고서 | Core 505 + EditMode 192 + PlayMode 53 통과, 성능 예산 초과 0% | (이 커밋) |
+| 2026-10-07 | M14 | C~G 20스테이지: 새 레벨 15개(조명 스위치·모기장·전기 모기채·두 사람·걷는 인간·에어컨·예민한 인간), 클리어·발각 봇 30개, 소파 뒤 은신처, `startBiteMarks`, NetGap 검사, 경제 검사, 비행 방식 튜토리얼, 근접 캡처 개선 (D-069) | Core 501 + EditMode 189 + PlayMode 53 통과, 봇 클리어 4~5/5·발각 5/5, 20스테이지 캡처 검토 | b6ea836 |
 | 2026-10-07 | M14 | gulf §3 맨살 겨눔·체온 숨결, §4 이중 그림자·지면 먼지, §6 정밀 비행 소리·날개·가장자리·귀 움찔, §7 머리 위 경계·눈동자 선행·고개 숨소리, §8 조명 예열·딸깍·에어컨 열림·바람 줄기·모기장 출렁, §9 물방울 막, §12 날갯짓 박자, §13 방 환경광·손 따라가는 휴대폰 빛·지팡이 빛, 효과음 3종 (D-068) | Core 424 + EditMode 174 + PlayMode 23 통과, 캡처 검토 | f779fc4 |
 | 2026-10-07 | M14 | gulf §1 지팡이 대가(yankItch)·§2 스냅·자동 착지·착지 표시·§5 비행 방식·보는 방향 대시·대시 고리(D-066), §10 왜 들켰나(원인 기억·광분 원인·느린 화면·결과 타임라인, D-067), 봇 F 떼기 | Core 422 + EditMode 161 + PlayMode 23 통과 | 29ea55d |
 | 2026-10-06 | M14 | C3 플레이 검증 변수 구조(playtest-keys.json 목록, playtest.json 덮어쓰기, F10 패널·프리셋·기록, 저장하고 다시 시작, 정본 올리기 메뉴, D-065), 문서 갱신(ideas·stage-expansion 결정 반영) | Core 412 + EditMode 155 + PlayMode 23 통과 | f133318 |

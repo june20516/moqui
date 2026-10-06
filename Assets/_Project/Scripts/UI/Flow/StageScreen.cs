@@ -75,6 +75,9 @@ namespace Moqui.Unity.UI.Flow
         /// <summary>경계 타임라인 (결과 화면, gulf §10).</summary>
         public Moqui.Unity.UI.Hud.AwarenessTimeline Timeline { get; } = new Moqui.Unity.UI.Hud.AwarenessTimeline();
 
+        /// <summary>결과 타임라인 막대 수 상한 (긴 판은 구간마다 최고 경계로 묶는다).</summary>
+        public const int MaxTimelineBars = 200;
+
         /// <summary>결과 화면의 타임라인 막대 부모 (테스트용).</summary>
         public RectTransform ResultTimeline { get; private set; }
 
@@ -240,7 +243,7 @@ namespace Moqui.Unity.UI.Flow
             }
 
             Subscribe(_runner.Driver.Simulation);
-            if (Keyboard.current != null && Keyboard.current.f10Key.wasPressedThisFrame)
+            if (PlaytestStore.IsAvailable && Keyboard.current != null && Keyboard.current.f10Key.wasPressedThisFrame)
             {
                 TogglePlaytest();
             }
@@ -280,7 +283,7 @@ namespace Moqui.Unity.UI.Flow
                 Destroy(child.gameObject);
             }
 
-            var samples = Timeline.Samples;
+            var samples = Moqui.Unity.UI.Hud.AwarenessTimeline.Downsample(Timeline.Samples, MaxTimelineBars);
             if (samples.Count == 0)
             {
                 return;

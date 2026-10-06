@@ -91,7 +91,11 @@ namespace Moqui.Core.Simulation
             ItchThreshold = tuning.GetFloat("suck.itchThreshold");
             SnapRange = tuning.GetFloat("attach.snapRange");
             AutoLandAlign = tuning.GetFloat("attach.autoLandAlign");
+            AutoLandDelay = tuning.GetFloat("attach.autoLandDelay");
         }
+
+        /// <summary>떼거나 튕긴 뒤 이 시간 동안은 자동 착지하지 않는다 (떼자마자 누르던 키로 다시 붙지 않게, gulf §2).</summary>
+        public float AutoLandDelay { get; }
 
         /// <summary>표면에 닿았다고 보는 거리: 플레이어 중심에서 표면까지 이 거리 이내 (spec/03, 정밀 비행 자동 착지).</summary>
         public float AttachRange { get; }

@@ -211,7 +211,9 @@ namespace Moqui.Unity.Presentation.Gimmicks
         /// </summary>
         private void RenderStreaks(float deltaTime, int tick)
         {
-            while (_streaks.Count < StreakPoolSize)
+            // 선풍기 하나가 수명 동안 내는 줄기 수만큼 (최소 StreakPoolSize).
+            int poolSize = Mathf.Max(StreakPoolSize, _simulation.Fans.Fans.Count * Mathf.CeilToInt(StreakLifetime / StreakInterval));
+            while (_streaks.Count < poolSize)
             {
                 var streak = Create(PrimitiveType.Capsule, "WindStreak", Art.ToonMaterials.Transparent);
                 streak.enabled = false;
@@ -296,6 +298,11 @@ namespace Moqui.Unity.Presentation.Gimmicks
         /// </summary>
         public void BindNets(IReadOnlyDictionary<string, GameObject> visuals)
         {
+            if (_nets.Count > 0)
+            {
+                return;
+            }
+
             foreach (var shape in _simulation.World.Shapes)
             {
                 bool net = shape.Matches(ShapeFlags.Net);

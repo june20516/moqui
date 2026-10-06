@@ -216,7 +216,7 @@ namespace Moqui.Unity.Presentation
                 return;
             }
 
-            float fill = Mathf.Clamp01(_human.Awareness / 100f);
+            float fill = Mathf.Clamp01(_human.Awareness / Moqui.Core.Simulation.ReactionSystem.GaugeMax);
             _alertMarker.position = _human.HeadCenter.ToUnity() + (Vector3.up * (_headRadius * 1.9f));
             _alertMarker.localScale = Vector3.one * (_headRadius * (0.25f + (0.2f * fill)));
             WorldView.Tint(_alertMarker.GetComponent<Renderer>(), HeadColor(_human.State));
