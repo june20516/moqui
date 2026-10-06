@@ -30,6 +30,12 @@ namespace Moqui.Unity.UI.Hud
         private HudPresenter _presenter;
         private TutorialHints _hints;
         private bool _tiersSet;
+        private MokiCueSystem _cues;
+        private TextCuePresenter _cuePresenter;
+        private SimulationDriver _cueDriver;
+
+        /// <summary>모키 표현 큐 표시기 (지금은 글자, spec/12).</summary>
+        public TextCuePresenter CuePresenter => _cuePresenter;
 
         public HudState LastState { get; private set; }
 
@@ -40,6 +46,36 @@ namespace Moqui.Unity.UI.Hud
             _presenter = new HudPresenter(_view, _audio);
             _tiersSet = false;
             _hints = new TutorialHints(new PlayerPrefsStore());
+            _cuePresenter = gameObject.AddComponent<TextCuePresenter>();
+        }
+
+        /// <summary>모키 표현 큐: 시뮬레이션 틱마다 큐를 내고, 모키 머리 옆에 작은 글자로 보여 준다 (spec/12).</summary>
+        private void BindCues()
+        {
+            if (_cues != null)
+            {
+                return;
+            }
+
+            _cues = new MokiCueSystem(_runner.Tuning.GetFloat("hud.satietyHighlightMul"));
+            _cueDriver = _runner.Driver;
+            _cueDriver.TickCompleted += OnTick;
+            var driver = _cueDriver;
+            float headHeight = _runner.Tuning.GetFloat("player.visualHeight") * 0.6f;
+            _cuePresenter.Bind(_camera, () => driver.InterpolatedPlayerPosition + (Vector3.up * headHeight));
+        }
+
+        private void OnTick(Moqui.Core.Simulation.GameSimulation simulation)
+        {
+            _cues.Step(simulation, _cuePresenter);
+        }
+
+        private void OnDestroy()
+        {
+            if (_cueDriver != null)
+            {
+                _cueDriver.TickCompleted -= OnTick;
+            }
         }
 
         private void LateUpdate()
@@ -50,6 +86,7 @@ namespace Moqui.Unity.UI.Hud
             }
 
             UpdateDeviceLabels();
+            BindCues();
             if (!_tiersSet)
             {
                 var toxin = _runner.Driver.Simulation.Settings.Toxin;

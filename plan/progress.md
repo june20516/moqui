@@ -17,7 +17,11 @@
 - [x] B4. 전기 모기채(Core + 표현): 광분 도구, 넓은 판정 (spec/02 §7) — Core 완료(`BodyAttackTests.Swatter_*` 3), 표현(채 모델) EditMode `HumanBodyViewTests.Companion_HasItsOwnView_SwatterFollowsToolTip`
 - [x] B5. 두 사람(Core): 인간 여럿, 광분 전염 (spec/02) — Core 완료(`CompanionTests` 3), 표현(인간별 뷰·체온·CO₂·자국·HUD 예고·소리) EditMode `HumanBodyViewTests.Companion_HasItsOwnView_SwatterFollowsToolTip`
 - [x] B6. 에어컨 타이머(Core + 표현): 주기적 강풍 (spec/06) — Core 완료(`GimmickTests.AirConditioner_*`), 표현(송풍 날개) 작성, Unity 테스트 통과
-- [ ] C. 1장 거실 5스테이지 (데이터 → 봇 → 캡처)
+- [x] C0. 표현 기반 (D-062) — 증거: 모키 표현 큐(spec/12, EditMode `MokiCueTests` 4), 애셋 스펙 47종·텍스처 37·VFX 12(`spec/assets`, Core `AssetIndexTests`), gulf 보완 계획(`plan/gulf-improvements.md`)
+- [ ] C1. 자연스러운 움직임: 머리 회전 가감속, 걷기 가감속·몸 흔들림, 호흡, 미세 움직임
+- [ ] C2. 조명 디테일: 방 분위기 조명(TV·스탠드·달빛·형광등·도시 불빛) + 자연스러운 깜빡임, 조명 스펙(`spec/assets/lighting.md`)
+- [ ] C3. 플레이 검증 변수 구조(`playtest.json`, 다시 읽기, 패널)
+- [ ] C. 1장 거실 5스테이지 (데이터 → 봇 → 캡처 → 애셋 스펙)
 - [ ] D. 2장 침실 5스테이지
 - [ ] E. 3장 물가 5스테이지
 - [ ] F. 4장 베란다 5스테이지
@@ -90,6 +94,7 @@
 ## 반복 로그
 | 일시 | 마일스톤 | 한 일 | 증거 | 커밋 |
 |---|---|---|---|---|
+| 2026-10-06 | M14 | C0 표현 기반: 모키 표현 큐(글자 표시기), 애셋 스펙 문서·인덱스·검사, gulf 계획 | Core 392 + EditMode 141 + PlayMode 22 통과 | (이 커밋) |
 | 2026-10-06 | M14 | G 구조: 스테이지 목록 데이터화(레벨 추가 = 데이터만) | Core 390 + EditMode 137 + PlayMode 22 통과 | (이 커밋) |
 | 2026-10-06 | M14 | B 표현: 두 사람(인간별 뷰·감각·HUD 예고·소리), 전기 모기채 모델 | Core 385 + EditMode 137 + PlayMode 22 통과 | (이 커밋) |
 | 2026-10-06 | M14 | B1~B6 Core(걷는 인간·조명·모기장·전기 모기채·두 사람·에어컨) + 일부 표현 | Core 385 + EditMode 136 + PlayMode 22 통과 | (이 커밋) |

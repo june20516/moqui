@@ -15,7 +15,8 @@
   1. `data/levels/<레벨 ID>.json`(필요하면 `data/rooms/` 방)을 만든다.
   2. `data/scenarios/<레벨 ID>_clear.json`(클리어 봇)과 `_detect.json`(발각 봇)을 만든다.
   3. `data/stages.json`의 장에 `{ "level": "<레벨 ID>", "title": "..." }`를 넣는다. 기준 시간이 다르면 tuning `meta.parTime.<레벨 ID>`를 추가한다(없으면 기본값).
-  4. 테스트를 돌리면 레벨 검사·봇·Unity 씬 생성·봇 재생·전 흐름이 새 레벨까지 자동으로 확인한다.
+  4. **애셋 스펙(필수, D-062):** 새 형상·소품·조명·이펙트가 있으면 `Tools/asset_specs.py`의 표를 고치고 `python Tools/asset_specs.py`로 `spec/assets`(모델별 문서·인덱스·텍스처·VFX)를 다시 만든다. 조명은 `spec/assets/lighting.md`. 형상이 인덱스에 없으면 Core 테스트 `AssetIndexTests`가 실패한다.
+  5. 테스트를 돌리면 레벨 검사·봇·Unity 씬 생성·봇 재생·전 흐름·애셋 인덱스가 새 레벨까지 자동으로 확인한다.
 
 ## 공통 규칙
 - 좌표는 u 단위이다. 원점은 방 바닥 중앙, +Y는 위, +Z는 북쪽 벽 방향이다.
