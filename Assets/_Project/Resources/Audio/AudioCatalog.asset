@@ -143,6 +143,11 @@ MonoBehaviour:
     Volume: 0.6
     Loop: 0
     Bus: 0
+  - Id: sfx_footstep
+    Clip: {fileID: 8300000, guid: f268c5271d220a442a7a5adb3981b860, type: 3}
+    Volume: 0.5
+    Loop: 0
+    Bus: 0
   - Id: amb_stage1
     Clip: {fileID: 8300000, guid: 2334c35b8ff60a04a81ed7f30195299e, type: 3}
     Volume: 0.4
