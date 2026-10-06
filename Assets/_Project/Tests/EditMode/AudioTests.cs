@@ -2,6 +2,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Moqui.Core.Data;
+using Moqui.Core.Data.Levels;
 using Moqui.Core.Simulation;
 using Moqui.Unity.Data;
 using Moqui.Unity.Editor;
@@ -45,7 +46,7 @@ namespace Moqui.Unity.Tests
                 "sfx_frenzy", "sfx_telegraph", "sfx_spray", "sfx_toxin", "sfx_breath", "sfx_dislodge", "sfx_decoy",
                 "sfx_drop_trap", "sfx_escape", "sfx_ui_select", "sfx_ui_confirm", "sfx_ui_cancel",
                 "amb_stage1", "amb_stage2", "amb_stage3", "amb_stage4", "amb_stage5",
-                "sfx_snore", "sfx_wake", "sfx_drip", "sfx_steam", "sfx_wind_loop", "sfx_wind_gust", "bgm_title", "bgm_stage",
+                "sfx_snore", "sfx_wake", "sfx_drip", "sfx_steam", "sfx_wind_loop", "sfx_wind_gust", "sfx_footstep", "bgm_title", "bgm_stage",
             };
             Assert.That(AudioIds.All, Is.SupersetOf(spec));
         }
@@ -139,6 +140,23 @@ namespace Moqui.Unity.Tests
             Assert.That(strong[AudioIds.WindLoop].Gain, Is.GreaterThan(weak[AudioIds.WindLoop].Gain));
             Assert.That(strong[AudioIds.WindLoop].Pitch, Is.GreaterThan(weak[AudioIds.WindLoop].Pitch));
             Assert.That(strong[AudioIds.WindLoop].Gain, Is.EqualTo(1f).Within(1e-4f));
+        }
+
+        /// <summary>걷는 인간의 걸음(다리 위상 반 바퀴)마다 발소리가 한 번 난다 (spec/02 §9, M14).</summary>
+        [Test]
+        public void Footstep_OncePerStep()
+        {
+            Tuning tuning = TuningLoader.Load(new UnityDataSource());
+            var level = new LevelLoader(new UnityDataSource()).Load("stage01");
+            var simulation = new GameSimulation(GameSettings.FromTuning(tuning), level.CreateSetup());
+            var cues = new AudioCues();
+            cues.OneShots(simulation);
+
+            simulation.Human.WalkPhase = (float)System.Math.PI * 0.5f;
+            Assert.That(cues.OneShots(simulation), Does.Not.Contain(AudioIds.Footstep));
+            simulation.Human.WalkPhase = (float)System.Math.PI * 1.1f;
+            Assert.That(cues.OneShots(simulation), Does.Contain(AudioIds.Footstep));
+            Assert.That(cues.OneShots(simulation), Does.Not.Contain(AudioIds.Footstep));
         }
 
         [Test]

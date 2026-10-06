@@ -56,6 +56,54 @@ namespace Moqui.Unity.Tests
             Assert.That(Vector3.Angle(_view.FanHead(fan.Id).up, expected), Is.LessThan(0.5f));
         }
 
+        /// <summary>에어컨 송풍 날개는 켜진 동안만 보인다 (spec/06, M14).</summary>
+        [Test]
+        public void AirConditionerVane_VisibleOnlyWhileOn()
+        {
+            Tuning tuning = TuningLoader.Load(new UnityDataSource());
+            var aircon = new FanDefinition("aircon", new System.Numerics.Vector3(0f, 200f, 0f), 180f, -20f, FanKind.AirConditioner, new FanSchedule(1f, 1f, 0f));
+            var gimmicks = new GimmickSetup(new[] { aircon }, null, null);
+            var simulation = new GameSimulation(GameSettings.FromTuning(tuning), new SimulationSetup(new Moqui.Core.Collision.CollisionWorld(), new System.Numerics.Vector3(0f, 100f, 300f), gimmicks: gimmicks));
+            var view = new GameObject("AirconView").AddComponent<GimmickView>();
+            view.transform.SetParent(_root.transform);
+            view.Bind(simulation, new SensesSettings(tuning), null);
+
+            view.Render(FrameTime);
+            Assert.That(view.FanHead("aircon").GetComponent<Renderer>().enabled, Is.True, "on at start");
+            for (int i = 0; i < 72; i++)
+            {
+                simulation.Step(PlayerCommand.None);
+            }
+
+            view.Render(FrameTime);
+            Assert.That(view.FanHead("aircon").GetComponent<Renderer>().enabled, Is.False, "off after 1s");
+        }
+
+        /// <summary>조명은 켜진 동안만 점광원이 켜진다 (spec/06, M14).</summary>
+        [Test]
+        public void Lamp_LitOnlyWhileOn()
+        {
+            Tuning tuning = TuningLoader.Load(new UnityDataSource());
+            var center = new System.Numerics.Vector3(0f, 200f, 0f);
+            var lamp = new LightDefinition("lamp", center, center, new System.Numerics.Vector3(100f, 100f, 100f), new FanSchedule(1f, 1f, 0f), false);
+            var gimmicks = new GimmickSetup(null, null, null, new[] { lamp });
+            var simulation = new GameSimulation(GameSettings.FromTuning(tuning), new SimulationSetup(new CollisionWorld(), new System.Numerics.Vector3(0f, 100f, 300f), gimmicks: gimmicks));
+            var view = new GameObject("LampView").AddComponent<GimmickView>();
+            view.transform.SetParent(_root.transform);
+            view.Bind(simulation, new SensesSettings(tuning), null);
+
+            simulation.Step(PlayerCommand.None);
+            view.Render(FrameTime);
+            Assert.That(view.Lamps[0].enabled, Is.True);
+            for (int i = 0; i < 72; i++)
+            {
+                simulation.Step(PlayerCommand.None);
+            }
+
+            view.Render(FrameTime);
+            Assert.That(view.Lamps[0].enabled, Is.False);
+        }
+
         [Test]
         public void CoilSmoke_RisesFromCoil()
         {

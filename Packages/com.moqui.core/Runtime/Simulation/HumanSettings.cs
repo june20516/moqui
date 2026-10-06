@@ -172,6 +172,8 @@ namespace Moqui.Core.Simulation
             SelfSlapTelegraph = tuning.GetFloat("attack.selfSlap.telegraph");
             SelfSlapRadius = tuning.GetFloat("attack.selfSlap.radius");
             SelfSlapRecovery = tuning.GetFloat("attack.selfSlap.recovery");
+            SwatterLength = tuning.GetFloat("attack.swatter.length");
+            SwatterRadius = tuning.GetFloat("attack.swatter.radius");
             HandPeakSpeedFrenzy = tuning.GetFloat("attack.handPeakSpeed.frenzy");
             HandPeakSpeedReaction = tuning.GetFloat("attack.handPeakSpeed.reaction");
             HandPeakSpeedDrunk = tuning.GetFloat("attack.handPeakSpeed.drunk");
@@ -207,6 +209,11 @@ namespace Moqui.Core.Simulation
         public float SelfSlapRadius { get; }
 
         public float SelfSlapRecovery { get; }
+
+        /// <summary>전기 모기채 (M14): 손목 앞 채 길이와 판정 반경.</summary>
+        public float SwatterLength { get; }
+
+        public float SwatterRadius { get; }
     }
 
     /// <summary>인간 몸 (knowledge/human-arm-motion.md): 손 길이, 관절 한계, 자세 전환 범위·시간.</summary>

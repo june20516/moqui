@@ -17,7 +17,23 @@ namespace Moqui.Core.Simulation
             OscillationPeriod = tuning.GetFloat("fan.oscillationPeriod");
             NoiseMaskRadius = tuning.GetFloat("fan.noiseMaskRadius");
             NoiseMaskMul = tuning.GetFloat("fan.noiseMaskMul");
+            AirconWindSpeed = tuning.GetFloat("aircon.windSpeed");
+            AirconRange = tuning.GetFloat("aircon.range");
+            AirconHalfAngle = tuning.GetFloat("aircon.halfAngle");
         }
+
+        /// <summary>에어컨 바람 (M14): 속도, 도달 거리, 반각.</summary>
+        public float AirconWindSpeed { get; }
+
+        public float AirconRange { get; }
+
+        public float AirconHalfAngle { get; }
+
+        public float WindSpeedOf(FanDefinition fan) => fan.Kind == FanKind.AirConditioner ? AirconWindSpeed : WindSpeed;
+
+        public float RangeOf(FanDefinition fan) => fan.Kind == FanKind.AirConditioner ? AirconRange : Range;
+
+        public float HalfAngleOf(FanDefinition fan) => fan.Kind == FanKind.AirConditioner ? AirconHalfAngle : HalfAngle;
 
         public float WindSpeed { get; }
 
@@ -37,14 +53,21 @@ namespace Moqui.Core.Simulation
     /// <summary>선풍기 하나의 현재 바람 원뿔 (HUD·표현·CO₂ 흩어짐용 스냅샷).</summary>
     public sealed class FanSnapshot
     {
-        public FanSnapshot(string id, Vector3 position, Vector3 direction, float range, float halfAngle)
+        public FanSnapshot(string id, Vector3 position, Vector3 direction, float range, float halfAngle, FanKind kind = FanKind.Fan, bool isOn = true)
         {
             Id = id;
             Position = position;
             Direction = direction;
             Range = range;
             HalfAngle = halfAngle;
+            Kind = kind;
+            IsOn = isOn;
         }
+
+        public FanKind Kind { get; }
+
+        /// <summary>지금 바람이 나오는가 (에어컨 주기).</summary>
+        public bool IsOn { get; }
 
         public string Id { get; }
 
@@ -79,8 +102,19 @@ namespace Moqui.Core.Simulation
         public IReadOnlyList<FanDefinition> Fans => _fans;
 
         /// <summary>틱 tick에서 선풍기 머리 방향(도).</summary>
+        /// <summary>지금 켜져 있는가 (주기가 없으면 늘 켜짐).</summary>
+        public bool IsOn(FanDefinition fan, int tick)
+        {
+            return fan.Schedule == null || fan.Schedule.IsOn(tick * GameSimulation.DeltaTime);
+        }
+
         public float HeadYaw(FanDefinition fan, int tick)
         {
+            if (fan.Kind == FanKind.AirConditioner)
+            {
+                return fan.Yaw;
+            }
+
             float seconds = tick * GameSimulation.DeltaTime;
             return fan.Yaw + (_settings.OscillationAngle * MathF.Sin(2f * MathF.PI * seconds / _settings.OscillationPeriod));
         }
@@ -94,9 +128,14 @@ namespace Moqui.Core.Simulation
 
         public bool InCone(FanDefinition fan, Vector3 point, int tick)
         {
+            if (!IsOn(fan, tick))
+            {
+                return false;
+            }
+
             Vector3 offset = point - fan.Position;
             float distance = offset.Length();
-            if (distance > _settings.Range)
+            if (distance > _settings.RangeOf(fan))
             {
                 return false;
             }
@@ -107,7 +146,7 @@ namespace Moqui.Core.Simulation
             }
 
             float cosine = Vector3.Dot(offset / distance, Direction(fan, tick));
-            return cosine >= MathF.Cos(_settings.HalfAngle * DegreesToRadians);
+            return cosine >= MathF.Cos(_settings.HalfAngleOf(fan) * DegreesToRadians);
         }
 
         /// <summary>점에 걸리는 바람 속도의 합.</summary>
@@ -118,7 +157,7 @@ namespace Moqui.Core.Simulation
             {
                 if (InCone(fan, point, tick))
                 {
-                    wind += Direction(fan, tick) * _settings.WindSpeed;
+                    wind += Direction(fan, tick) * _settings.WindSpeedOf(fan);
                 }
             }
 
@@ -138,12 +177,12 @@ namespace Moqui.Core.Simulation
             return false;
         }
 
-        /// <summary>소음 반경 배율: 어느 선풍기든 마스킹 반경 안이면 fan.noiseMaskMul.</summary>
-        public float NoiseMultiplier(Vector3 point)
+        /// <summary>소음 반경 배율: 켜진 선풍기·에어컨의 마스킹 반경 안이면 fan.noiseMaskMul.</summary>
+        public float NoiseMultiplier(Vector3 point, int tick)
         {
             foreach (var fan in _fans)
             {
-                if (Vector3.Distance(point, fan.Position) <= _settings.NoiseMaskRadius)
+                if (IsOn(fan, tick) && Vector3.Distance(point, fan.Position) <= _settings.NoiseMaskRadius)
                 {
                     return _settings.NoiseMaskMul;
                 }
@@ -157,7 +196,7 @@ namespace Moqui.Core.Simulation
             var list = new List<FanSnapshot>();
             foreach (var fan in _fans)
             {
-                list.Add(new FanSnapshot(fan.Id, fan.Position, Direction(fan, tick), _settings.Range, _settings.HalfAngle));
+                list.Add(new FanSnapshot(fan.Id, fan.Position, Direction(fan, tick), _settings.RangeOf(fan), _settings.HalfAngleOf(fan), fan.Kind, IsOn(fan, tick)));
             }
 
             return list;

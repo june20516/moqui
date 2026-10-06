@@ -17,11 +17,14 @@ namespace Moqui.Core.Simulation
         private readonly int _losIntervalTicks;
         private readonly float _steamVisionMul;
         private readonly float _drunkVisionMul;
+        private readonly float _lightVisionMul;
 
         /// <param name="steamVisionMul">증기 속 플레이어에 대한 시각 배율 (humid.steamVisionMul, spec/05 §2).</param>
         /// <param name="drunkVisionMul">취한 타겟의 시각 증가 배율 (drunk.visionRateMul, spec/06).</param>
-        public VisionSensor(VisionSettings settings, CollisionWorld world, float steamVisionMul = 1f, float drunkVisionMul = 1f)
+        /// <param name="lightVisionMul">켜진 조명 영역 안 플레이어에 대한 시각 배율 (light.visionMul, spec/06 M14).</param>
+        public VisionSensor(VisionSettings settings, CollisionWorld world, float steamVisionMul = 1f, float drunkVisionMul = 1f, float lightVisionMul = 1f)
         {
+            _lightVisionMul = lightVisionMul;
             _settings = settings;
             _world = world;
             _steamVisionMul = steamVisionMul;
@@ -79,6 +82,11 @@ namespace Moqui.Core.Simulation
             if (player.InSteam)
             {
                 multiplier *= _steamVisionMul;
+            }
+
+            if (player.InLight)
+            {
+                multiplier *= _lightVisionMul;
             }
 
             return multiplier;

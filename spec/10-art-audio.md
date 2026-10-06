@@ -34,6 +34,7 @@
 | amb_stage1~5 | TV 소리(1·2), 선풍기(3), 환풍기·물소리(4), 풀벌레(5) | CC0 |
 | sfx_snore / sfx_wake | 조는 숨소리 / 깜빡 깨는 소리 | CC0 또는 합성 |
 | sfx_drip / sfx_steam | 물방울 떨어짐 / 증기 | CC0 |
+| sfx_footstep | 걷는 인간의 발소리, 걸음마다 (M14) | 합성 가능 |
 | sfx_wind_loop / sfx_wind_gust | 바람에 밀리는 동안 바람 루프(세기에 따라 음량·피치) / 바람에 처음 밀릴 때 휙 (M13) | 합성 가능 |
 | bgm_title / bgm_stage | 짧은 루프 | CC0/CC-BY |
 

@@ -24,6 +24,7 @@ namespace Moqui.Core.Simulation
             Sites = new SiteSettings(tuning);
             Reaction = new ReactionSettings(tuning);
             HumanMotion = new HumanMotionSettings(tuning);
+            Walk = new WalkSettings(tuning);
             Attach = new AttachSettings(tuning);
             BiteMark = new BiteMarkSettings(tuning);
             Suck = new SuckSettings(tuning);
@@ -34,12 +35,20 @@ namespace Moqui.Core.Simulation
             Breath = new BreathSettings(tuning);
             Decoy = new DecoySettings(tuning);
             Fan = new FanSettings(tuning);
+            Light = new LightSettings(tuning);
+            Net = new NetSettings(tuning);
             Toxin = new ToxinSettings(tuning);
             Drunk = new DrunkSettings(tuning);
             WebStruggleTime = tuning.GetFloat("web.struggleTime");
         }
 
         public FanSettings Fan { get; }
+
+        /// <summary>조명 스위치 (M14).</summary>
+        public LightSettings Light { get; }
+
+        /// <summary>모기장 (M14).</summary>
+        public NetSettings Net { get; }
 
         public ToxinSettings Toxin { get; }
 
@@ -69,6 +78,9 @@ namespace Moqui.Core.Simulation
         public ReactionSettings Reaction { get; }
 
         public HumanMotionSettings HumanMotion { get; }
+
+        /// <summary>걷는 인간 (spec/02 §9).</summary>
+        public WalkSettings Walk { get; }
 
         public AttachSettings Attach { get; }
 

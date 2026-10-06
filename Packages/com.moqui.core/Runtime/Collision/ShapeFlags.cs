@@ -23,6 +23,12 @@ namespace Moqui.Core.Collision
 
         /// <summary>강한 습기(증기) 영역 볼륨 (spec/05 §2).</summary>
         HumidStrong = 1 << 9,
+
+        /// <summary>모기장 틈 볼륨: 정밀 비행이 아니면 지날 때 바스락 소음 (spec/06 모기장, M14).</summary>
+        NetGap = 1 << 10,
+
+        /// <summary>모기장 그물: 유리처럼 충돌하지만 시야는 막지 않는다. 표현에서 그물로 그린다 (M14).</summary>
+        Net = 1 << 11,
         /// <summary>몸이 통과할 수 없는 형상: 장애물 + 유리. 유리는 충돌하지만 시야는 막지 않는다 (spec/07).</summary>
         Solid = Obstacle | Glass,
 

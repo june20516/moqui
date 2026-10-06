@@ -20,6 +20,15 @@ namespace Moqui.Core.Simulation
     }
 
     /// <summary>흡혈 가능한 피부 부위 유형 (spec/04 §1). tuning 키 site.<유형>.* 의 이름과 같다.</summary>
+    /// <summary>인간이 손에 든 도구 (M14).</summary>
+    public enum HumanTool
+    {
+        None,
+
+        /// <summary>전기 모기채: 오른손(없으면 첫 팔)에 든다. 손이 채 길이만큼 길어지고 판정이 넓다.</summary>
+        Swatter,
+    }
+
     public enum SkinSiteType
     {
         Forearm,
@@ -76,8 +85,12 @@ namespace Moqui.Core.Simulation
             HumanTraits traits = null,
             float facingPitch = 0f,
             float restPitch = 0f,
-            PostureLevel maxPosture = PostureLevel.Rise)
+            PostureLevel maxPosture = PostureLevel.Rise,
+            HumanWalkDefinition walk = null,
+            HumanTool tool = HumanTool.None)
         {
+            Tool = tool;
+            Walk = walk;
             MaxPosture = maxPosture;
             FacingPitch = facingPitch;
             RestPitch = restPitch;
@@ -115,6 +128,12 @@ namespace Moqui.Core.Simulation
         }
 
         public string Id { get; }
+
+        /// <summary>손에 든 도구 (spec/02 §7 전기 모기채, M14).</summary>
+        public HumanTool Tool { get; }
+
+        /// <summary>걷기 경로 (없으면 제자리, spec/02 §9).</summary>
+        public HumanWalkDefinition Walk { get; }
 
         public Vector3 Position { get; }
 

@@ -25,6 +25,8 @@ namespace Moqui.Core.Data.Levels
             ["glass"] = ShapeFlags.Glass,
             ["humidWeak"] = ShapeFlags.HumidWeak,
             ["humidStrong"] = ShapeFlags.HumidStrong,
+            ["netGap"] = ShapeFlags.NetGap,
+            ["net"] = ShapeFlags.Net,
         };
 
         private ShapeDefinition(string id, ShapeType type, ShapeFlags flags)

@@ -21,10 +21,17 @@ namespace Moqui.Unity.Presentation.Gimmicks
         private const float CoilSmokeStrength = 0.6f;
         private const float CloudFadeIn = 0.3f;
         private const float CloudFadeOut = 1.5f;
+        private const float BulbDiameter = 12f;
+
+        /// <summary>조명 표현 (M14): 점광원 세기와 거리는 영역 크기에 맞춘다.</summary>
+        private const float LampIntensity = 2.5f;
+        private static readonly Color LampColor = new Color(1f, 0.92f, 0.75f);
 
         private static readonly int BaseColorId = Shader.PropertyToID("_BaseColor");
 
         private readonly Dictionary<string, Transform> _fanHeads = new Dictionary<string, Transform>();
+        private readonly List<Light> _lamps = new List<Light>();
+        private readonly List<Renderer> _bulbs = new List<Renderer>();
         private readonly List<Renderer> _cloudPool = new List<Renderer>();
         private readonly List<Renderer> _smokePool = new List<Renderer>();
         private readonly List<Co2Plume> _coilPlumes = new List<Co2Plume>();
@@ -40,6 +47,9 @@ namespace Moqui.Unity.Presentation.Gimmicks
 
         public Transform FanHead(string fanId) => _fanHeads[fanId];
 
+        /// <summary>조명별 점광원 (켜진 동안만 켜짐, spec/06 M14).</summary>
+        public IReadOnlyList<Light> Lamps => _lamps;
+
         public IReadOnlyList<Co2Plume> CoilPlumes => _coilPlumes;
 
         public void Bind(GameSimulation simulation, SensesSettings senses, LevelMaterials materials)
@@ -52,6 +62,24 @@ namespace Moqui.Unity.Presentation.Gimmicks
                 var head = Create(PrimitiveType.Cylinder, $"FanHead_{fan.Id}", null);
                 head.transform.localScale = new Vector3(FanHeadDiameter, FanHeadThickness * 0.5f, FanHeadDiameter);
                 _fanHeads.Add(fan.Id, head.transform);
+            }
+
+            foreach (var lightDefinition in simulation.Lights.Lights)
+            {
+                var bulb = Create(PrimitiveType.Sphere, $"Bulb_{lightDefinition.Id}", null);
+                bulb.transform.position = lightDefinition.Position.ToUnity();
+                bulb.transform.localScale = Vector3.one * BulbDiameter;
+                bulb.enabled = true;
+                _bulbs.Add(bulb);
+                var lamp = new GameObject($"Lamp_{lightDefinition.Id}").AddComponent<Light>();
+                lamp.transform.SetParent(transform, false);
+                lamp.transform.position = lightDefinition.Position.ToUnity();
+                lamp.type = LightType.Point;
+                lamp.color = LampColor;
+                lamp.intensity = LampIntensity;
+                lamp.range = lightDefinition.AreaHalfSize.Length() * 2f;
+                lamp.enabled = false;
+                _lamps.Add(lamp);
             }
 
             foreach (var coil in simulation.Toxin.Coils)
@@ -75,7 +103,16 @@ namespace Moqui.Unity.Presentation.Gimmicks
                 var head = _fanHeads[fan.Id];
                 head.position = fan.Position.ToUnity() + (direction * FanHeadOffset);
                 head.rotation = Quaternion.FromToRotation(Vector3.up, direction);
-                head.GetComponent<Renderer>().enabled = true;
+                // 에어컨 송풍 날개는 켜져 있을 때만 보인다 (주기 읽기, spec/06 M14).
+                head.GetComponent<Renderer>().enabled = fans.IsOn(fan, tick);
+            }
+
+            for (int i = 0; i < _lamps.Count; i++)
+            {
+                bool on = _simulation.Lights.IsOn(i);
+                _lamps[i].enabled = on;
+                _block.SetColor(BaseColorId, on ? LampColor : Color.gray);
+                _bulbs[i].SetPropertyBlock(_block);
             }
 
             RenderCoilSmoke(deltaTime, tick);

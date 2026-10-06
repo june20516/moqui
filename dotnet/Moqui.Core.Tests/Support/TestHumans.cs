@@ -55,6 +55,27 @@ namespace Moqui.Core.Tests.Support
             return new HumanDefinition("human", Vector3.Zero, facingYaw, parts, "head", shoulders, idleLookYaws ?? new[] { 0f }, actions, traits);
         }
 
+        /// <summary>테스트용 서 있는 인간 (걷는 인간, spec/02 §9). 골반이 원점 위 90u, +Z(yaw 0)를 본다.</summary>
+        public static HumanDefinition Standing(HumanWalkDefinition walk = null)
+        {
+            var parts = new[]
+            {
+                new BodyPartDefinition("head", BodyPartKind.Head, new Vector3(0, 66, 0), new Vector3(0, 74, 0), HeadRadius, SkinSiteType.Cheek),
+                new BodyPartDefinition("neck", BodyPartKind.Neck, new Vector3(0, 52, 0), new Vector3(0, 58, 0), 5f, SkinSiteType.Neck),
+                new BodyPartDefinition("torso", BodyPartKind.Torso, new Vector3(0, 2, 0), new Vector3(0, 46, 0), 15f, null),
+                new BodyPartDefinition("upperArmL", BodyPartKind.UpperArm, new Vector3(-20, 50, 0), new Vector3(-24, 22, 0), 5f, null),
+                new BodyPartDefinition("forearmL", BodyPartKind.Forearm, new Vector3(-24, 22, 0), new Vector3(-24, -4, 6), 4f, SkinSiteType.Forearm),
+                new BodyPartDefinition("upperArmR", BodyPartKind.UpperArm, new Vector3(20, 50, 0), new Vector3(24, 22, 0), 5f, null),
+                new BodyPartDefinition("forearmR", BodyPartKind.Forearm, new Vector3(24, 22, 0), new Vector3(24, -4, 6), 4f, SkinSiteType.Forearm),
+                new BodyPartDefinition("thighL", BodyPartKind.Thigh, new Vector3(-10, -2, 0), new Vector3(-10, -42, 0), 7f, null),
+                new BodyPartDefinition("calfL", BodyPartKind.Calf, new Vector3(-10, -44, 0), new Vector3(-10, -82, 0), 5f, SkinSiteType.Calf),
+                new BodyPartDefinition("thighR", BodyPartKind.Thigh, new Vector3(10, -2, 0), new Vector3(10, -42, 0), 7f, null),
+                new BodyPartDefinition("calfR", BodyPartKind.Calf, new Vector3(10, -44, 0), new Vector3(10, -82, 0), 5f, SkinSiteType.Calf),
+            };
+            var shoulders = new[] { new Vector3(-20, 50, 0), new Vector3(20, 50, 0) };
+            return new HumanDefinition("human", new Vector3(0f, 90f, 0f), 0f, parts, "head", shoulders, new[] { 0f }, maxPosture: PostureLevel.Turn, walk: walk);
+        }
+
         public static GameSimulation Simulation(Vector3 playerSpawn, CollisionWorld world = null, HumanDefinition human = null, ulong seed = DefaultSeed)
         {
             var setup = new SimulationSetup(world ?? new CollisionWorld(), playerSpawn, human ?? Seated(), seed);

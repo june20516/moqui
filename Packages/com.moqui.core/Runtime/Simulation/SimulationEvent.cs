@@ -19,6 +19,9 @@ namespace Moqui.Core.Simulation
 
         /// <summary>미끼 마법 (spec/09). 인간은 진짜 소음처럼 듣는다.</summary>
         Decoy,
+
+        /// <summary>모기장 틈을 빠르게 지나며 그물을 스침 (spec/06, M14).</summary>
+        Net,
     }
 
     /// <summary>반경 안의 인간 경계를 즉시 올리는 소음 핑 (spec/01 대시, spec/02).</summary>

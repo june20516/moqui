@@ -32,9 +32,7 @@ namespace Moqui.Core.Simulation
             Body = body;
             RootPosition = definition.Position;
             // 먼저 몸 로컬 X축으로 기울이고(정면 +Z가 위로 들림), 그다음 yaw로 돌린다.
-            var pitch = Quaternion.CreateFromAxisAngle(Vector3.UnitX, -definition.FacingPitch * DegreesToRadians);
-            var yaw = Quaternion.CreateFromAxisAngle(Vector3.UnitY, definition.FacingYaw * DegreesToRadians);
-            BodyRotation = Quaternion.Concatenate(pitch, yaw);
+            SetBodyYaw(definition.FacingYaw);
             HeadPitch = definition.RestPitch;
             foreach (var part in definition.Parts)
             {
@@ -128,7 +126,29 @@ namespace Moqui.Core.Simulation
         public Vector3 ShoulderFor(int arm, PostureState posture) => ToWorld(PosedUpperLocal(Rig.Arms[arm].ShoulderLocal, posture));
 
         /// <summary>팔 길이 = 위팔 + 아래팔 + 손바닥까지.</summary>
-        public float ArmReach(int arm) => Rig.Arms[arm].UpperLength + Rig.Arms[arm].ForearmLength + Body.HandReachExtra;
+        public float ArmReach(int arm) => Rig.Arms[arm].UpperLength + Rig.Arms[arm].ForearmLength + HandExtra(arm);
+
+        /// <summary>도구를 든 팔 (오른팔, 없으면 첫 팔). 도구가 없으면 -1.</summary>
+        public int ToolArm => Definition.Tool == HumanTool.None ? -1 : RightOrFirstArm();
+
+        /// <summary>도구 길이 (전기 모기채, attack.swatter.length). Human을 만든 뒤 시뮬레이션이 정한다.</summary>
+        public float ToolLength { get; set; }
+
+        /// <summary>손목에서 "손 끝"(판정 중심)까지: 손바닥 중심 거리 + 도구를 든 팔이면 도구 길이.</summary>
+        public float HandExtra(int arm) => Body.HandReachExtra + (arm == ToolArm ? ToolLength : 0f);
+
+        private int RightOrFirstArm()
+        {
+            foreach (var candidate in Rig.Arms)
+            {
+                if (candidate.Side > 0f)
+                {
+                    return candidate.Index;
+                }
+            }
+
+            return 0;
+        }
 
         private Vector3 RiseOffset(float rise) => ((Vector3.UnitY * Body.RiseLift) + (Vector3.UnitZ * Body.RiseForward)) * rise;
 
@@ -137,6 +157,54 @@ namespace Moqui.Core.Simulation
         public string Id => Definition.Id;
 
         public Quaternion BodyRotation { get; set; }
+
+        /// <summary>몸 방향 (도, 월드 Y축). 걷는 인간은 이 값을 돌린다 (spec/02 §9).</summary>
+        public float BodyYaw { get; private set; }
+
+        /// <summary>몸 방향을 바꾼다: 데이터의 몸 기울기(facingPitch)를 먼저, 그다음 yaw.</summary>
+        public void SetBodyYaw(float yaw)
+        {
+            BodyYaw = yaw;
+            var pitch = Quaternion.CreateFromAxisAngle(Vector3.UnitX, -Definition.FacingPitch * DegreesToRadians);
+            BodyRotation = Quaternion.Concatenate(pitch, Quaternion.CreateFromAxisAngle(Vector3.UnitY, yaw * DegreesToRadians));
+        }
+
+        // ---- 걷기 (spec/02 §9) ----
+
+        /// <summary>지금 가는 경로점 번호.</summary>
+        public int WalkWaypoint { get; set; }
+
+        /// <summary>경로점에서 멈춘 상태가 끝나는 틱.</summary>
+        public int WalkPauseEndTick { get; set; }
+
+        /// <summary>걸은 거리에 따른 다리 위상 (라디안).</summary>
+        public float WalkPhase { get; set; }
+
+        /// <summary>왼다리 무릎·발 쪽의 앞(+)뒤 흔들림 (u). 오른다리는 반대.</summary>
+        public float LegSwing { get; set; }
+
+        /// <summary>광분 추격으로 걷는 중인가.</summary>
+        public bool IsChasing { get; set; }
+
+        private Vector3 _previousRoot;
+        private Quaternion _previousRotation = Quaternion.Identity;
+
+        /// <summary>틱 시작: 몸 전체 이동을 계산할 기준 자세를 기억한다.</summary>
+        public void BeginMotionTick()
+        {
+            _previousRoot = RootPosition;
+            _previousRotation = BodyRotation;
+        }
+
+        /// <summary>
+        /// 이번 틱에 몸 전체(루트 이동과 회전)만으로 그 점이 움직인 속도. 튕겨남은 이것을 뺀 부위 자체의 움직임으로 판정한다 (spec/02 §9).
+        /// </summary>
+        public Vector3 CarriedVelocityAt(Vector3 point, float deltaTime)
+        {
+            Vector3 local = Vector3.Transform(point - RootPosition, Quaternion.Conjugate(BodyRotation));
+            Vector3 before = _previousRoot + Vector3.Transform(local, _previousRotation);
+            return (point - before) / deltaTime;
+        }
 
         public CollisionShape HeadShape { get; }
 
@@ -327,6 +395,11 @@ namespace Moqui.Core.Simulation
                     }
                 }
 
+                if (LegSwing != 0f)
+                {
+                    SwingLeg(part, ref a, ref b);
+                }
+
                 if (Rig.UpperBodyParts.Contains(part.Id))
                 {
                     a = Rig.HipLocal + rise + Vector3.Transform(a - Rig.HipLocal, upper);
@@ -353,7 +426,7 @@ namespace Moqui.Core.Simulation
                     // 팔꿈치는 바깥·아래·뒤로 꺾인다 (상체 기준).
                     Vector3 poleLocal = new Vector3(arm.Side * 0.6f, -1f, -0.4f);
                     Vector3 pole = shoulder + Vector3.Transform(poleLocal, Quaternion.Concatenate(upper, BodyRotation));
-                    BodyKinematics.SolveArm(shoulder, target.Value, arm.UpperLength, arm.ForearmLength, Body.HandReachExtra, Body.ElbowFlexMax, pole,
+                    BodyKinematics.SolveArm(shoulder, target.Value, arm.UpperLength, arm.ForearmLength, HandExtra(arm.Index), Body.ElbowFlexMax, pole,
                         out Vector3 elbow, out Vector3 wrist, out Vector3 palm);
                     _shapes[arm.UpperArmId].SetSegment(shoulder, elbow);
                     _shapes[arm.ForearmId].SetSegment(elbow, wrist);
@@ -363,8 +436,26 @@ namespace Moqui.Core.Simulation
                 {
                     var forearm = _shapes[arm.ForearmId];
                     Vector3 direction = forearm.PointB - forearm.PointA;
-                    _palms[arm.Index] = forearm.PointB + (direction.LengthSquared() > 1e-6f ? Vector3.Normalize(direction) * Body.HandReachExtra : Vector3.Zero);
+                    _palms[arm.Index] = forearm.PointB + (direction.LengthSquared() > 1e-6f ? Vector3.Normalize(direction) * HandExtra(arm.Index) : Vector3.Zero);
                 }
+            }
+        }
+
+        /// <summary>걸음: 무릎과 발 쪽을 몸 정면(+Z) 앞뒤로 흔든다. 왼다리(-X)와 오른다리는 반대 위상.</summary>
+        private void SwingLeg(BodyPartDefinition part, ref Vector3 a, ref Vector3 b)
+        {
+            float side = part.LocalA.X < 0f ? 1f : -1f;
+            var swing = new Vector3(0f, 0f, LegSwing * side);
+            switch (part.Kind)
+            {
+                case BodyPartKind.Thigh:
+                    b += swing;
+                    break;
+                case BodyPartKind.Calf:
+                case BodyPartKind.Foot:
+                    a += swing;
+                    b += swing;
+                    break;
             }
         }
 

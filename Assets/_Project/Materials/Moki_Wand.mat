@@ -31,6 +31,7 @@ Material:
     m_Floats:
     - _AmbientStrength: 0.35
     - _Bands: 3
+    - _OutlineDistanceRatio: 0.006
     - _OutlineWidth: 0.015
     - _SelfIllumination: 0.3
     m_Colors:

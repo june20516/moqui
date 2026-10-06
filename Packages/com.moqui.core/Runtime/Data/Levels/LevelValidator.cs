@@ -28,7 +28,45 @@ namespace Moqui.Core.Data.Levels
             CheckDripSources(level, settings, world, errors);
             CheckHumanData(level, errors);
             CheckEscapeCover(settings, world, human, errors);
+            if (human != null)
+            {
+                errors.AddRange(WalkRouteErrors(human, world, settings.Walk));
+            }
+
             return errors;
+        }
+
+        /// <summary>
+        /// 걷는 인간의 경로 (spec/02 §9): 경로점과 경로점 사이 구간에서 골반 높이 구(human.walkRadius)가 가구와 겹치지 않아야 한다.
+        /// </summary>
+        public static IEnumerable<string> WalkRouteErrors(Human human, CollisionWorld world, WalkSettings walk)
+        {
+            var route = human.Definition.Walk?.Route;
+            if (route == null)
+            {
+                yield break;
+            }
+
+            float height = human.RootPosition.Y;
+            var hits = new List<CollisionShape>();
+            for (int i = 0; i < route.Count; i++)
+            {
+                var point = new Vector3(route[i].X, height, route[i].Y);
+                hits.Clear();
+                world.Overlap(point, walk.Radius, ShapeFlags.Obstacle, hits);
+                if (hits.Exists(shape => !human.Owns(shape)))
+                {
+                    yield return $"{human.Id}: walk point {i} overlaps furniture";
+                }
+
+                Vector3 from = i == 0 ? new Vector3(human.RootPosition.X, height, human.RootPosition.Z) : new Vector3(route[i - 1].X, height, route[i - 1].Y);
+                Vector3 delta = point - from;
+                float distance = delta.Length();
+                if (distance > 1e-3f && world.SphereSweep(from, walk.Radius, delta / distance, distance, ShapeFlags.Obstacle, out _, ShapeFlags.Body))
+                {
+                    yield return $"{human.Id}: walk segment to point {i} is blocked";
+                }
+            }
         }
 
         /// <summary>정적 가구 형상은 obstacle 또는 glass 플래그를 가져야 한다 (spec/03, spec/07).</summary>

@@ -111,6 +111,9 @@ namespace Moqui.Core.Simulation
         /// <summary>강한 습기(증기) 영역 안.</summary>
         public bool InSteam { get; set; }
 
+        /// <summary>켜진 조명 영역 안인가 (spec/06 조명 스위치, M14).</summary>
+        public bool InLight { get; set; }
+
         // ---- 흡혈 (spec/04) ----
 
         /// <summary>흡혈 게이지 b (0~100%). 100이면 Stage Clear.</summary>

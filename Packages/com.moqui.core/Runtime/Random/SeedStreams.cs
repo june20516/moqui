@@ -19,6 +19,9 @@ namespace Moqui.Core.Random
         /// <summary>흡혈 중 이벤트 (D-056).</summary>
         public const string SuckEvents = "suckEvents";
 
+        /// <summary>걷는 인간의 멈춤 시간 (spec/02 §9).</summary>
+        public const string Walk = "walk";
+
         /// <summary>이동 입력 없는 대시의 무작위 방향 (D-051).</summary>
         public const string Dash = "dash";
 
