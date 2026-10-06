@@ -28,8 +28,8 @@ namespace Moqui.Core.Bots
         {
             if (player.State == PlayerState.Attached)
             {
-                // 이동 입력으로 이탈한다 (spec/03).
-                return new PlayerCommand { Vertical = 1f };
+                // F로 뗀다 (spec/03). 정밀 비행 중 표면에 닿아 자동 착지했어도 같은 방법으로 빠져나온다 (gulf §2).
+                return new PlayerCommand { AttachPressed = true };
             }
 
             Vector3 delta = target - player.Position;

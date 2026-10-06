@@ -90,11 +90,6 @@ namespace Moqui.Core.Simulation
         }
 
         /// <summary>카메라 각도(도)의 시선 방향. 피치 +는 위.</summary>
-        public static Vector3 AimDirection(float yawDegrees, float pitchDegrees)
-        {
-            var flat = CameraBasis.FromYaw(yawDegrees).Forward;
-            float pitch = pitchDegrees * (MathF.PI / 180f);
-            return Vector3.Normalize((flat * MathF.Cos(pitch)) + (Vector3.UnitY * MathF.Sin(pitch)));
-        }
+        public static Vector3 AimDirection(float yawDegrees, float pitchDegrees) => CameraBasis.Aim(yawDegrees, pitchDegrees);
     }
 }

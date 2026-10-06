@@ -36,7 +36,7 @@ namespace Moqui.Unity.UI.Flow
 
         public static SettingsPanel Create(Transform canvas, UserSettings settings, Action onChanged)
         {
-            var panel = UiFactory.CreatePanel("SettingsPanel", canvas, new Vector2(1000f, 860f));
+            var panel = UiFactory.CreatePanel("SettingsPanel", canvas, new Vector2(1000f, 960f));
             var component = panel.gameObject.AddComponent<SettingsPanel>();
             component._settings = settings;
             component._onChanged = onChanged;
@@ -62,12 +62,14 @@ namespace Moqui.Unity.UI.Flow
         private void Build(RectTransform panel)
         {
             var title = UiFactory.CreateText("Title", panel, "설정", 40, TextAnchor.MiddleCenter, 900f, 60f);
-            title.rectTransform.anchoredPosition = new Vector2(0f, 380f);
+            title.rectTransform.anchoredPosition = new Vector2(0f, 430f);
             var column = UiFactory.CreateColumn("Rows", panel, 8f);
-            column.anchoredPosition = new Vector2(0f, 320f);
+            column.anchoredPosition = new Vector2(0f, 370f);
 
             Stepper(column, "sensitivity", () => $"마우스 감도  {_settings.MouseSensitivity:0.00}배", () => _settings.MouseSensitivity -= SensitivityStep, () => _settings.MouseSensitivity += SensitivityStep);
             Toggle(column, "invertY", () => $"Y축 반전  {OnOff(_settings.InvertY)}", () => _settings.InvertY = !_settings.InvertY);
+            Toggle(column, "flightMode", () => $"비행 방식  {(_settings.FlightMode == Moqui.Core.Simulation.FlightControlMode.Free ? "자유 비행(W = 보는 방향)" : "호버(W = 수평 앞)")}", () =>
+                _settings.FlightMode = _settings.FlightMode == Moqui.Core.Simulation.FlightControlMode.Free ? Moqui.Core.Simulation.FlightControlMode.Hover : Moqui.Core.Simulation.FlightControlMode.Free);
             Toggle(column, "tutorialHints", () => $"튜토리얼 안내  {OnOff(_settings.TutorialHints)}", () => _settings.TutorialHints = !_settings.TutorialHints);
             Toggle(column, "defaultView", () => $"기본 시점  {(_settings.DefaultView == CameraViewMode.FirstPerson ? "1인칭" : "3인칭")}", () =>
                 _settings.DefaultView = _settings.DefaultView == CameraViewMode.FirstPerson ? CameraViewMode.ThirdPerson : CameraViewMode.FirstPerson);
@@ -78,7 +80,7 @@ namespace Moqui.Unity.UI.Flow
             Stepper(column, "resolution", () => $"해상도  {_settings.Resolution.x}×{_settings.Resolution.y}", () => _settings.ResolutionIndex -= 1, () => _settings.ResolutionIndex += 1);
 
             CloseButton = UiFactory.CreateButton("Close", panel, "닫기", Close, 300f);
-            ((RectTransform)CloseButton.transform).anchoredPosition = new Vector2(0f, -370f);
+            ((RectTransform)CloseButton.transform).anchoredPosition = new Vector2(0f, -420f);
         }
 
         private void Stepper(Transform parent, string name, Func<string> label, Action decrease, Action increase)

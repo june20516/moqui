@@ -19,6 +19,7 @@ namespace Moqui.Unity.UI.Flow
         public const string MusicVolumeKey = "settings.musicVolume";
         public const string FullscreenKey = "settings.fullscreen";
         public const string ResolutionKey = "settings.resolution";
+        public const string FlightModeKey = "settings.flightMode";
 
         public const float MinSensitivity = 0.25f;
         public const float MaxSensitivity = 4f;
@@ -44,6 +45,13 @@ namespace Moqui.Unity.UI.Flow
         {
             get => GetBool(InvertYKey, false);
             set => SetBool(InvertYKey, value);
+        }
+
+        /// <summary>비행 조작 방식 (gulf §5): 호버(기본) 또는 자유 비행.</summary>
+        public Moqui.Core.Simulation.FlightControlMode FlightMode
+        {
+            get => Enum.TryParse(_store.GetString(FlightModeKey, Moqui.Core.Simulation.FlightControlMode.Hover.ToString()), out Moqui.Core.Simulation.FlightControlMode mode) ? mode : Moqui.Core.Simulation.FlightControlMode.Hover;
+            set => _store.SetString(FlightModeKey, value.ToString());
         }
 
         public bool TutorialHints

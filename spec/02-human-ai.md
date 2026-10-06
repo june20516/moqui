@@ -146,5 +146,7 @@
 - [x] 전기 모기채를 든 팔은 채 길이만큼 더 닿고 판정이 넓다 (Core). (M14) — 증거: `BodyAttackTests.Swatter_ExtendsReachOfTheToolArm`, `Swatter_WiderHit`(손바닥이면 비껴갈 거리에서 채는 맞음)
 - [x] 두 사람이 각자 감지·공격하고, 붙은 부위의 주인에게서 흡혈하며, 한 사람이 광분하면 다른 사람이 경계해 그쪽을 본다 (Core). (M14) — 증거: `CompanionTests.EachHuman_SensesOnItsOwn`, `Sucking_TheFriendsArm_FeedsAndMarksTheFriend`, `Frenzy_SpreadsAlarmToTheOtherHuman`
 
+- [x] 광분 순간 최근 경계를 가장 많이 올린 원인(눈·귀·가려움·시선·동행자)을 낸다 (Core). (M14, gulf §10) — 증거: `AwarenessCauseTests.StayingInSight_FrenzyCauseIsSight`, `DashingBehindTheHead_FrenzyCauseIsHearing`, `Memory_ForgetsOldCauses`
+- [x] 광분 순간 짧은 느린 화면과 원인 문구, 결과 화면에 원인 색 경계 타임라인 (Unity). (M14) — 증거: EditMode `FrenzyMomentTests`
 ## 범위 외
 - 인간의 보행과 자리 이동, 파리채·전기 모기채 등 도구 공격 (향후 확장 후보: 도구는 닿는 거리·판정 면적을 늘려 난이도·레벨링 요소로 쓸 수 있다 — plan/ideas.md) (스프레이 제외), 다수의 인간

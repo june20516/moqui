@@ -26,7 +26,8 @@
 - 흡혈 중 해당 부위 가려움이 `suck.itchRate × site.sensitivity × 스킬 배율`/s로 오른다. 흡혈하지 않는 동안 모든 부위는 `suck.itchDecay`/s로 감소한다.
 - 가려움은 반응 확률을 올린다 (spec/02 §5). 가려움 100이면 즉시 반응한다.
 - 흡혈 자체는 소음이 없다. 부착 상태 규칙(spec/03)이 그대로 적용된다.
-- **흡혈 중 몸 고정 (M13):** Suck을 누른 채 세션이 진행 중이면 이동·상승·하강 입력으로 떨어지지 않는다. 시점(마우스)은 자유롭다. 빠져나오는 방법은 F(떼기), 대시(긴급 탈출, 표면 법선 방향), Suck을 놓은 뒤 이동 입력이다 (D-055).
+- **흡혈 중 몸 고정 (M13):** Suck을 누른 채 세션이 진행 중이면 이동·상승·하강 입력으로 떨어지지 않는다. 시점(마우스)은 자유롭다. 빠져나오는 방법은 F(떼기), 대시(긴급 탈출, 표면 법선 방향), Suck을 놓은 뒤 이동 입력이다 (D-055). 개념 모델은 "지팡이를 꽂으면 붙들린다"(spec/12, gulf §1).
+- **억지로 뽑기 (M14, D-066):** 흡혈 중(Suck을 누른 채 세션 진행) 대시로 빠져나오면 그 부위 가려움이 `suck.yankItch`만큼 오른다(긴급 탈출의 대가). F 떼기나 Suck을 놓은 뒤 떨어지기는 대가가 없다. 모키 큐 `wand.yank`.
 
 ## 3. 착지
 - SkinSite에 부착하는 순간 착지 반응을 판정한다 (spec/02 §5). 스킬 "깃털 착지"가 확률을 낮춘다.
@@ -84,6 +85,7 @@
 - [x] 시선 중 계속 빨면 들켜 경계가 +70 오르고, 멈추고 얼어 있으면 들키지 않으며 머리가 되돌아간다. 흡혈 중이 아니면 이벤트가 없다 (Core). (M13) — 증거: `SuckEventTests.Glance_KeepSucking_IsNoticed`, `Glance_Frozen_PassesUnnoticed_HeadReturns`(얼기 규칙을 끄면 실패함을 확인), `NotSucking_NoEventStarts`
 - [x] 흡혈 중 이벤트마다 HUD 경고 문구가 뜬다 (Unity). (M13) — 증거: EditMode `HudTests.SuckEventWarnings_ShowDuringSessionOnly`
 - [x] 이벤트가 있어도 "적게 물고 길게 빠는" 설계가 유지되고 봇이 각 스테이지를 4/5 이상 클리어한다 (Core). (M13) — 증거: `DesignValidationTests.LongSessions_VersusShortSessions_LowerAwarenessAndFasterClear`(긴 세션 12/20 vs 짧은 0/20), `ScenarioTests`(봇은 시선이 오면 흡혈을 멈추고 얼어 있는다)
+- [x] 흡혈 중 대시로 빠져나오면 그 부위 가려움이 `suck.yankItch`만큼 오르고, F 떼기는 대가가 없다 (Core). (M14) — 증거: `SuckTests.WhileSucking_DashYank_RaisesItch_AttachReleaseDoesNot`
 
 ## 범위 외
 - 흡혈 후 탈출(퇴장) 단계

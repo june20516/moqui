@@ -459,6 +459,7 @@ namespace Moqui.Core.Simulation
             {
                 // 흡혈하며 꿈틀거리는 모기를 보았다 (D-056).
                 state.Noticed = true;
+                human.Causes.Add(AwarenessCause.Glance, _settings.GlanceNoticeAwareness);
                 human.Awareness = Math.Min(ReactionSystem.GaugeMax, human.Awareness + _settings.GlanceNoticeAwareness);
                 human.HasStimulus = true;
                 human.LastStimulusPosition = state.Target;

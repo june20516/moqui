@@ -111,6 +111,36 @@ namespace Moqui.Core.Simulation
         public string ShapeId { get; }
     }
 
+    /// <summary>인간이 광분에 들어감과 그 원인 (gulf §10 "왜 들켰나", D-067).</summary>
+    public sealed class FrenzyTriggered : SimulationEvent
+    {
+        public FrenzyTriggered(int tick, string humanId, AwarenessCause cause)
+            : base(tick)
+        {
+            HumanId = humanId;
+            Cause = cause;
+        }
+
+        public string HumanId { get; }
+
+        public AwarenessCause Cause { get; }
+    }
+
+    /// <summary>흡혈 중 대시로 지팡이를 억지로 뽑음 (gulf §1, D-066). 그 부위 가려움이 suck.yankItch만큼 올랐다.</summary>
+    public sealed class WandYanked : SimulationEvent
+    {
+        public WandYanked(int tick, string partId, float itchAfter)
+            : base(tick)
+        {
+            PartId = partId;
+            ItchAfter = itchAfter;
+        }
+
+        public string PartId { get; }
+
+        public float ItchAfter { get; }
+    }
+
     /// <summary>부위가 빠르게 움직여 튕겨 나감 (spec/02 §6). 사망이 아니다.</summary>
     public sealed class PlayerDislodged : SimulationEvent
     {

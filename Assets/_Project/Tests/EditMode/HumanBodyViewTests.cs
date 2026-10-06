@@ -44,6 +44,20 @@ namespace Moqui.Unity.Tests
             Assert.That(view.EyesClosed, Is.True);
         }
 
+        /// <summary>F 착지 미끄러짐: 처음 빠르고 끝에서 감속해 0.15초에 정확히 붙은 자리 (gulf §2).</summary>
+        [Test]
+        public void SnapGlide_EasesOutAndArrives()
+        {
+            var from = Vector3.zero;
+            var to = new Vector3(0f, 0f, 6f);
+
+            Vector3 half = PlayerView.Glide(from, to, PlayerView.SnapGlideSeconds * 0.5f);
+
+            Assert.That(half.z, Is.GreaterThan(3f), "ease-out covers more than half in the first half");
+            Assert.That(PlayerView.Glide(from, to, PlayerView.SnapGlideSeconds), Is.EqualTo(to));
+            Assert.That(PlayerView.Glide(from, to, float.PositiveInfinity), Is.EqualTo(to));
+        }
+
         [Test]
         public void HoverBob_LargestWhenStill_ZeroAtFullSpeed()
         {

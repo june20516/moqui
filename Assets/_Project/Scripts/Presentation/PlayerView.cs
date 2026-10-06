@@ -16,6 +16,36 @@ namespace Moqui.Unity.Presentation
         private SimulationRunner _runner;
 
         private Vector2 _lean;
+        private bool _wasAttached;
+        private bool _hasRendered;
+        private Vector3 _glideFrom;
+        private float _glideElapsed = float.PositiveInfinity;
+        private Transform _landingMarker;
+
+        /// <summary>F 착지 때 붙을 곳까지 미끄러지는 시간 (표현 전용, gulf §2). Core는 즉시 붙는다.</summary>
+        public const float SnapGlideSeconds = 0.15f;
+
+        /// <summary>이보다 짧게 움직인 착지는 미끄러지지 않고 바로 붙는다 (u).</summary>
+        public const float SnapGlideMinDistance = 0.5f;
+
+        /// <summary>착지 표시(발밑 마법진 대용) 지름과 표면에서 띄우는 높이 (u).</summary>
+        public const float LandingMarkerDiameter = 1.6f;
+        public const float LandingMarkerLift = 0.05f;
+
+        private static readonly Color LandingMarkerColor = new Color(1f, 0.55f, 0.8f);
+
+        /// <summary>착지 표시가 보이는가 (테스트용).</summary>
+        public bool LandingMarkerVisible => _landingMarker != null && _landingMarker.gameObject.activeSelf;
+
+        /// <summary>
+        /// 미끄러져 붙기 위치: 처음은 빠르고 끝에서 감속(ease-out)한다. t ≥ 1이면 목표.
+        /// </summary>
+        public static Vector3 Glide(Vector3 from, Vector3 to, float elapsed)
+        {
+            float t = Mathf.Clamp01(elapsed / SnapGlideSeconds);
+            float eased = 1f - ((1f - t) * (1f - t));
+            return Vector3.Lerp(from, to, eased);
+        }
 
         /// <summary>호버링 둥실거림 (표현 전용, M14): 폭(u)과 주기(Hz). 빠르게 날수록 줄어든다.</summary>
         public const float HoverBobAmplitude = 0.06f;
@@ -36,13 +66,30 @@ namespace Moqui.Unity.Presentation
 
             var simulation = _runner.Driver.Simulation;
             var player = simulation.Player;
-            if (player.State == Core.Simulation.PlayerState.Attached)
+            RefreshLandingMarker(simulation);
+            bool attached = player.State == Core.Simulation.PlayerState.Attached;
+            if (attached)
             {
                 // 벽·천장에 붙으면 몸의 up을 표면 법선에 맞춰 "앉은" 자세로 보이게 한다 (spec/03, M12).
+                // 멀리서 F로 붙었으면 붙은 자리까지 짧게 미끄러져 간다 (gulf §2).
+                Vector3 attachedAt = _runner.Driver.InterpolatedPlayerPosition;
+                if (!_wasAttached && _hasRendered && Vector3.Distance(transform.position, attachedAt) > SnapGlideMinDistance)
+                {
+                    _glideFrom = transform.position;
+                    _glideElapsed = 0f;
+                }
+
+                _glideElapsed += Time.deltaTime;
                 _lean = Vector2.zero;
-                transform.SetPositionAndRotation(_runner.Driver.InterpolatedPlayerPosition, AttachedRotation(player.Up.ToUnity(), player.Yaw));
+                _wasAttached = true;
+                _hasRendered = true;
+                transform.SetPositionAndRotation(Glide(_glideFrom, attachedAt, _glideElapsed), AttachedRotation(player.Up.ToUnity(), player.Yaw));
                 return;
             }
+
+            _wasAttached = false;
+            _hasRendered = true;
+            _glideElapsed = float.PositiveInfinity;
 
             Quaternion yaw = Quaternion.Euler(0f, player.Yaw, 0f);
             Vector3 localVelocity = Quaternion.Inverse(yaw) * player.Velocity.ToUnity();
@@ -52,6 +99,42 @@ namespace Moqui.Unity.Presentation
             float speedRatio = player.Velocity.Length() / simulation.Settings.Flight.Speed;
             Vector3 bob = Vector3.up * HoverBob(Time.time, speedRatio);
             transform.SetPositionAndRotation(_runner.Driver.InterpolatedPlayerPosition + bob, yaw * Quaternion.Euler(_lean.x, 0f, _lean.y));
+        }
+
+        /// <summary>착지 표시: 비행 중 F로 붙을 수 있으면 붙을 자리에 작은 분홍 원 (발밑 마법진 VFX 전 대용, spec/12 land.ready).</summary>
+        private void RefreshLandingMarker(Core.Simulation.GameSimulation simulation)
+        {
+            if (_landingMarker == null)
+            {
+                var marker = Art.Primitives.Create(PrimitiveType.Cylinder, "LandingMarker", null);
+                marker.transform.localScale = new Vector3(LandingMarkerDiameter, 0.01f, LandingMarkerDiameter);
+                WorldView.Tint(marker.GetComponent<Renderer>(), LandingMarkerColor);
+                marker.GetComponent<Renderer>().shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                _landingMarker = marker.transform;
+            }
+
+            bool show = simulation.TryGetAttachTarget(out var point, out var normal);
+            _landingMarker.gameObject.SetActive(show);
+            if (show)
+            {
+                Vector3 up = normal.ToUnity();
+                _landingMarker.SetPositionAndRotation(point.ToUnity() + (up * LandingMarkerLift), Quaternion.FromToRotation(Vector3.up, up));
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (_landingMarker != null)
+            {
+                if (Application.isPlaying)
+                {
+                    Destroy(_landingMarker.gameObject);
+                }
+                else
+                {
+                    DestroyImmediate(_landingMarker.gameObject);
+                }
+            }
         }
 
         /// <summary>부착 중 몸 방향: up = 표면 법선, 앞 = 시점 방향을 표면에 투영한 방향 (투영이 거의 0이면 월드 위쪽을 투영).</summary>

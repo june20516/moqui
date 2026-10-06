@@ -279,6 +279,12 @@ namespace Moqui.Core.Simulation
 
         public Vector3 LastStimulusPosition { get; set; }
 
+        /// <summary>원인별 경계 기여의 짧은 기억 (gulf §10).</summary>
+        public AwarenessCauseMemory Causes { get; } = new AwarenessCauseMemory();
+
+        /// <summary>마지막 광분의 원인 (gulf §10). 광분한 적이 없으면 None.</summary>
+        public AwarenessCause LastFrenzyCause { get; set; }
+
         public int LastStimulusTick { get; set; } = Player.NeverTick;
 
         /// <summary>이번 틱 "보임" 여부 (D-029). 스냅샷의 PlayerVisibleToHuman.</summary>

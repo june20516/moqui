@@ -59,6 +59,9 @@ namespace Moqui.Unity.Input
         /// <summary>세로 반전 (설정, spec/08).</summary>
         public bool InvertY { get; set; }
 
+        /// <summary>비행 조작 방식 (호버 / 자유 비행, gulf §5). 규칙은 같고 입력을 나누는 방식만 다르다.</summary>
+        public FlightControlMode FlightMode { get; set; }
+
         /// <summary>매 프레임 호출한다. 시점을 갱신하고 눌림을 래치한다.</summary>
         public void Sample(float deltaTime)
         {
@@ -78,10 +81,11 @@ namespace Moqui.Unity.Input
         public PlayerCommand NextCommand()
         {
             Vector2 move = _move.ReadValue<Vector2>();
+            FlightControl.Map(FlightMode, new System.Numerics.Vector2(move.x, move.y), _vertical.ReadValue<float>(), Look.Pitch, out var mappedMove, out float mappedVertical);
             var command = new PlayerCommand
             {
-                Move = new System.Numerics.Vector2(move.x, move.y),
-                Vertical = _vertical.ReadValue<float>(),
+                Move = mappedMove,
+                Vertical = mappedVertical,
                 LookYaw = Look.Yaw,
                 LookPitch = Look.Pitch,
                 DashPressed = _dashLatched,

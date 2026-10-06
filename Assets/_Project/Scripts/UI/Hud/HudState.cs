@@ -102,6 +102,9 @@ namespace Moqui.Unity.UI.Hud
 
         public bool CrosshairVisible { get; private set; }
 
+        /// <summary>1인칭 비행 중 대시할 수 있으면 조준점 둘레 고리 (입력 없이 대시하면 조준점 쪽으로 간다, gulf §5).</summary>
+        public bool DashAimVisible { get; private set; }
+
         /// <summary>장착한 액티브 스킬이 있는가 (우하단 칸).</summary>
         public bool ActiveSkillVisible { get; private set; }
 
@@ -142,6 +145,7 @@ namespace Moqui.Unity.UI.Hud
                 ItchVisible = player.SuckSession != null,
                 ItchFraction = player.SuckSession != null ? Mathf.Clamp01(player.SuckSession.Site.Itch / settings.Attach.ItchThreshold) : 0f,
                 CrosshairVisible = firstPerson || player.SuckSession != null,
+                DashAimVisible = firstPerson && simulation.CanDashNow,
             };
 
             state.Prompt = PromptFor(simulation);

@@ -57,15 +57,15 @@ namespace Moqui.Core.Simulation
         /// <summary>일반·연속 대시 중 하나라도 지금 시작할 수 있는가.</summary>
         public bool CanDash(Player player, int tick) => CanStart(player, tick) || CanChain(player, tick);
 
-        /// <summary>Dash 입력이면 진행 방향(입력 없으면 무작위)으로 대시를 시작한다 (spec/01, D-051).</summary>
-        public bool TryStart(Player player, in PlayerCommand command, int tick, IRandom random, List<SimulationEvent> events)
+        /// <summary>Dash 입력이면 진행 방향(입력 없으면 보는 방향)으로 대시를 시작한다 (spec/01, D-051, D-066).</summary>
+        public bool TryStart(Player player, in PlayerCommand command, int tick, List<SimulationEvent> events)
         {
             if (!command.DashPressed || !CanDash(player, tick))
             {
                 return false;
             }
 
-            Start(player, DashDirectionResolver.Resolve(command, random), tick, events);
+            Start(player, DashDirectionResolver.Resolve(command), tick, events);
             return true;
         }
 

@@ -89,10 +89,18 @@ namespace Moqui.Core.Simulation
             AttachRange = tuning.GetFloat("suck.attachRange");
             DetachOffset = tuning.GetFloat("attach.detachOffset");
             ItchThreshold = tuning.GetFloat("suck.itchThreshold");
+            SnapRange = tuning.GetFloat("attach.snapRange");
+            AutoLandAlign = tuning.GetFloat("attach.autoLandAlign");
         }
 
-        /// <summary>플레이어 중심에서 표면까지 이 거리 이내면 부착할 수 있다 (spec/03).</summary>
+        /// <summary>표면에 닿았다고 보는 거리: 플레이어 중심에서 표면까지 이 거리 이내 (spec/03, 정밀 비행 자동 착지).</summary>
         public float AttachRange { get; }
+
+        /// <summary>F 착지가 닿는 거리: 이 안의 가장 가까운 표면으로 미끄러져 붙는다 (gulf §2, D-066).</summary>
+        public float SnapRange { get; }
+
+        /// <summary>정밀 비행 자동 착지: 진행 방향이 표면 쪽(−법선)과 이루는 코사인이 이 값 이상이어야 한다.</summary>
+        public float AutoLandAlign { get; }
 
         public float DetachOffset { get; }
 
@@ -110,6 +118,7 @@ namespace Moqui.Core.Simulation
             ItchRate = tuning.GetFloat("suck.itchRate");
             ItchDecay = tuning.GetFloat("suck.itchDecay");
             ItchThreshold = tuning.GetFloat("suck.itchThreshold");
+            YankItch = tuning.GetFloat("suck.yankItch");
             SatietyMinSpeedMul = tuning.GetFloat("satiety.minSpeedMul");
             SatietyMinDashMul = tuning.GetFloat("satiety.minDashMul");
         }
@@ -127,6 +136,9 @@ namespace Moqui.Core.Simulation
         public float ItchDecay { get; }
 
         public float ItchThreshold { get; }
+
+        /// <summary>흡혈 중 대시로 지팡이를 억지로 뽑을 때 그 부위 가려움에 더하는 양 (gulf §1, D-066).</summary>
+        public float YankItch { get; }
 
         public float SatietyMinSpeedMul { get; }
 

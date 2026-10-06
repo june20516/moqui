@@ -17,7 +17,8 @@
 - **디버프 회복 가속:** Shadow Zone 안(숨은 상태)에서는 디버프가 `hiding.debuffRecoveryMul`배 빠르게 풀린다. 대상은 중독 감소(spec/06), 젖은 날개 남은 시간과 습기 감소(spec/05), 탈진 남은 시간(spec/01)이다. (D-018)
 
 ### 벽면 부착
-- 플레이어가 `attachable` 플래그를 가진 표면(가구, 벽, 인간 피부 `SkinSite`)에서 `suck.attachRange` 이내일 때 Attach 입력으로 부착한다.
+- 플레이어가 `attachable` 플래그를 가진 표면(가구, 벽, 인간 피부 `SkinSite`)에서 `attach.snapRange`(8u) 이내일 때 Attach 입력으로 가장 가까운 점에 부착한다. 표현은 그 자리까지 0.15초 미끄러져 붙는다(Core는 즉시, gulf §2, D-066). 착지할 수 있으면 붙을 자리에 작은 분홍 원이 보이고 모키 큐 `land.ready`가 뜬다.
+- **정밀 비행 자동 착지 (M14, D-066):** 정밀 비행 + 이동 입력으로 표면 쪽(진행 방향과 −법선의 코사인 ≥ `attach.autoLandAlign`)으로 날다 `suck.attachRange` 안에 닿으면 F 없이 내려앉는다. 스치듯 지나가기·일반 비행은 붙지 않는다. 내려앉은 직후에는 그 이동 키를 놓을 때까지 그 입력으로 떨어지지 않는다(표면에서 멀어지는 입력이면 바로 뗀다).
 - 벽·천장·가구 옆면처럼 방향과 무관하게 `attachable` 표면이면 부착할 수 있다. 캐릭터 그림도 표면 법선에 맞춰 회전해 벽·천장에 "앉은" 것이 보여야 한다 (M12).
 - 부착 시: 표면 법선에 맞춰 정렬, 이동 정지, 소음 0 (`noise.attachedRadius`), 시각 증가율에 `vision.attachedMul` 적용 (스킬 그림자 동화로 감소). 표면이 움직이면 그 로컬 좌표를 따라간다.
 - 이동 입력이나 Attach 입력으로 이탈한다. 이탈 시 법선 방향으로 2u 떨어진다.
@@ -37,5 +38,7 @@
 - [x] 벽 옆면과 천장 아랫면에 부착되고, 부착 중 위치가 표면에서 떨어지지 않는다 (Core). (M12) — 증거: `AttachTests.Attach_CeilingAndWallSide_StaysOnSurface`(천장·벽 옆면, 2초 유지)
 - [x] 부착 중 캐릭터 그림의 up이 표면 법선과 5° 이내다(벽·천장 포함) (Unity). (M12) — 증거: EditMode `MokiTests.AttachedRotation_UpMatchesSurfaceNormal`(천장·벽·바닥·비스듬한 면), `PlayerView`가 부착 중 `AttachedRotation` 사용
 
+- [x] F 착지는 snapRange 안의 가장 가까운 표면에 붙고, 정밀 비행으로 표면 쪽으로 닿으면 자동 착지하며 일반 비행·스치기는 붙지 않는다 (Core). (M14) — 증거: `AttachTests.Attach_SnapsWithinSnapRange_NotBeyond`, `PrecisionFlight_IntoSurface_AutoLands`, 봇 시나리오 전체 통과(`ScenarioTests`)
+- [x] 착지 미끄러짐은 끝에서 감속해 0.15초에 붙은 자리에 도착한다 (Unity). (M14) — 증거: EditMode `HumanBodyViewTests.SnapGlide_EasesOutAndArrives`
 ## 범위 외
 - 빛의 밝기 기반 동적 은신 계산 (Shadow Zone은 수작업 볼륨으로만 처리)

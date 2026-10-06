@@ -17,6 +17,7 @@ namespace Moqui.Unity.Simulation
         private bool _paused;
         private float _sensitivityScale = 1f;
         private bool _invertY;
+        private FlightControlMode _flightMode;
 
         public SimulationDriver Driver { get; private set; }
 
@@ -41,15 +42,17 @@ namespace Moqui.Unity.Simulation
             }
         }
 
-        /// <summary>사용자 설정(감도·세로 반전)을 입력 수집기에 반영한다.</summary>
-        public void ApplyLookPreferences(float sensitivityScale, bool invertY)
+        /// <summary>사용자 설정(감도·세로 반전·비행 방식)을 입력 수집기에 반영한다.</summary>
+        public void ApplyLookPreferences(float sensitivityScale, bool invertY, FlightControlMode flightMode = FlightControlMode.Hover)
         {
             _sensitivityScale = sensitivityScale;
             _invertY = invertY;
+            _flightMode = flightMode;
             if (_collector != null)
             {
                 _collector.SensitivityScale = sensitivityScale;
                 _collector.InvertY = invertY;
+                _collector.FlightMode = flightMode;
             }
         }
 
@@ -61,6 +64,7 @@ namespace Moqui.Unity.Simulation
             {
                 SensitivityScale = _sensitivityScale,
                 InvertY = _invertY,
+                FlightMode = _flightMode,
             };
             Driver = new SimulationDriver(simulation, _collector);
         }

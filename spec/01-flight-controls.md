@@ -31,7 +31,7 @@
 - 장애물과는 sweep으로 충돌 처리하고 표면을 따라 미끄러진다.
 
 ### 볼텍스 대시
-- 방향 (M12): **진행 방향**(이동 입력 = 카메라 yaw 기준 전후좌우 + 월드 상하를 합친 벡터의 방향)으로 대시한다. 이동 입력이 없으면 Core 난수(시드 고정)로 고른 **무작위 방향**으로 대시한다 (D-051). 부착 중 대시는 붙은 표면의 **법선 방향**으로 떨어져 나가며 대시한다.
+- 방향 (M12): **진행 방향**(이동 입력 = 카메라 yaw 기준 전후좌우 + 월드 상하를 합친 벡터의 방향)으로 대시한다. 이동 입력이 없으면 **보는 방향**(시점 yaw + pitch, 조준점 쪽)으로 대시한다 (D-051 → D-066: 무작위 방향은 예측할 수 없어 실행 간극을 키우므로 바꿨다). 부착 중 대시는 붙은 표면의 **법선 방향**으로 떨어져 나가며 대시한다.
 - (이전 규칙: 좌/우/상/하 중 가장 큰 축, 입력 없으면 위쪽 — 2026-10-01 플레이테스트에서 "무조건 위로만 간다"는 피드백으로 폐기)
 - `dash.duration` 동안 `dash.distance × 포만 대시 배율`(spec/04 §5)을 등속으로 이동한다. 장애물에 닿으면 그 지점에서 멈춘다.
 - 대시가 끝나면 대시 방향으로 `flight.speed`의 속도를 남기고, 이후 일반 가감속 규칙을 따른다 (살짝 미끄러지며 빠져나오는 느낌).
@@ -69,7 +69,9 @@ Attached ──(부위 급격한 움직임)──▶ Dislodged ──(경직 종
 - [x] 바람 외력은 입력과 무관하게 즉시 더해진다 (Core). — 증거: `ExternalForceTests.Wind_NoInput_AddedImmediatelyWithoutInertia`, `Wind_WithInput_AddsToInputMovement`
 - [x] 대각선 입력 속도가 단일 방향 속도와 같다 (Core). — 증거: `FlightTests.DiagonalInput_TopSpeed_EqualsSingleDirectionSpeed`
 - [x] 대시가 0.12초 동안 60u를 이동한다 (Core, ±1u). — 증거: `DashTests.Dash_FromRest_Moves60uIn012Seconds` (7틱, D-026)
-- [x] 대시가 진행 방향(전후좌우+상하 합성)으로 나가고, 이동 입력이 없으면 같은 시드에서 같은 무작위 방향으로 나간다 (Core). (M12) — 증거: `DashTests.DashDirection_FollowsMovementInput_IncludingForwardAndVertical`, `DashDirection_NoInput_RandomUnitVector_ReproducibleWithSeed_NotAlwaysUp`, `Dash_ForwardInput_MovesForward` (D-051)
+- [x] 대시가 진행 방향(전후좌우+상하 합성)으로 나가고, 이동 입력이 없으면 보는 방향으로 나간다 (Core). (M12, M14 갱신) — 증거: `DashTests.DashDirection_FollowsMovementInput_IncludingForwardAndVertical`, `DashDirection_NoInput_GoesWhereYouLook`, `Dash_ForwardInput_MovesForward` (D-051, D-066)
+- [x] 비행 방식 설정: 호버(W = 수평 앞) / 자유 비행(W = 보는 방향, 위아래 포함). 규칙(속도·관성)은 같고 입력 변환만 다르다 (Core·Unity). (M14) — 증거: Core `DashTests.FlightControl_FreeSplitsForwardByPitch_HoverKeepsIt`, EditMode `FlowTests.Settings_ChangedThroughPanel_PersistInStore`
+- [x] 1인칭 비행 중 대시할 수 있으면 조준점 둘레에 고리가 보인다 (Unity). (M14) — 증거: EditMode `HudTests.DashAim_FirstPersonWhenDashReady`
 - [x] 부착 중 대시 입력이면 표면 법선 방향으로 대시하며 부착이 풀린다 (Core). (M12) — 증거: `DashTests.Dash_WhileAttached_LeavesAlongSurfaceNormal`, `Dash_WhileAttached_WithoutStamina_StaysAttached`
 - [x] 스태미나 < 25이면 대시가 실행되지 않는다 (Core). — 증거: `DashTests.Dash_StaminaBelowCost_DoesNotExecute`
 - [x] 쿨타임 안의 재입력은 무시된다 (Core). — 증거: `DashTests.Dash_PressedDuringCooldown_IsIgnored`

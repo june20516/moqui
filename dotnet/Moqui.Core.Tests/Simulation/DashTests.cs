@@ -50,30 +50,39 @@ namespace Moqui.Core.Tests.Simulation
             var forwardUp = new PlayerCommand { Move = new Vector2(0f, 1f), Vertical = 1f };
             var leftDown = new PlayerCommand { Move = new Vector2(-1f, 0f), Vertical = -1f };
             var turned = new PlayerCommand { Move = new Vector2(0f, 1f), LookYaw = 90f };
-            var random = SeedStreams.Create(1, SeedStreams.Dash);
 
-            Assert.That(Vector3.Distance(DashDirectionResolver.Resolve(forward, random), Vector3.UnitZ), Is.LessThan(Tolerance), "forward is no longer ignored");
-            Assert.That(Vector3.Distance(DashDirectionResolver.Resolve(forwardUp, random), Vector3.Normalize(new Vector3(0, 1, 1))), Is.LessThan(Tolerance));
-            Assert.That(Vector3.Distance(DashDirectionResolver.Resolve(leftDown, random), Vector3.Normalize(new Vector3(-1, -1, 0))), Is.LessThan(Tolerance));
-            Assert.That(Vector3.Distance(DashDirectionResolver.Resolve(turned, random), Vector3.UnitX), Is.LessThan(Tolerance), "camera yaw");
+            Assert.That(Vector3.Distance(DashDirectionResolver.Resolve(forward), Vector3.UnitZ), Is.LessThan(Tolerance), "forward is no longer ignored");
+            Assert.That(Vector3.Distance(DashDirectionResolver.Resolve(forwardUp), Vector3.Normalize(new Vector3(0, 1, 1))), Is.LessThan(Tolerance));
+            Assert.That(Vector3.Distance(DashDirectionResolver.Resolve(leftDown), Vector3.Normalize(new Vector3(-1, -1, 0))), Is.LessThan(Tolerance));
+            Assert.That(Vector3.Distance(DashDirectionResolver.Resolve(turned), Vector3.UnitX), Is.LessThan(Tolerance), "camera yaw");
         }
 
-        [Test]
-        public void DashDirection_NoInput_RandomUnitVector_ReproducibleWithSeed_NotAlwaysUp()
+        /// <summary>입력 없이 대시하면 보는 방향(조준점 쪽, 위아래 포함)으로 간다 (gulf §5, D-066).</summary>
+        [TestCase(0f, 0f, 0f, 0f, 1f)]
+        [TestCase(90f, 0f, 1f, 0f, 0f)]
+        [TestCase(0f, 30f, 0f, 0.5f, 0.8660254f)]
+        public void DashDirection_NoInput_GoesWhereYouLook(float yaw, float pitch, float x, float y, float z)
         {
-            var first = SeedStreams.Create(7, SeedStreams.Dash);
-            var second = SeedStreams.Create(7, SeedStreams.Dash);
-            int upward = 0;
-            for (int i = 0; i < 200; i++)
-            {
-                Vector3 a = DashDirectionResolver.Resolve(PlayerCommand.None, first);
-                Vector3 b = DashDirectionResolver.Resolve(PlayerCommand.None, second);
-                Assert.That(a, Is.EqualTo(b), "same seed, same direction");
-                Assert.That(a.Length(), Is.EqualTo(1f).Within(Tolerance));
-                upward += a.Y > 0.9f ? 1 : 0;
-            }
+            var command = new PlayerCommand { LookYaw = yaw, LookPitch = pitch };
 
-            Assert.That(upward, Is.LessThan(40), "uniform on the sphere, not biased up");
+            Assert.That(Vector3.Distance(DashDirectionResolver.Resolve(command), new Vector3(x, y, z)), Is.LessThan(Tolerance));
+        }
+
+        /// <summary>자유 비행: 앞 입력이 시점 pitch만큼 위아래로 나뉜다. 호버는 그대로 (gulf §5).</summary>
+        [Test]
+        public void FlightControl_FreeSplitsForwardByPitch_HoverKeepsIt()
+        {
+            FlightControl.Map(FlightControlMode.Free, new Vector2(0f, 1f), 0f, 30f, out var move, out float vertical);
+            Assert.That(move.Y, Is.EqualTo(0.8660254f).Within(Tolerance));
+            Assert.That(vertical, Is.EqualTo(0.5f).Within(Tolerance));
+
+            FlightControl.Map(FlightControlMode.Hover, new Vector2(0f, 1f), 0f, 30f, out move, out vertical);
+            Assert.That(move.Y, Is.EqualTo(1f));
+            Assert.That(vertical, Is.EqualTo(0f));
+
+            FlightControl.Map(FlightControlMode.Free, new Vector2(1f, 0f), 1f, 60f, out move, out vertical);
+            Assert.That(move, Is.EqualTo(new Vector2(1f, 0f)), "strafing is not tilted");
+            Assert.That(vertical, Is.EqualTo(1f));
         }
 
         [Test]

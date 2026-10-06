@@ -96,6 +96,7 @@
 | awareness.frenzyEnter | 100 | 도달 시 광분 |
 | awareness.decayDelay | 2.0s | 자극이 없을 때 감소 시작까지 |
 | awareness.decayRate | 10 /s | |
+| awareness.causeMemory | 4s | 원인별(눈·귀·가려움·시선·동행자) 경계 기여를 기억하는 시정수. 광분 순간 가장 큰 원인을 "왜 들켰나"로 보인다 (gulf §10, M14) |
 | awareness.shadowDecayRate | 25 /s | 플레이어가 Shadow Zone에 있을 때 |
 | head.idleTurnSpeed | 60 °/s | |
 | head.suspiciousTurnSpeed | 90 °/s | |
@@ -188,6 +189,7 @@
 | suck.itchRate | 6 /s | 흡혈 중 가려움 증가 (민감도 1 기준) |
 | suck.itchDecay | 5 /s | 흡혈하지 않을 때 감소 |
 | suck.itchThreshold | 100 | 도달 시 즉시 반응 |
+| suck.yankItch | 30 | 흡혈 중 대시로 지팡이를 억지로 뽑을 때 그 부위 가려움 증가 (gulf §1, M14) |
 | suck.attachRange | 2u | 표면 부착 가능 거리 |
 | suckEvent.twitchItchStart | 40 | 긁으러 오는 손: 첫 움찔 가려움 (M13, D-056) |
 | suckEvent.twitchItchStep | 20 | 움찔 단계 간격 (40·60·80) |
@@ -206,6 +208,8 @@
 | suckEvent.glanceHold | 1.2s | 응시 시간 |
 | suckEvent.glanceNoticeAwareness | 70 | 응시 중 흡혈하는 모기를 보면 오르는 경계 (평소 경계 30 이상이면 광분, D-057) |
 | attach.detachOffset | 2u | 이탈 시 표면 법선 방향으로 떨어지는 거리 (spec/03, D-031) |
+| attach.snapRange | 8u | F 착지가 닿는 거리. 이 안의 가장 가까운 표면으로 미끄러져 붙는다 (gulf §2, M14) |
+| attach.autoLandAlign | 0.5 | 정밀 비행 자동 착지: 진행 방향과 표면 쪽(−법선) 코사인 하한 (gulf §2, M14) |
 
 ## site (부위 유형)
 | 키 | 민감도 | 혈액량 |

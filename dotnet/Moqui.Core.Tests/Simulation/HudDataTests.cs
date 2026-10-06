@@ -73,11 +73,11 @@ namespace Moqui.Core.Tests.Simulation
         }
 
         [Test]
-        public void CanAttach_OnlyFlyingWithinAttachRangeOfAttachableSurface()
+        public void CanAttach_OnlyFlyingWithinSnapRangeOfAttachableSurface()
         {
             var world = new CollisionWorld();
             world.Add(CollisionShape.Box("wall", new Vector3(0f, 100f, 50f), new Vector3(100f, 100f, 1f), ShapeFlags.Obstacle | ShapeFlags.Attachable));
-            float range = Settings.Attach.AttachRange;
+            float range = Settings.Attach.SnapRange;
             var simulation = WithWorld(world, new Vector3(0f, 100f, 50f - 1f - (range * 0.5f)));
             Assert.That(simulation.CanAttach, Is.True);
 

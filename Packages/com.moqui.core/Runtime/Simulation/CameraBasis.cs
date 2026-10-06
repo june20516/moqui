@@ -29,6 +29,14 @@ namespace Moqui.Core.Simulation
             return new CameraBasis(new Vector3(sin, 0f, cos), new Vector3(cos, 0f, -sin));
         }
 
+        /// <summary>시점 방향 단위 벡터 (yaw + pitch, pitch 양수 = 위).</summary>
+        public static Vector3 Aim(float yawDegrees, float pitchDegrees)
+        {
+            var flat = FromYaw(yawDegrees).Forward;
+            float pitch = pitchDegrees * DegreesToRadians;
+            return Vector3.Normalize((flat * MathF.Cos(pitch)) + (Vector3.UnitY * MathF.Sin(pitch)));
+        }
+
         /// <summary>Move 입력(X 오른쪽, Y 앞)을 월드 수평 벡터로 바꾼다.</summary>
         public Vector3 ToWorld(Vector2 move)
         {

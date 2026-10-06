@@ -20,7 +20,6 @@ namespace Moqui.Core.Simulation
         private readonly FlightSystem _flight;
         private readonly StaminaSystem _stamina;
         private readonly DashSystem _dash;
-        private readonly IRandom _dashRandom;
         private readonly AttachSystem _attach;
         private readonly SphereMover _mover;
         private readonly FallingBodySystem _fallingBodies;
@@ -52,7 +51,6 @@ namespace Moqui.Core.Simulation
             Suck = new SuckSystem(settings.Suck, settings.Sites, settings.BiteMark, settings.SuckEvent);
             Water = new WaterSystem(settings.Water, World, _fallingBodies, _dash, setup.DripSources);
             Humidity = new HumiditySystem(settings.Humid, settings.Water, settings.Hiding, World, Water);
-            _dashRandom = SeedStreams.Create(setup.Seed, SeedStreams.Dash);
             _dash.ChainLevel = setup.Skills.Level(SkillCatalog.ChainVortex);
             Decoy = new DecoySystem(settings.Decoy, World, setup.Skills.ActiveLevel(SkillCatalog.DecoyCharm));
             Fans = new FanSystem(settings.Fan, setup.Gimmicks.Fans);
@@ -146,8 +144,14 @@ namespace Moqui.Core.Simulation
         /// <summary>현재 대시 스태미나 비용 (HUD 스태미나 눈금, spec/08).</summary>
         public float DashCost => _dash.Cost(Player);
 
+        /// <summary>지금 대시를 시작할 수 있는가 (1인칭 대시 표식, gulf §5).</summary>
+        public bool CanDashNow => Player.State == PlayerState.Flying && _dash.CanDash(Player, Tick);
+
         /// <summary>지금 착지 입력을 하면 붙을 수 있는가 (HUD 착지 프롬프트, spec/08).</summary>
         public bool CanAttach => _attach.HasTarget(Player);
+
+        /// <summary>지금 F를 누르면 붙을 지점 (착지 표시, gulf §2).</summary>
+        public bool TryGetAttachTarget(out Vector3 point, out Vector3 normal) => _attach.TryGetTarget(Player, out point, out normal);
 
         public WaterSystem Water { get; }
 
@@ -271,6 +275,14 @@ namespace Moqui.Core.Simulation
                     // 부착 중 대시: 붙은 표면의 법선 방향으로 떨어져 나가며 대시한다 (spec/01, D-051). 대시할 수 없으면 그대로 붙어 있다.
                     if (command.DashPressed && _dash.CanDash(Player, Tick))
                     {
+                        // 흡혈 중 대시 = 꽂은 지팡이를 억지로 뽑는 긴급 탈출. 대가로 그 부위가 가려워진다 (gulf §1, D-066).
+                        if (AttachSystem.IsSucking(Player, command))
+                        {
+                            var site = Player.SuckSession.Site;
+                            site.Itch = Math.Min(ReactionSystem.GaugeMax, site.Itch + Settings.Suck.YankItch);
+                            _events.Add(new WandYanked(Tick, site.PartId, site.Itch));
+                        }
+
                         Player.Anchor.Resolve(out _, out Vector3 surfaceNormal);
                         _attach.Detach(Player, Tick, _events);
                         _dash.Start(Player, surfaceNormal, Tick, _events);
@@ -313,7 +325,7 @@ namespace Moqui.Core.Simulation
                 return;
             }
 
-            _dash.TryStart(Player, command, Tick, _dashRandom, _events);
+            _dash.TryStart(Player, command, Tick, _events);
             if (Player.State == PlayerState.Dashing)
             {
                 _dash.Step(Player);
@@ -415,6 +427,7 @@ namespace Moqui.Core.Simulation
                         continue;
                     }
 
+                    other.Causes.Add(AwarenessCause.Alarm, Settings.HumanMotion.AlarmShare - other.Awareness);
                     other.Awareness = Math.Max(other.Awareness, Settings.HumanMotion.AlarmShare);
                     other.HasStimulus = true;
                     other.LastStimulusPosition = source.HasStimulus ? source.LastStimulusPosition : source.LastSeenPosition;
@@ -450,6 +463,7 @@ namespace Moqui.Core.Simulation
         {
             Vector3 previousVelocity = Player.Velocity;
             _flight.UpdateVelocity(Player, command, DeltaTime);
+            Vector3 intendedVelocity = Player.Velocity;
 
             // 틱 안에서 속도가 선형으로 변한다고 보고 평균 속도로 적분한다. 외력(바람)은 관성 없이 그대로 더한다.
             Vector3 averageVelocity = (previousVelocity + Player.Velocity) * 0.5f;
@@ -457,6 +471,9 @@ namespace Moqui.Core.Simulation
             var move = _mover.Move(Player.Position, Player.CollisionRadius, displacement, Player.Velocity, ShapeFlags.Solid);
             Player.Position = move.Position;
             Player.Velocity = move.Velocity;
+
+            // 정밀 비행으로 표면 쪽으로 날다 닿으면 그대로 내려앉는다 (gulf §2).
+            _attach.TryAutoLand(Player, command, intendedVelocity, Tick, _events);
         }
     }
 }

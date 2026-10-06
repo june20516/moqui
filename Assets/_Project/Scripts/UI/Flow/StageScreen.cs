@@ -72,6 +72,12 @@ namespace Moqui.Unity.UI.Flow
 
         public StageOutcomeInfo Outcome { get; private set; }
 
+        /// <summary>경계 타임라인 (결과 화면, gulf §10).</summary>
+        public Moqui.Unity.UI.Hud.AwarenessTimeline Timeline { get; } = new Moqui.Unity.UI.Hud.AwarenessTimeline();
+
+        /// <summary>결과 화면의 타임라인 막대 부모 (테스트용).</summary>
+        public RectTransform ResultTimeline { get; private set; }
+
         /// <summary>테스트용 연결 (씬에서는 직렬화 필드).</summary>
         public void Connect(SimulationRunner runner, StageBootstrap stage)
         {
@@ -117,6 +123,7 @@ namespace Moqui.Unity.UI.Flow
             ResultTitle.text = cleared ? "클리어!" : "실패";
             ResultBody.text = cleared ? ClearText(Outcome) : $"사망 원인: {CauseText(Outcome.DeathCause)}\n시간 {Outcome.Seconds:0.0}초\n획득 혈액 포인트 0";
             EndingButton.gameObject.SetActive(Outcome.UnlocksEnding);
+            DrawTimeline();
             ResultPanel.SetActive(true);
             CursorPolicy.ForMenu();
             UiFactory.Focus(Outcome.UnlocksEnding ? EndingButton : RetryButton);
@@ -144,6 +151,12 @@ namespace Moqui.Unity.UI.Flow
             ResultTitle.rectTransform.anchoredPosition = new Vector2(0f, 300f);
             ResultBody = UiFactory.CreateText("Body", result, string.Empty, 28, TextAnchor.UpperCenter, 800f, 300f);
             ResultBody.rectTransform.anchoredPosition = new Vector2(0f, 90f);
+            var timelineLabel = UiFactory.CreateText("TimelineLabel", result, "경계 타임라인 (색 = 원인: 노랑 눈 · 하늘 귀 · 분홍 가려움 · 주황 시선 · 보라 동행자)", 16, TextAnchor.MiddleCenter, 800f, 22f);
+            timelineLabel.rectTransform.anchoredPosition = new Vector2(0f, -2f);
+            ResultTimeline = new GameObject("Timeline", typeof(RectTransform)).GetComponent<RectTransform>();
+            ResultTimeline.SetParent(result, false);
+            ResultTimeline.sizeDelta = new Vector2(800f, 40f);
+            ResultTimeline.anchoredPosition = new Vector2(0f, -38f);
             var resultColumn = UiFactory.CreateColumn("Menu", result, 10f);
             resultColumn.anchoredPosition = new Vector2(0f, -100f);
             EndingButton = UiFactory.CreateButton("Ending", resultColumn, "엔딩 보기", () => Leave(Flow.OpenEnding));
@@ -215,7 +228,7 @@ namespace Moqui.Unity.UI.Flow
         {
             if (_runner != null)
             {
-                _runner.ApplyLookPreferences(Flow.Session.Settings.MouseSensitivity, Flow.Session.Settings.InvertY);
+                _runner.ApplyLookPreferences(Flow.Session.Settings.MouseSensitivity, Flow.Session.Settings.InvertY, Flow.Session.Settings.FlightMode);
             }
         }
 
@@ -259,6 +272,35 @@ namespace Moqui.Unity.UI.Flow
             }
         }
 
+        /// <summary>타임라인 막대: 표본마다 경계값 높이, 원인 색 (광분 진입값이 꽉 찬 높이).</summary>
+        private void DrawTimeline()
+        {
+            foreach (Transform child in ResultTimeline)
+            {
+                Destroy(child.gameObject);
+            }
+
+            var samples = Timeline.Samples;
+            if (samples.Count == 0)
+            {
+                return;
+            }
+
+            float width = ResultTimeline.sizeDelta.x / samples.Count;
+            float height = ResultTimeline.sizeDelta.y;
+            float full = _runner.Driver.Simulation.Settings.Awareness.FrenzyEnter;
+            for (int i = 0; i < samples.Count; i++)
+            {
+                var bar = new GameObject($"Sample{i}", typeof(RectTransform), typeof(Image));
+                var rect = (RectTransform)bar.transform;
+                rect.SetParent(ResultTimeline, false);
+                rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0f, 0f);
+                rect.anchoredPosition = new Vector2(i * width, 0f);
+                rect.sizeDelta = new Vector2(Mathf.Max(1f, width - 1f), Mathf.Max(2f, height * Mathf.Clamp01(samples[i].Awareness / full)));
+                bar.GetComponent<Image>().color = Moqui.Unity.UI.Hud.FrenzyMoment.ColorOf(samples[i].Cause);
+            }
+        }
+
         private bool PausePressed()
         {
             if (_pause == null && _controls != null)
@@ -283,6 +325,7 @@ namespace Moqui.Unity.UI.Flow
 
         private void OnTick(GameSimulation simulation)
         {
+            Timeline.Observe(simulation);
             var died = simulation.Events.OfType<PlayerDied>().FirstOrDefault();
             if (died != null)
             {

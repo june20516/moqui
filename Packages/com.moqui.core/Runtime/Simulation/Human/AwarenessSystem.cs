@@ -24,8 +24,12 @@ namespace Moqui.Core.Simulation
         public void Apply(Human human, in HumanPerception perception, bool playerHidden, int tick, float deltaTime)
         {
             float gain = ((perception.VisionRate + perception.HearingRate) * deltaTime) + perception.InstantGain;
+            human.Causes.Decay(deltaTime, _settings.CauseMemory);
+            human.Causes.Add(AwarenessCause.Sight, perception.VisionRate * deltaTime * GainMultiplier);
+            human.Causes.Add(AwarenessCause.Hearing, ((perception.HearingRate * deltaTime) + perception.InstantGain) * GainMultiplier);
             if (perception.RedZoneTriggered)
             {
+                human.Causes.Add(AwarenessCause.Sight, _settings.FrenzyEnter - human.Awareness);
                 human.Awareness = _settings.FrenzyEnter;
             }
 

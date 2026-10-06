@@ -196,6 +196,9 @@ namespace Moqui.Core.Simulation
 
         private void EnterFrenzy(Human human, int tick, List<SimulationEvent> events)
         {
+            // 왜 들켰나: 최근 몇 초 동안 경계를 가장 많이 올린 원인 (gulf §10).
+            human.LastFrenzyCause = human.Causes.Dominant;
+            events.Add(new FrenzyTriggered(tick, human.Id, human.LastFrenzyCause));
             human.Awareness = _awareness.FrenzyEnter;
             human.FrenzyEnteredTick = tick;
             human.UnseenTicks = 0;

@@ -109,7 +109,7 @@ namespace Moqui.Core.Tests.Support
         }
 
         /// <summary>시야에 걸리지 않는 위쪽 대시 (좌우·상하 입력 없음 → 위, spec/01).</summary>
-        public static PlayerCommand DashUp => new PlayerCommand { DashPressed = true };
+        public static PlayerCommand DashUp => new PlayerCommand { DashPressed = true, Vertical = 1f };
 
         /// <summary>인간 정면(+Z) 머리 높이에서 distance만큼 떨어진 점.</summary>
         public static Vector3 InFront(float distance)

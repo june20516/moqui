@@ -140,6 +140,29 @@ namespace Moqui.Core.Tests.Simulation
             Assert.That(simulation.Events.OfType<PlayerDetached>().Count(), Is.EqualTo(1), escape);
         }
 
+        /// <summary>흡혈 중 대시는 지팡이를 억지로 뽑는 탈출: 그 부위 가려움이 suck.yankItch만큼 오른다. 떼기(F)는 대가가 없다 (gulf §1, D-066).</summary>
+        [Test]
+        public void WhileSucking_DashYank_RaisesItch_AttachReleaseDoesNot()
+        {
+            var yanked = AttachedTo("forearmR");
+            Run(yanked, Suck, SecondsToTicks(0.5f));
+            var site = yanked.Player.SuckSession.Site;
+            float before = site.Itch;
+
+            yanked.Step(new PlayerCommand { SuckHeld = true, DashPressed = true });
+
+            Assert.That(site.Itch, Is.EqualTo(before + yanked.Settings.Suck.YankItch).Within(1f), "decay of one tick aside");
+            Assert.That(yanked.Events.OfType<WandYanked>().Single().PartId, Is.EqualTo("forearmR"));
+
+            var released = AttachedTo("forearmR");
+            Run(released, Suck, SecondsToTicks(0.5f));
+            var releasedSite = released.Player.SuckSession.Site;
+            float releasedBefore = releasedSite.Itch;
+            released.Step(new PlayerCommand { SuckHeld = true, AttachPressed = true });
+            Assert.That(releasedSite.Itch, Is.LessThanOrEqualTo(releasedBefore + 0.5f));
+            Assert.That(released.Events.OfType<WandYanked>(), Is.Empty);
+        }
+
         [Test]
         public void Suck_NotAttached_NoGain()
         {

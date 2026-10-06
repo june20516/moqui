@@ -180,6 +180,7 @@ namespace Moqui.Core.Simulation
                 }
 
                 // 세션이 끝나는 순간 가려움을 알아챈다 (spec/04 §4).
+                human.Causes.Add(AwarenessCause.Itch, _biteMarks.AwarenessBump);
                 human.Awareness = Math.Min(GaugeMax, human.Awareness + _biteMarks.AwarenessBump);
                 human.HasStimulus = true;
                 human.LastStimulusPosition = session.Site.Shape.Center;

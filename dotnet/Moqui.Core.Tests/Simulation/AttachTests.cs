@@ -48,16 +48,51 @@ namespace Moqui.Core.Tests.Simulation
             Assert.That(simulation.Events.OfType<PlayerAttached>().Single().ShapeId, Is.EqualTo("wall"));
         }
 
+        /// <summary>F 착지는 attach.snapRange 안의 가장 가까운 표면으로 미끄러져 붙고, 그보다 멀면 붙지 않는다 (gulf §2, D-066).</summary>
         [Test]
-        public void Attach_SurfaceFartherThan2u_DoesNotAttach()
+        public void Attach_SnapsWithinSnapRange_NotBeyond()
         {
             var world = new CollisionWorld();
             world.Add(CollisionShape.Box("wall", new Vector3(0, 0, 10), new Vector3(50, 50, 1), ShapeFlags.Obstacle | ShapeFlags.Attachable));
-            var simulation = WithWorld(world, new Vector3(0, 0, 9f - 2.1f));
+            float snap = Settings.Attach.SnapRange;
+            var near = WithWorld(world, new Vector3(0, 0, 9f - (snap - 0.5f)));
+            var far = WithWorld(world, new Vector3(0, 0, 9f - (snap + 0.5f)));
 
-            simulation.Step(Attach);
+            near.Step(Attach);
+            far.Step(Attach);
 
-            Assert.That(simulation.Player.State, Is.EqualTo(PlayerState.Flying));
+            Assert.That(near.Player.State, Is.EqualTo(PlayerState.Attached));
+            Assert.That(near.Player.Position.Z, Is.EqualTo(9f - near.Player.CollisionRadius - SphereMover.Skin).Within(1e-3f), "placed on the surface (face at z = 9)");
+            Assert.That(far.Player.State, Is.EqualTo(PlayerState.Flying));
+        }
+
+        /// <summary>정밀 비행으로 표면 쪽으로 날다 닿으면 F 없이 내려앉는다. 일반 비행·스치듯 지나가기는 붙지 않는다 (gulf §2, D-066).</summary>
+        [TestCase(true, 0f, 1f, true)]
+        [TestCase(false, 0f, 1f, false)]
+        [TestCase(true, 1f, 0f, false)]
+        public void PrecisionFlight_IntoSurface_AutoLands(bool precision, float moveX, float moveY, bool lands)
+        {
+            var world = new CollisionWorld();
+            world.Add(CollisionShape.Box("wall", new Vector3(0, 0, 10), new Vector3(200, 200, 1), ShapeFlags.Obstacle | ShapeFlags.Attachable));
+            var simulation = WithWorld(world, new Vector3(0, 0, 9f - 3f));
+            var command = new PlayerCommand { Move = new Vector2(moveX, moveY), PrecisionHeld = precision };
+
+            Run(simulation, command, SecondsToTicks(1.5f));
+
+            Assert.That(simulation.Player.State == PlayerState.Attached, Is.EqualTo(lands), "still holding the key toward the wall keeps it attached");
+            if (lands)
+            {
+                // 키를 놓았다가 다시 누르면 평소처럼 이동 입력으로 뗀다.
+                simulation.Step(PlayerCommand.None);
+                simulation.Step(command);
+                Assert.That(simulation.Player.State, Is.EqualTo(PlayerState.Flying), "after releasing, move detaches again");
+
+                // 표면에서 멀어지는 입력은 놓지 않아도 바로 뗀다.
+                var again = WithWorld(world, new Vector3(0, 0, 9f - 3f));
+                Run(again, command, SecondsToTicks(1.5f));
+                again.Step(new PlayerCommand { Move = new Vector2(0f, -1f), PrecisionHeld = true });
+                Assert.That(again.Player.State, Is.EqualTo(PlayerState.Flying));
+            }
         }
 
         [Test]

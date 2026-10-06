@@ -39,6 +39,9 @@ namespace Moqui.Unity.UI.Hud
 
         public HudState LastState { get; private set; }
 
+        /// <summary>광분 순간 느린 화면·원인 문구 (gulf §10).</summary>
+        public FrenzyMoment Frenzy { get; } = new FrenzyMoment();
+
         private void Awake()
         {
             _view = GetComponent<HudView>();
@@ -68,6 +71,13 @@ namespace Moqui.Unity.UI.Hud
         private void OnTick(Moqui.Core.Simulation.GameSimulation simulation)
         {
             _cues.Step(simulation, _cuePresenter);
+            foreach (var simulationEvent in simulation.Events)
+            {
+                if (simulationEvent is Moqui.Core.Simulation.FrenzyTriggered triggered)
+                {
+                    Frenzy.Trigger(triggered.Cause, Time.unscaledTime);
+                }
+            }
         }
 
         private void OnDestroy()
@@ -98,6 +108,18 @@ namespace Moqui.Unity.UI.Hud
             LastState = HudState.Compute(_runner.Driver.Simulation, _camera, firstPerson, _runner.Tuning);
             _presenter.Present(LastState, Time.time);
             _view.TutorialText.text = _hints.CurrentText(_stage != null ? _stage.Tutorial : null, _view.UseGamepadLabels);
+            RefreshFrenzyMoment();
+        }
+
+        private void RefreshFrenzyMoment()
+        {
+            Time.timeScale = Frenzy.Update(Time.unscaledTime, Time.timeScale);
+            _view.FrenzyCauseText.gameObject.SetActive(Frenzy.TextVisible);
+            if (Frenzy.TextVisible)
+            {
+                _view.FrenzyCauseText.text = Frenzy.Text;
+                _view.FrenzyCauseText.color = FrenzyMoment.ColorOf(Frenzy.Cause);
+            }
         }
 
         /// <summary>마지막으로 입력이 들어온 장치에 맞춰 프롬프트 표기를 바꾼다 (spec/08).</summary>

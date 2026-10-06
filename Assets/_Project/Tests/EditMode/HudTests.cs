@@ -71,6 +71,19 @@ namespace Moqui.Unity.Tests
             return state;
         }
 
+        /// <summary>1인칭 비행 중 대시할 수 있으면 조준점 둘레 고리, 3인칭이나 스태미나가 모자라면 없다 (gulf §5).</summary>
+        [Test]
+        public void DashAim_FirstPersonWhenDashReady()
+        {
+            Assert.That(Present(firstPerson: true).DashAimVisible, Is.True);
+            Assert.That(_view.DashAim.gameObject.activeSelf, Is.True);
+            Assert.That(Present(firstPerson: false).DashAimVisible, Is.False);
+
+            _simulation.Player.Stamina = 0f;
+            Assert.That(Present(firstPerson: true).DashAimVisible, Is.False);
+            Assert.That(_view.DashAim.gameObject.activeSelf, Is.False);
+        }
+
         [Test]
         public void ModelValues_AreReflectedInHudElements()
         {

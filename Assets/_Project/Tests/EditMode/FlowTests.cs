@@ -228,6 +228,7 @@ namespace Moqui.Unity.Tests
             panel.Controls["invertY"].Primary.onClick.Invoke();
             panel.Controls["tutorialHints"].Primary.onClick.Invoke();
             panel.Controls["defaultView"].Primary.onClick.Invoke();
+            panel.Controls["flightMode"].Primary.onClick.Invoke();
             panel.Controls["sfxVolume"].Primary.onClick.Invoke();
             panel.Controls["resolution"].Primary.onClick.Invoke();
 
@@ -236,6 +237,7 @@ namespace Moqui.Unity.Tests
             Assert.That(reloaded.InvertY, Is.True);
             Assert.That(reloaded.TutorialHints, Is.False);
             Assert.That(reloaded.DefaultView, Is.EqualTo(CameraViewMode.FirstPerson));
+            Assert.That(reloaded.FlightMode, Is.EqualTo(Moqui.Core.Simulation.FlightControlMode.Free));
             Assert.That(reloaded.SfxVolume, Is.EqualTo(0.9f).Within(1e-4f));
             Assert.That(reloaded.ResolutionIndex, Is.EqualTo(1));
             Assert.That(panel.Labels["sensitivity"].text, Does.Contain("1.25"));

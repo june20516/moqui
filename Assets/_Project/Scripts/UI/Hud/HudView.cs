@@ -94,6 +94,9 @@ namespace Moqui.Unity.UI.Hud
 
         public Image Crosshair { get; private set; }
 
+        /// <summary>대시 준비 고리 (1인칭, gulf §5).</summary>
+        public Image DashAim { get; private set; }
+
         public Text PromptText { get; private set; }
 
         public RectTransform HeadArrow { get; private set; }
@@ -106,6 +109,9 @@ namespace Moqui.Unity.UI.Hud
 
         /// <summary>흡혈 중 이벤트 경고 문구 (조준점 위).</summary>
         public Text SuckWarningText { get; private set; }
+
+        /// <summary>광분 순간 원인 문구 (gulf §10).</summary>
+        public Text FrenzyCauseText { get; private set; }
 
         public GameObject ActiveSkillRoot { get; private set; }
 
@@ -328,8 +334,13 @@ namespace Moqui.Unity.UI.Hud
             ItchRing.fillOrigin = (int)Image.Origin360.Top;
             Crosshair = CreateImage("Crosshair", Root, HudSprites.Circle, Color.white);
             Place(Crosshair.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(6f, 6f));
+            DashAim = CreateImage("DashAim", Root, HudSprites.Ring, new Color(1f, 0.6f, 0.85f, 0.55f));
+            Place(DashAim.rectTransform, new Vector2(0.5f, 0.5f), Vector2.zero, new Vector2(26f, 26f));
             SuckWarningText = CreateText("SuckWarning", Root, 26, TextAnchor.MiddleCenter);
             Place(SuckWarningText.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, 90f), new Vector2(900f, 40f));
+            FrenzyCauseText = CreateText("FrenzyCause", Root, 40, TextAnchor.MiddleCenter);
+            Place(FrenzyCauseText.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, 180f), new Vector2(1200f, 60f));
+            FrenzyCauseText.gameObject.SetActive(false);
         }
 
         /// <summary>흡혈 중 이벤트 경고 문구 (spec/04 §8). 키 이름 없이 행동만 알려 준다.</summary>
@@ -461,6 +472,7 @@ namespace Moqui.Unity.UI.Hud
             ItchRing.gameObject.SetActive(state.ItchVisible);
             ItchRing.fillAmount = state.ItchFraction;
             Crosshair.gameObject.SetActive(state.CrosshairVisible);
+            DashAim.gameObject.SetActive(state.DashAimVisible);
             SuckWarningText.gameObject.SetActive(state.SuckWarning != HudSuckWarning.None);
             SuckWarningText.text = SuckWarningLabel(state.SuckWarning);
             Color warningColor = state.SuckWarning == HudSuckWarning.Riding ? RidingColor : ItchColor;

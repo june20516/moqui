@@ -99,6 +99,13 @@ namespace Moqui.Core.Tests.Support
                         return FlyTo(CurrentHideSpot);
                     }
 
+                    // 정밀 비행으로 다가가다 목표 피부에 닿아 자동 착지했으면 바로 빤다 (gulf §2).
+                    if (player.State == PlayerState.Attached && player.Anchor.Shape == _simulation.Human.Shapes[_site])
+                    {
+                        _phase = Phase.Suck;
+                        return new PlayerCommand { SuckHeld = true };
+                    }
+
                     if (player.State == PlayerState.Flying && Vector3.Distance(player.Position, approach) < ArriveDistance)
                     {
                         _phase = Phase.Suck;
@@ -233,8 +240,8 @@ namespace Moqui.Core.Tests.Support
             var player = _simulation.Player;
             if (player.State == PlayerState.Attached)
             {
-                // 이동 입력으로 이탈한다 (spec/03).
-                return new PlayerCommand { Vertical = 1f };
+                // F로 뗀다 (spec/03). 자동 착지 직후에도 같은 방법으로 빠져나온다 (gulf §2).
+                return new PlayerCommand { AttachPressed = true };
             }
 
             Vector3 delta = target - player.Position;

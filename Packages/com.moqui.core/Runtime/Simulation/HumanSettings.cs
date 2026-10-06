@@ -83,6 +83,7 @@ namespace Moqui.Core.Simulation
             FrenzyEnter = tuning.GetFloat("awareness.frenzyEnter");
             DecayDelay = tuning.GetFloat("awareness.decayDelay");
             DecayRate = tuning.GetFloat("awareness.decayRate");
+            CauseMemory = tuning.GetFloat("awareness.causeMemory");
             ShadowDecayRate = tuning.GetFloat("awareness.shadowDecayRate");
         }
 
@@ -94,6 +95,9 @@ namespace Moqui.Core.Simulation
         public float FrenzyEnter { get; }
 
         public float DecayDelay { get; }
+
+        /// <summary>원인별 경계 기여를 기억하는 시정수 (s, "왜 들켰나" gulf §10).</summary>
+        public float CauseMemory { get; }
 
         public float DecayRate { get; }
 
