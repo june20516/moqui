@@ -159,7 +159,11 @@ namespace Moqui.Unity.Editor
 
             var site = simulation.Human.Shapes["forearmR"];
             Vector3 siteCenter = site.Center.ToUnity();
-            Vector3 near = siteCenter + ((spawn - siteCenter).normalized * HumanCloseupDistance);
+            // 몸통에서 팔 바깥쪽(수평) + 조금 위: 앉은·누운·선 자세 모두 팔과 몸이 보인다 (M14 걷는 인간).
+            Vector3 torso = simulation.Human.Shapes["torso"].Center.ToUnity();
+            Vector3 outward = Vector3.ProjectOnPlane(siteCenter - torso, Vector3.up);
+            outward = outward.sqrMagnitude > 1e-4f ? outward.normalized : (spawn - siteCenter).normalized;
+            Vector3 near = siteCenter + (((outward * 0.8f) + (Vector3.up * 0.6f)).normalized * HumanCloseupDistance);
             Shot(near, solver.ThirdPerson(near, YawTowards(near, siteCenter), -15f), false, "human_close");
 
             var shadow = simulation.World.Shapes.First(shape => shape.Matches(ShapeFlags.ShadowZone));

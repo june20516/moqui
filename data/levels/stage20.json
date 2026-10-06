@@ -1,0 +1,180 @@
+{
+  "formatVersion": 1,
+  "id": "stage20",
+  "room": "veranda",
+  "seed": 2020,
+  "playerSpawn": [-215, 220, -140],
+  "human": {
+    "id": "human",
+    "position": [0, 0, 80],
+    "facingYaw": 180,
+    "head": "head",
+    "shoulders": [
+      [-20, 52, -2],
+      [20, 52, -2]
+    ],
+    "parts": [
+      { "id": "head", "kind": "head", "a": [0, 70, 0], "b": [0, 76, 0], "radius": 10 },
+      { "id": "neck", "kind": "neck", "a": [0, 55, -1], "b": [0, 61, 0], "radius": 5, "site": "neck" },
+      { "id": "torso", "kind": "torso", "a": [0, 16, -4], "b": [0, 38, -2], "radius": 14 },
+      { "id": "upperArmL", "kind": "upperArm", "a": [-20, 52, -2], "b": [-24, 30, 6], "radius": 5 },
+      { "id": "forearmL", "kind": "forearm", "a": [-24, 30, 6], "b": [-16, 36, 32], "radius": 4, "site": "forearm" },
+      { "id": "upperArmR", "kind": "upperArm", "a": [20, 52, -2], "b": [24, 30, 6], "radius": 5 },
+      { "id": "forearmR", "kind": "forearm", "a": [24, 30, 6], "b": [16, 36, 32], "radius": 4, "site": "forearm" },
+      { "id": "thighL", "kind": "thigh", "a": [-10, 9, 0], "b": [-10, 9, 40], "radius": 7 },
+      { "id": "calfL", "kind": "calf", "a": [-10, 8, 42], "b": [-10, 6, 80], "radius": 5, "site": "calf" },
+      { "id": "thighR", "kind": "thigh", "a": [10, 9, 0], "b": [10, 9, 40], "radius": 7 },
+      { "id": "calfR", "kind": "calf", "a": [10, 8, 42], "b": [10, 6, 80], "radius": 5, "site": "calf" }
+    ],
+    "idle": { "lookYaws": [0] },
+    "actions": [
+      {
+        "name": "drinkBeer",
+        "weight": 3,
+        "duration": 1.6,
+        "motions": [
+          { "part": "forearmR", "offsetA": [0, 0, 0], "offsetB": [-8, 26, -18] }
+        ]
+      },
+      {
+        "name": "grabSnack",
+        "weight": 2,
+        "duration": 1.0,
+        "motions": [
+          { "part": "forearmL", "offsetA": [0, 0, 0], "offsetB": [4, 2, 8] }
+        ]
+      },
+      {
+        "name": "swayBody",
+        "weight": 2,
+        "duration": 2.0,
+        "motions": [
+          { "part": "torso", "offsetA": [0, 0, 0], "offsetB": [5, 0, 0] },
+          { "part": "neck", "offsetA": [6, 0, 0], "offsetB": [6, 0, 0] },
+          { "part": "head", "offsetA": [7, 0, 0], "offsetB": [7, 0, 0] }
+        ]
+      },
+      {
+        "name": "tiltHeadBack",
+        "weight": 1,
+        "duration": 1.0,
+        "motions": [
+          { "part": "head", "offsetA": [0, 0, -6], "offsetB": [0, 0, -6] },
+          { "part": "neck", "offsetA": [0, 0, -3], "offsetB": [0, 0, -3] }
+        ]
+      },
+      {
+        "name": "stretchLegs",
+        "weight": 1,
+        "duration": 0.6,
+        "motions": [
+          { "part": "calfL", "offsetA": [0, 0, 8], "offsetB": [0, 0, 12] },
+          { "part": "calfR", "offsetA": [0, 0, 8], "offsetB": [0, 0, 12] }
+        ]
+      }
+    ],
+    "canSpray": true,
+    "modifiers": ["drunk"]
+  },
+  "dripSources": [],
+  "humidZones": [],
+  "fans": [
+    { "id": "fan", "position": [180, 45, 60], "yaw": -90, "bodySize": [20, 90, 24] }
+  ],
+  "webs": [
+    { "id": "web_corner_ne", "center": [214, 228, 138], "size": [24, 24, 1], "rotation": [0, 45, 0] },
+    { "id": "web_corner_nw", "center": [-214, 228, 138], "size": [24, 24, 1], "rotation": [0, -45, 0] },
+    { "id": "web_passage", "center": [-150, 60, -20], "size": [40, 100, 1] },
+    { "id": "web_shelf", "center": [-190, 120, 60], "size": [30, 30, 1], "rotation": [0, 90, 0] }
+  ],
+  "coils": [
+    { "id": "coil", "position": [75, 3, 0] }
+  ],
+  "sprayDispensers": [
+    { "id": "dispenser", "position": [-160, 70, 10] }
+  ],
+  "tutorial": [],
+  "companions": [
+    {
+      "id": "friend",
+      "position": [120, 0, 80],
+      "facingYaw": 180,
+      "head": "head",
+      "shoulders": [
+        [-20, 52, -2],
+        [20, 52, -2]
+      ],
+      "parts": [
+        { "id": "head", "kind": "head", "a": [0, 70, 0], "b": [0, 76, 0], "radius": 10 },
+        { "id": "neck", "kind": "neck", "a": [0, 55, -1], "b": [0, 61, 0], "radius": 5, "site": "neck" },
+        { "id": "torso", "kind": "torso", "a": [0, 16, -4], "b": [0, 38, -2], "radius": 14 },
+        { "id": "upperArmL", "kind": "upperArm", "a": [-20, 52, -2], "b": [-24, 30, 6], "radius": 5 },
+        { "id": "forearmL", "kind": "forearm", "a": [-24, 30, 6], "b": [-16, 36, 32], "radius": 4, "site": "forearm" },
+        { "id": "upperArmR", "kind": "upperArm", "a": [20, 52, -2], "b": [24, 30, 6], "radius": 5 },
+        { "id": "forearmR", "kind": "forearm", "a": [24, 30, 6], "b": [16, 36, 32], "radius": 4, "site": "forearm" },
+        { "id": "thighL", "kind": "thigh", "a": [-10, 9, 0], "b": [-10, 9, 40], "radius": 7 },
+        { "id": "calfL", "kind": "calf", "a": [-10, 8, 42], "b": [-10, 6, 80], "radius": 5, "site": "calf" },
+        { "id": "thighR", "kind": "thigh", "a": [10, 9, 0], "b": [10, 9, 40], "radius": 7 },
+        { "id": "calfR", "kind": "calf", "a": [10, 8, 42], "b": [10, 6, 80], "radius": 5, "site": "calf" }
+      ],
+      "idle": { "lookYaws": [0] },
+      "actions": [
+        {
+          "name": "drinkBeer",
+          "weight": 3,
+          "duration": 1.6,
+          "motions": [
+            { "part": "forearmR", "offsetA": [0, 0, 0], "offsetB": [-8, 26, -18] }
+          ]
+        },
+        {
+          "name": "grabSnack",
+          "weight": 2,
+          "duration": 1.0,
+          "motions": [
+            { "part": "forearmL", "offsetA": [0, 0, 0], "offsetB": [4, 2, 8] }
+          ]
+        },
+        {
+          "name": "swayBody",
+          "weight": 2,
+          "duration": 2.0,
+          "motions": [
+            { "part": "torso", "offsetA": [0, 0, 0], "offsetB": [5, 0, 0] },
+            { "part": "neck", "offsetA": [6, 0, 0], "offsetB": [6, 0, 0] },
+            { "part": "head", "offsetA": [7, 0, 0], "offsetB": [7, 0, 0] }
+          ]
+        },
+        {
+          "name": "tiltHeadBack",
+          "weight": 1,
+          "duration": 1.0,
+          "motions": [
+            { "part": "head", "offsetA": [0, 0, -6], "offsetB": [0, 0, -6] },
+            { "part": "neck", "offsetA": [0, 0, -3], "offsetB": [0, 0, -3] }
+          ]
+        },
+        {
+          "name": "stretchLegs",
+          "weight": 1,
+          "duration": 0.6,
+          "motions": [
+            { "part": "calfL", "offsetA": [0, 0, 8], "offsetB": [0, 0, 12] },
+            { "part": "calfR", "offsetA": [0, 0, 8], "offsetB": [0, 0, 12] }
+          ]
+        }
+      ],
+      "canSpray": true,
+      "modifiers": ["drunk"],
+      "tool": "swatter"
+    }
+  ],
+  "lights": [
+    {
+      "id": "lantern_switch",
+      "position": [0, 120, 10],
+      "area": { "center": [60, 80, 40], "size": [160, 160, 160] },
+      "schedule": { "on": 8, "off": 8 }
+    }
+  ]
+}

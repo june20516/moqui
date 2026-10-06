@@ -1,0 +1,11 @@
+{
+  "formatVersion": 1,
+  "id": "stage13_detect",
+  "level": "stage13",
+  "seeds": [1, 2, 3, 4, 5],
+  "minSuccesses": 5,
+  "steps": [
+    { "do": "hover", "point": [0, 70, 30], "seconds": 60 }
+  ],
+  "expect": { "outcome": "Died", "deathCause": "Attack", "maxTicks": 3600 }
+}

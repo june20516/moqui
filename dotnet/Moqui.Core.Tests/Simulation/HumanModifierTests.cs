@@ -234,7 +234,7 @@ namespace Moqui.Core.Tests.Simulation
             Assert.That(snapshot.Human.ExhalePosition, Is.EqualTo(simulation.Human.ExhalePosition));
             Assert.That(snapshot.Human.SkinSites.Select(s => s.Type).OrderBy(t => t), Is.EqualTo(new[] { SkinSiteType.Forearm, SkinSiteType.Forearm, SkinSiteType.Calf, SkinSiteType.Calf, SkinSiteType.Neck }.OrderBy(t => t)));
             Assert.That(snapshot.Human.SkinSites.All(s => s.Radius > 0f && s.Position != Vector3.Zero), Is.True);
-            Assert.That(snapshot.ShadowZones.Select(z => z.Id), Is.EquivalentTo(new[] { "shadow_coffee_table", "shadow_bookshelf", "shadow_curtain", "shadow_under_cabinet", "shadow_dining_table" }));
+            Assert.That(snapshot.ShadowZones.Select(z => z.Id), Is.EquivalentTo(new[] { "shadow_behind_sofa", "shadow_coffee_table", "shadow_bookshelf", "shadow_curtain", "shadow_under_cabinet", "shadow_dining_table" }));
             Assert.That(snapshot.WindZones, Is.Empty, "no fans in the living room");
             Assert.That(snapshot.Player.IsHidden, Is.False);
             Assert.That(snapshot.PlayerVisibleToHuman, Is.False);

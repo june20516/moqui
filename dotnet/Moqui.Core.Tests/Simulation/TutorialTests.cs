@@ -117,6 +117,10 @@ namespace Moqui.Core.Tests.Simulation
             Assert.That(tracker.CurrentStep, Is.EqualTo("detach"));
 
             Tick(simulation, tracker, new PlayerCommand { AttachPressed = true });
+
+            // 마지막은 비행 방식 안내(정보 단계): 읽을 시간이 지나면 끝난다 (gulf §5).
+            Assert.That(tracker.CurrentStep, Is.EqualTo("flightMode"));
+            Run(simulation, tracker, PlayerCommand.None, TutorialSettings.InfoTimeout + 0.1f);
             Assert.That(tracker.IsComplete, Is.True);
             Assert.That(tracker.CurrentStep, Is.Null);
         }

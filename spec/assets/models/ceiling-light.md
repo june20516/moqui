@@ -6,6 +6,10 @@
 | 스테이지 | 장 | 형상 ID | 판정 형상 |
 |---|---|---|---|
 | stage03 열대야 침실 · 누워 휴대폰 보는 인간 | 2장 · 침실 | `ceiling_light` | 구 지름 28u |
+| stage09 침실 · 불을 켜는 인간 | 2장 · 침실 | `ceiling_light` | 구 지름 28u |
+| stage10 침실 · 모기향과 협탁 스탠드 | 2장 · 침실 | `ceiling_light` | 구 지름 28u |
+| stage11 침실 · 스프레이를 쥔 인간 | 2장 · 침실 | `ceiling_light` | 구 지름 28u |
+| stage12 침실 · 모기장 친 침대 | 2장 · 침실 | `ceiling_light` | 구 지름 28u |
 
 ## 형상 ID 패턴
 `ceiling_light`

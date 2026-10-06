@@ -1,0 +1,91 @@
+{
+  "formatVersion": 1,
+  "id": "stage11",
+  "room": "bedroom",
+  "seed": 1111,
+  "playerSpawn": [120, 190, -190],
+  "human": {
+    "id": "human",
+    "position": [0, 66, 105],
+    "facingYaw": 180,
+    "facingPitch": 90,
+    "maxPosture": "turn",
+    "head": "head",
+    "shoulders": [
+      [-20, 48, 0],
+      [20, 48, 0]
+    ],
+    "parts": [
+      { "id": "head", "kind": "head", "a": [0, 63, 0], "b": [0, 71, 0], "radius": 10, "site": "cheek" },
+      { "id": "neck", "kind": "neck", "a": [0, 50, 0], "b": [0, 56, 0], "radius": 5 },
+      { "id": "torso", "kind": "torso", "a": [0, 4, 0], "b": [0, 44, 0], "radius": 15 },
+      { "id": "upperArmL", "kind": "upperArm", "a": [-20, 48, 0], "b": [-24, 32, 10], "radius": 5 },
+      { "id": "forearmL", "kind": "forearm", "a": [-24, 32, 10], "b": [-9, 50, 26], "radius": 4, "site": "forearm" },
+      { "id": "upperArmR", "kind": "upperArm", "a": [20, 48, 0], "b": [24, 32, 10], "radius": 5 },
+      { "id": "forearmR", "kind": "forearm", "a": [24, 32, 10], "b": [9, 50, 26], "radius": 4, "site": "forearm" },
+      { "id": "thighL", "kind": "thigh", "a": [-10, -2, 0], "b": [-10, -42, 0], "radius": 7 },
+      { "id": "calfL", "kind": "calf", "a": [-10, -44, 0], "b": [-10, -82, 0], "radius": 5 },
+      { "id": "footL", "kind": "foot", "a": [-10, -86, 0], "b": [-10, -88, 10], "radius": 4, "site": "footTop" },
+      { "id": "thighR", "kind": "thigh", "a": [10, -2, 0], "b": [10, -42, 0], "radius": 7 },
+      { "id": "calfR", "kind": "calf", "a": [10, -44, 0], "b": [10, -82, 0], "radius": 5 },
+      { "id": "footR", "kind": "foot", "a": [10, -86, 0], "b": [10, -88, 10], "radius": 4, "site": "footTop" }
+    ],
+    "idle": {
+      "lookYaws": [0],
+      "glance": { "interval": { "min": 6, "max": 10 }, "angle": 60, "duration": 2 }
+    },
+    "actions": [
+      {
+        "name": "rollOver",
+        "weight": 1,
+        "duration": 0.7,
+        "motions": [
+          { "part": "torso", "offsetA": [14, 0, 2], "offsetB": [14, 0, 2] },
+          { "part": "upperArmL", "offsetA": [14, 0, 2], "offsetB": [14, 0, 2] },
+          { "part": "forearmL", "offsetA": [14, 0, 2], "offsetB": [14, 0, 2] },
+          { "part": "upperArmR", "offsetA": [14, 0, 2], "offsetB": [14, 0, 2] },
+          { "part": "forearmR", "offsetA": [14, 0, 2], "offsetB": [14, 0, 2] },
+          { "part": "thighL", "offsetA": [14, 0, 2], "offsetB": [14, 0, 2] },
+          { "part": "thighR", "offsetA": [14, 0, 2], "offsetB": [14, 0, 2] }
+        ]
+      },
+      {
+        "name": "liftPhone",
+        "weight": 3,
+        "duration": 1.4,
+        "motions": [
+          { "part": "forearmL", "offsetA": [0, 0, 0], "offsetB": [0, 4, 8] },
+          { "part": "forearmR", "offsetA": [0, 0, 0], "offsetB": [0, 4, 8] }
+        ]
+      },
+      {
+        "name": "rubFeet",
+        "weight": 2,
+        "duration": 1.2,
+        "motions": [
+          { "part": "footL", "offsetA": [4, 0, 0], "offsetB": [4, 0, 0] }
+        ]
+      },
+      {
+        "name": "kickBlanket",
+        "weight": 1,
+        "duration": 0.6,
+        "motions": [
+          { "part": "calfL", "offsetA": [0, 0, 10], "offsetB": [0, 0, 16] },
+          { "part": "footL", "offsetA": [0, 0, 16], "offsetB": [0, 0, 16] },
+          { "part": "calfR", "offsetA": [0, 0, 10], "offsetB": [0, 0, 16] },
+          { "part": "footR", "offsetA": [0, 0, 16], "offsetB": [0, 0, 16] }
+        ]
+      }
+    ],
+    "canSpray": true,
+    "modifiers": []
+  },
+  "dripSources": [],
+  "humidZones": [],
+  "fans": [],
+  "webs": [],
+  "coils": [],
+  "sprayDispensers": [],
+  "tutorial": []
+}

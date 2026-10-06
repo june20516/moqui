@@ -77,7 +77,7 @@ namespace Moqui.Core.Data.Levels
 
             try
             {
-                return new HumanDefinition(
+                var definition = new HumanDefinition(
                     json.Get("id").String(),
                     json.Get("position").Vector3(),
                     json.Get("facingYaw").Float(),
@@ -92,6 +92,12 @@ namespace Moqui.Core.Data.Levels
                     json.Has("maxPosture") ? json.Get("maxPosture").Enum<PostureLevel>() : PostureLevel.Rise,
                     walk,
                     json.Has("tool") ? json.Get("tool").Enum<HumanTool>() : HumanTool.None);
+                if (json.Has("startBiteMarks"))
+                {
+                    definition.StartBiteMarks = json.Get("startBiteMarks").Int();
+                }
+
+                return definition;
             }
             catch (System.ArgumentException exception)
             {

@@ -12,7 +12,7 @@ namespace Moqui.Core.Data.Levels
     /// </summary>
     public static class LevelValidator
     {
-        private const ShapeFlags VolumeFlags = ShapeFlags.ShadowZone | ShapeFlags.HumidWeak | ShapeFlags.HumidStrong | ShapeFlags.Wind | ShapeFlags.Hazard;
+        private const ShapeFlags VolumeFlags = ShapeFlags.ShadowZone | ShapeFlags.HumidWeak | ShapeFlags.HumidStrong | ShapeFlags.Wind | ShapeFlags.Hazard | ShapeFlags.NetGap;
         private const int CueSampleRings = 3;
         private const int CueSamplesPerRing = 16;
 

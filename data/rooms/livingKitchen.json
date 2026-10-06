@@ -18,6 +18,7 @@
     { "id": "coffee_table_leg_nw", "type": "box", "center": [-196, 19, 161], "size": [4, 38, 4], "flags": ["obstacle", "attachable"] },
     { "id": "coffee_table_leg_se", "type": "box", "center": [-104, 19, 119], "size": [4, 38, 4], "flags": ["obstacle", "attachable"] },
     { "id": "coffee_table_leg_sw", "type": "box", "center": [-196, 19, 119], "size": [4, 38, 4], "flags": ["obstacle", "attachable"] },
+    { "id": "shadow_behind_sofa", "type": "box", "center": [-150, 42, 312], "size": [190, 80, 22], "flags": ["shadowZone"] },
     { "id": "shadow_coffee_table", "type": "box", "center": [-150, 19, 140], "size": [88, 38, 38], "flags": ["shadowZone"] },
     { "id": "bookshelf", "type": "box", "center": [70, 90, 50], "size": [40, 180, 100], "flags": ["obstacle", "attachable"] },
     { "id": "shadow_bookshelf", "type": "box", "center": [95, 90, 50], "size": [10, 180, 100], "flags": ["shadowZone"] },

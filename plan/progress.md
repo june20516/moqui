@@ -21,11 +21,11 @@
 - [x] C1. 자연스러운 움직임: 머리 회전 가감속, 걷기 가감속·몸 흔들림, 호흡, 미세 움직임 (D-063) — 증거: Core `HumanAwarenessTests.Head_IdlePattern_EasesInAndOut_NoOvershoot`·`WalkTests`, EditMode `HumanBodyViewTests.Breath_SwellsTorso_AsleepClosesEyes`·`HoverBob_LargestWhenStill_ZeroAtFullSpeed`
 - [x] C2. 조명 디테일: 방 분위기 조명(TV·스탠드·달빛·형광등·도시 불빛) + 자연스러운 깜빡임, 조명 스펙(`spec/assets/lighting.md`) (D-064) — 증거: Core `RoomLightingTests`, EditMode `RoomLightingViewTests`, 캡처 검토
 - [x] C3. 플레이 검증 변수 구조(`playtest.json`, 다시 읽기, 패널) (D-065) — 증거: Core `PlaytestTests` 10, EditMode `PlaytestStoreTests` 3, PlayMode `FlowPlayModeTests.Playtest_OverrideApplies_PanelPausesAndSaveRestartsWithNewValue`
-- [ ] C. 1장 거실 5스테이지 (데이터 → 봇 → 캡처 → 애셋 스펙)
-- [ ] D. 2장 침실 5스테이지
-- [ ] E. 3장 물가 5스테이지
-- [ ] F. 4장 베란다 5스테이지
-- [ ] G. 흐름·저장·경제: 장별 스테이지 선택, 기록 키 확장(기존 기록 유지), 혈액 포인트·스킬 비용, 전 흐름 테스트 — 구조 완료(D-061: `data/stages.json` 목록, 장 페이지 선택 화면, 레벨 ID 기록 키, 기준 시간 기본값, 테스트·도구가 목록을 따름, `StageCatalogTests`·`FlowTests`·전 흐름 테스트 통과). 남은 것: 스테이지가 늘어난 뒤 혈액 포인트·스킬 비용 조정
+- [x] C. 1장 거실 5스테이지 (데이터 → 봇 → 캡처 → 애셋 스펙) — 증거: stage01·02·06·07·08, `ScenarioTests` 클리어 4~5/5·발각 5/5, 걷는 인간(stage08)·시작 자국(stage07, Core `startBiteMarks`)·소파 뒤 은신처
+- [x] D. 2장 침실 5스테이지 — 증거: stage03·09·10·11·12(조명 스위치·모기향·스프레이·모기장), 봇 5/5
+- [x] E. 3장 물가 5스테이지 — 증거: stage04·13·14·15·16(증기·분사기·전기 모기채·시선), 봇 4~5/5
+- [x] F. 4장 베란다 5스테이지 — 증거: stage05·17·18·19·20(거미줄·두 사람·모기채·주기 조명), 봇 4/5
+- [x] G. 흐름·저장·경제: 장별 스테이지 선택, 기록 키 확장(기존 기록 유지), 혈액 포인트·스킬 비용, 전 흐름 테스트 — 증거: 구조(D-061, `StageCatalogTests`·`FlowTests`·전 흐름 PlayMode), 경제(D-069, Core `EconomyTests`, spec/09 §1)
 - [ ] H. 마무리: 빌드·성능·spec 체크·최종 보고서
 
 ## M7 버티컬 슬라이스 리포트 (2026-10-01, 사람 검토 권장)
@@ -94,7 +94,8 @@
 ## 반복 로그
 | 일시 | 마일스톤 | 한 일 | 증거 | 커밋 |
 |---|---|---|---|---|
-| 2026-10-07 | M14 | gulf §3 맨살 겨눔·체온 숨결, §4 이중 그림자·지면 먼지, §6 정밀 비행 소리·날개·가장자리·귀 움찔, §7 머리 위 경계·눈동자 선행·고개 숨소리, §8 조명 예열·딸깍·에어컨 열림·바람 줄기·모기장 출렁, §9 물방울 막, §12 날갯짓 박자, §13 방 환경광·손 따라가는 휴대폰 빛·지팡이 빛, 효과음 3종 (D-068) | Core 424 + EditMode 174 + PlayMode 23 통과, 캡처 검토 | (이 커밋) |
+| 2026-10-07 | M14 | C~G 20스테이지: 새 레벨 15개(조명 스위치·모기장·전기 모기채·두 사람·걷는 인간·에어컨·예민한 인간), 클리어·발각 봇 30개, 소파 뒤 은신처, `startBiteMarks`, NetGap 검사, 경제 검사, 비행 방식 튜토리얼, 근접 캡처 개선 (D-069) | Core 501 + EditMode 189 + PlayMode 53 통과, 봇 클리어 4~5/5·발각 5/5, 20스테이지 캡처 검토 | (이 커밋) |
+| 2026-10-07 | M14 | gulf §3 맨살 겨눔·체온 숨결, §4 이중 그림자·지면 먼지, §6 정밀 비행 소리·날개·가장자리·귀 움찔, §7 머리 위 경계·눈동자 선행·고개 숨소리, §8 조명 예열·딸깍·에어컨 열림·바람 줄기·모기장 출렁, §9 물방울 막, §12 날갯짓 박자, §13 방 환경광·손 따라가는 휴대폰 빛·지팡이 빛, 효과음 3종 (D-068) | Core 424 + EditMode 174 + PlayMode 23 통과, 캡처 검토 | f779fc4 |
 | 2026-10-07 | M14 | gulf §1 지팡이 대가(yankItch)·§2 스냅·자동 착지·착지 표시·§5 비행 방식·보는 방향 대시·대시 고리(D-066), §10 왜 들켰나(원인 기억·광분 원인·느린 화면·결과 타임라인, D-067), 봇 F 떼기 | Core 422 + EditMode 161 + PlayMode 23 통과 | 29ea55d |
 | 2026-10-06 | M14 | C3 플레이 검증 변수 구조(playtest-keys.json 목록, playtest.json 덮어쓰기, F10 패널·프리셋·기록, 저장하고 다시 시작, 정본 올리기 메뉴, D-065), 문서 갱신(ideas·stage-expansion 결정 반영) | Core 412 + EditMode 155 + PlayMode 23 통과 | f133318 |
 | 2026-10-06 | M14 | C1 자연스러운 움직임(머리·걷기 가감속, 걸음 출렁임, 호흡·눈 깜빡임, 모키 둥실거림, D-063) · C2 방 분위기 조명(14개 + 흔들림 곡선, 툰 셰이더 추가 조명 수정, 조명 스펙·등불·쿠키·빛줄기 애셋, D-064), gulf §8·§12·§13 | Core 402 + EditMode 152 + PlayMode 22 통과, 캡처 검토(화장실 점 조명 그림자 톱니 → 그림자 끔) | a887407 |

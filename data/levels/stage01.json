@@ -47,5 +47,5 @@
   "webs": [],
   "coils": [],
   "sprayDispensers": [],
-  "tutorial": ["move", "look", "precision", "dash", "attach", "hide", "co2", "suck", "detach"]
+  "tutorial": ["move", "look", "precision", "dash", "attach", "hide", "co2", "suck", "detach", "flightMode"]
 }

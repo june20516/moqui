@@ -7,9 +7,13 @@
 |---|---|---|---|
 | stage01 거실 · TV 보다 조는 인간 | 1장 · 거실 | `air_conditioner` | 상자 90 × 30 × 25u |
 | stage02 거실 · TV 보는 인간 | 1장 · 거실 | `air_conditioner` | 상자 90 × 30 × 25u |
+| stage06 거실 · 선풍기 앞 둘러보는 인간 | 1장 · 거실 | `air_conditioner` | 상자 90 × 30 × 25u |
+| stage07 거실 · 이미 물린 예민한 인간 | 1장 · 거실 | `air_conditioner` | 상자 90 × 30 × 25u |
+| stage08 넓은 거실 · 걸어 다니는 인간과 에어컨 | 1장 · 거실 | `air_conditioner` | 상자 90 × 30 × 25u |
+| stage08 넓은 거실 · 걸어 다니는 인간과 에어컨 | 1장 · 거실 | `aircon_vent` | 상자 4 × 4 × 4u |
 
 ## 형상 ID 패턴
-`air_conditioner`
+`air_conditioner`, `aircon_*`
 
 ## 형태
 흰 벽걸이 에어컨, 아래 송풍 날개(에어컨 타이머 기믹일 때 열림), 작은 초록 LED.

@@ -1,0 +1,31 @@
+{
+  "formatVersion": 1,
+  "id": "stage06_clear",
+  "level": "stage06",
+  "seeds": [1, 2, 3, 4, 5],
+  "minSuccesses": 4,
+  "loop": true,
+  "flee": true,
+  "hideSpots": [
+    [-210, 230, 290],
+    [-380, 220, 290]
+  ],
+  "start": [
+    { "do": "flyTo", "point": [-380, 200, -50] },
+    { "do": "flyTo", "point": [-380, 220, 290] },
+    { "do": "flyTo", "point": [-210, 230, 290] }
+  ],
+  "steps": [
+    { "do": "flyTo", "point": [-210, 230, 290] },
+    { "do": "flyTo", "point": [-150, 110, 280] },
+    { "do": "flyTo", "point": [-184, 62, 260] },
+    { "do": "attachSite", "part": "forearmR" },
+    { "do": "suck", "session": 50 },
+    { "do": "detach" },
+    { "do": "flyTo", "point": [-184, 62, 260] },
+    { "do": "flyTo", "point": [-150, 110, 280] },
+    { "do": "flyTo", "point": [-210, 230, 290] },
+    { "do": "hide" }
+  ],
+  "expect": { "outcome": "Cleared", "maxTicks": 36000 }
+}

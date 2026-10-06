@@ -1,0 +1,41 @@
+{
+  "formatVersion": 1,
+  "id": "stage17_clear",
+  "level": "stage17",
+  "seeds": [1, 2, 3, 4, 5],
+  "minSuccesses": 4,
+  "loop": true,
+  "flee": true,
+  "hideRoutes": [
+    [
+      [-45, 60, 110],
+      [-45, 60, 147],
+      [-20, 30, 147]
+    ],
+    [
+      [-45, 30, 105],
+      [-30, 25, 118]
+    ]
+  ],
+  "start": [
+    { "do": "flyTo", "point": [-120, 180, 40] },
+    { "do": "flyTo", "point": [-45, 60, 110] },
+    { "do": "flyTo", "point": [-45, 60, 147] },
+    { "do": "flyTo", "point": [-20, 30, 147] }
+  ],
+  "steps": [
+    { "do": "flyTo", "point": [-20, 30, 147] },
+    { "do": "flyTo", "point": [-45, 60, 147] },
+    { "do": "flyTo", "point": [-45, 60, 110] },
+    { "do": "flyTo", "point": [-48, 32, 62] },
+    { "do": "attachSite", "part": "forearmR" },
+    { "do": "suck", "session": 50 },
+    { "do": "detach" },
+    { "do": "flyTo", "point": [-48, 32, 62] },
+    { "do": "flyTo", "point": [-45, 60, 110] },
+    { "do": "flyTo", "point": [-45, 60, 147] },
+    { "do": "flyTo", "point": [-20, 30, 147] },
+    { "do": "hide" }
+  ],
+  "expect": { "outcome": "Cleared", "maxTicks": 36000 }
+}

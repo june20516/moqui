@@ -1,0 +1,65 @@
+{
+  "formatVersion": 1,
+  "id": "stage08",
+  "room": "livingKitchen",
+  "seed": 808,
+  "playerSpawn": [-370, 120, -290],
+  "human": {
+    "id": "human",
+    "position": [320, 90, -160],
+    "facingYaw": 0,
+    "maxPosture": "rise",
+    "head": "head",
+    "shoulders": [
+      [-20, 48, 0],
+      [20, 48, 0]
+    ],
+    "parts": [
+      { "id": "head", "kind": "head", "a": [0, 63, 0], "b": [0, 71, 0], "radius": 10, "site": "cheek" },
+      { "id": "neck", "kind": "neck", "a": [0, 50, 0], "b": [0, 56, 0], "radius": 5 },
+      { "id": "torso", "kind": "torso", "a": [0, 4, 0], "b": [0, 44, 0], "radius": 15 },
+      { "id": "upperArmL", "kind": "upperArm", "a": [-20, 48, 0], "b": [-24, 32, 10], "radius": 5 },
+      { "id": "forearmL", "kind": "forearm", "a": [-24, 32, 10], "b": [-9, 50, 26], "radius": 4, "site": "forearm" },
+      { "id": "upperArmR", "kind": "upperArm", "a": [20, 48, 0], "b": [24, 32, 10], "radius": 5 },
+      { "id": "forearmR", "kind": "forearm", "a": [24, 32, 10], "b": [9, 50, 26], "radius": 4, "site": "forearm" },
+      { "id": "thighL", "kind": "thigh", "a": [-10, -2, 0], "b": [-10, -42, 0], "radius": 7 },
+      { "id": "calfL", "kind": "calf", "a": [-10, -44, 0], "b": [-10, -82, 0], "radius": 5 },
+      { "id": "footL", "kind": "foot", "a": [-10, -86, 0], "b": [-10, -88, 10], "radius": 4, "site": "footTop" },
+      { "id": "thighR", "kind": "thigh", "a": [10, -2, 0], "b": [10, -42, 0], "radius": 7 },
+      { "id": "calfR", "kind": "calf", "a": [10, -44, 0], "b": [10, -82, 0], "radius": 5 },
+      { "id": "footR", "kind": "foot", "a": [10, -86, 0], "b": [10, -88, 10], "radius": 4, "site": "footTop" }
+    ],
+    "idle": { "lookYaws": [0] },
+    "actions": [
+      {
+        "name": "liftPhone",
+        "weight": 3,
+        "duration": 1.4,
+        "motions": [
+          { "part": "forearmL", "offsetA": [0, 0, 0], "offsetB": [0, 4, 8] },
+          { "part": "forearmR", "offsetA": [0, 0, 0], "offsetB": [0, 4, 8] }
+        ]
+      }
+    ],
+    "canSpray": false,
+    "modifiers": [],
+    "walk": { "route": [[320, -30], [320, -160]], "pause": { "min": 10, "max": 14 }, "loop": true }
+  },
+  "dripSources": [],
+  "humidZones": [],
+  "fans": [
+    {
+      "id": "aircon_vent",
+      "position": [30, 200, 296],
+      "yaw": 180,
+      "pitch": -25,
+      "kind": "airConditioner",
+      "schedule": { "on": 6, "off": 10, "offset": 3 },
+      "bodySize": [4, 4, 4]
+    }
+  ],
+  "webs": [],
+  "coils": [],
+  "sprayDispensers": [],
+  "tutorial": []
+}

@@ -7,6 +7,9 @@
 |---|---|---|---|
 | stage01 거실 · TV 보다 조는 인간 | 1장 · 거실 | `shoe_cabinet` | 상자 120 × 100 × 30u |
 | stage02 거실 · TV 보는 인간 | 1장 · 거실 | `shoe_cabinet` | 상자 120 × 100 × 30u |
+| stage06 거실 · 선풍기 앞 둘러보는 인간 | 1장 · 거실 | `shoe_cabinet` | 상자 120 × 100 × 30u |
+| stage07 거실 · 이미 물린 예민한 인간 | 1장 · 거실 | `shoe_cabinet` | 상자 120 × 100 × 30u |
+| stage08 넓은 거실 · 걸어 다니는 인간과 에어컨 | 1장 · 거실 | `shoe_cabinet` | 상자 120 × 100 × 30u |
 
 ## 형상 ID 패턴
 `shoe_cabinet`

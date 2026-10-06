@@ -8,6 +8,18 @@
 | stage04 화장실 · 볼일 보는 인간 | 3장 · 물가 | `sink_pedestal` | 상자 10 × 80 × 10u |
 | stage04 화장실 · 볼일 보는 인간 | 3장 · 물가 | `sink_basin` | 상자 40 × 12 × 56u |
 | stage04 화장실 · 볼일 보는 인간 | 3장 · 물가 | `mirror_cabinet` | 상자 18 × 60 × 56u |
+| stage13 화장실 · 김 서린 샤워 뒤 | 3장 · 물가 | `sink_pedestal` | 상자 10 × 80 × 10u |
+| stage13 화장실 · 김 서린 샤워 뒤 | 3장 · 물가 | `sink_basin` | 상자 40 × 12 × 56u |
+| stage13 화장실 · 김 서린 샤워 뒤 | 3장 · 물가 | `mirror_cabinet` | 상자 18 × 60 × 56u |
+| stage14 화장실 · 자동 분사기 | 3장 · 물가 | `sink_pedestal` | 상자 10 × 80 × 10u |
+| stage14 화장실 · 자동 분사기 | 3장 · 물가 | `sink_basin` | 상자 40 × 12 × 56u |
+| stage14 화장실 · 자동 분사기 | 3장 · 물가 | `mirror_cabinet` | 상자 18 × 60 × 56u |
+| stage15 화장실 · 전기 모기채를 든 인간 | 3장 · 물가 | `sink_pedestal` | 상자 10 × 80 × 10u |
+| stage15 화장실 · 전기 모기채를 든 인간 | 3장 · 물가 | `sink_basin` | 상자 40 × 12 × 56u |
+| stage15 화장실 · 전기 모기채를 든 인간 | 3장 · 물가 | `mirror_cabinet` | 상자 18 × 60 × 56u |
+| stage16 화장실 · 김 속의 숨바꼭질 | 3장 · 물가 | `sink_pedestal` | 상자 10 × 80 × 10u |
+| stage16 화장실 · 김 속의 숨바꼭질 | 3장 · 물가 | `sink_basin` | 상자 40 × 12 × 56u |
+| stage16 화장실 · 김 속의 숨바꼭질 | 3장 · 물가 | `mirror_cabinet` | 상자 18 × 60 × 56u |
 
 ## 형상 ID 패턴
 `sink_*`, `mirror_cabinet`

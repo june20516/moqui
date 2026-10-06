@@ -132,6 +132,9 @@ namespace Moqui.Core.Simulation
         /// <summary>손에 든 도구 (spec/02 §7 전기 모기채, M14).</summary>
         public HumanTool Tool { get; }
 
+        /// <summary>시작할 때 이미 있는 물린 자국 수 (예민한 인간, spec/07 장 구성, M14). 경계 증가·바닥 보정이 처음부터 걸린다.</summary>
+        public int StartBiteMarks { get; set; }
+
         /// <summary>걷기 경로 (없으면 제자리, spec/02 §9).</summary>
         public HumanWalkDefinition Walk { get; }
 

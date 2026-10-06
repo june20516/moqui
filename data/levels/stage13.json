@@ -1,0 +1,84 @@
+{
+  "formatVersion": 1,
+  "id": "stage13",
+  "room": "bathroom",
+  "seed": 1313,
+  "playerSpawn": [60, 238, 100],
+  "human": {
+    "id": "human",
+    "position": [0, 0, 95],
+    "facingYaw": 180,
+    "restPitch": -35,
+    "head": "head",
+    "shoulders": [
+      [-20, 95, -6],
+      [20, 95, -6]
+    ],
+    "parts": [
+      { "id": "head", "kind": "head", "a": [0, 114, 0], "b": [0, 120, 0], "radius": 10 },
+      { "id": "neck", "kind": "neck", "a": [0, 98, -3], "b": [0, 106, -2], "radius": 5, "site": "neck" },
+      { "id": "torso", "kind": "torso", "a": [0, 58, -8], "b": [0, 80, -6], "radius": 14 },
+      { "id": "upperArmL", "kind": "upperArm", "a": [-20, 95, -6], "b": [-24, 66, -2], "radius": 5 },
+      { "id": "forearmL", "kind": "forearm", "a": [-24, 66, -2], "b": [-10, 74, 24], "radius": 4, "site": "forearm" },
+      { "id": "upperArmR", "kind": "upperArm", "a": [20, 95, -6], "b": [24, 66, -2], "radius": 5 },
+      { "id": "forearmR", "kind": "forearm", "a": [24, 66, -2], "b": [10, 74, 24], "radius": 4, "site": "forearm" },
+      { "id": "thighL", "kind": "thigh", "a": [-10, 52, -2], "b": [-10, 52, 40], "radius": 7 },
+      { "id": "calfL", "kind": "calf", "a": [-10, 50, 42], "b": [-10, 8, 46], "radius": 5, "site": "calf" },
+      { "id": "thighR", "kind": "thigh", "a": [10, 52, -2], "b": [10, 52, 40], "radius": 7 },
+      { "id": "calfR", "kind": "calf", "a": [10, 50, 42], "b": [10, 8, 46], "radius": 5, "site": "calf" }
+    ],
+    "idle": { "lookYaws": [0] },
+    "actions": [
+      {
+        "name": "scrollPhone",
+        "weight": 4,
+        "duration": 1.5,
+        "motions": [
+          { "part": "forearmR", "offsetA": [0, 0, 0], "offsetB": [0, 1, 1] }
+        ]
+      },
+      {
+        "name": "shiftSitting",
+        "weight": 2,
+        "duration": 1.5,
+        "motions": [
+          { "part": "torso", "offsetA": [0, 0, 2], "offsetB": [2, 1, 3] },
+          { "part": "neck", "offsetA": [2, 1, 3], "offsetB": [2, 1, 3] },
+          { "part": "head", "offsetA": [2, 1, 3], "offsetB": [2, 1, 3] }
+        ]
+      },
+      {
+        "name": "jiggleLeg",
+        "weight": 2,
+        "duration": 0.6,
+        "motions": [
+          { "part": "calfL", "offsetA": [0, 0, 0], "offsetB": [0, 0, 14] }
+        ]
+      },
+      {
+        "name": "grabTissue",
+        "weight": 1,
+        "duration": 0.7,
+        "motions": [
+          { "part": "upperArmL", "offsetA": [0, 0, 0], "offsetB": [-12, 4, 6] },
+          { "part": "forearmL", "offsetA": [-12, 4, 6], "offsetB": [-30, 0, 4] }
+        ]
+      }
+    ],
+    "canSpray": false,
+    "modifiers": []
+  },
+  "dripSources": [
+    { "position": [-95, 188, -115] },
+    { "position": [-80, 245, -70] }
+  ],
+  "humidZones": [
+    { "id": "steam_shower", "center": [-76, 125, -85], "size": [66, 248, 88], "strength": "strong" },
+    { "id": "steam_bath", "center": [-40, 110, 60], "size": [80, 120, 80], "strength": "strong" }
+  ],
+  "fans": [],
+  "webs": [],
+  "coils": [],
+  "sprayDispensers": [],
+  "tutorial": []
+}

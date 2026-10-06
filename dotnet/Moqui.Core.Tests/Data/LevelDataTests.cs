@@ -126,7 +126,7 @@ namespace Moqui.Core.Tests.Data
         public void Level_AllFurnitureHasObstacleFlag(string levelId)
         {
             var level = Loader.Load(levelId);
-            var volumes = ShapeFlags.ShadowZone | ShapeFlags.HumidWeak | ShapeFlags.HumidStrong | ShapeFlags.Wind | ShapeFlags.Hazard;
+            var volumes = ShapeFlags.ShadowZone | ShapeFlags.HumidWeak | ShapeFlags.HumidStrong | ShapeFlags.Wind | ShapeFlags.Hazard | ShapeFlags.NetGap;
 
             var furniture = level.AllShapes().Where(s => (s.Flags & volumes) == 0).ToList();
 

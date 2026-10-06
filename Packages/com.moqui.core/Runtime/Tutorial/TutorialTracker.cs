@@ -45,7 +45,7 @@ namespace Moqui.Core.Tutorial
         /// <summary>행동으로 끝나지만 InfoTimeout이 지나면 넘어가는 설명형 안내.</summary>
         private static readonly HashSet<string> InfoSteps = new HashSet<string>
         {
-            "visionZones", "frenzyHide", "reactionDodge",
+            "visionZones", "frenzyHide", "reactionDodge", "flightMode",
         };
 
         private readonly IReadOnlyList<string> _steps;

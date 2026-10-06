@@ -596,6 +596,12 @@
             "swatter"
           ],
           "description": "손에 든 도구 (전기 모기채, M14)"
+        },
+        "startBiteMarks": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5,
+          "description": "시작할 때 이미 있는 물린 자국 수 (예민한 인간, M14)"
         }
       }
     }

@@ -12,49 +12,49 @@
 | prop-swatter | model | 도구·소품 | 전기 모기채 | [models/prop-swatter.md](models/prop-swatter.md) | - | - | (표현 오브젝트) |
 | prop-phone | model | 도구·소품 | 휴대폰 | [models/prop-phone.md](models/prop-phone.md) | - | - | (표현 오브젝트) |
 | prop-remote | model | 도구·소품 | TV 리모컨 | [models/prop-remote.md](models/prop-remote.md) | - | - | (표현 오브젝트) |
-| prop-beer-can | model | 도구·소품 | 맥주 캔 | [models/prop-beer-can.md](models/prop-beer-can.md) | `beer_can` | - | stage05 |
-| prop-snack-plate | model | 도구·소품 | 안주 접시 | [models/prop-snack-plate.md](models/prop-snack-plate.md) | `snack_plate` | - | stage05 |
-| prop-spray-can | model | 도구·소품 | 모기약 스프레이 캔 | [models/prop-spray-can.md](models/prop-spray-can.md) | `spray_can` | - | stage03 |
-| room-living-kitchen | model | 1장 거실·주방 | 거실·주방 방 껍데기 | [models/room-living-kitchen.md](models/room-living-kitchen.md) | `floor` `ceiling` `wall_*` | livingKitchen | stage01, stage02 |
-| sofa | model | 1장 거실·주방 | 소파 | [models/sofa.md](models/sofa.md) | `sofa_*` | livingKitchen | stage01, stage02 |
-| tv-set | model | 1장 거실·주방 | TV와 TV장 | [models/tv-set.md](models/tv-set.md) | `tv` `tv_stand` | livingKitchen | stage01, stage02 |
-| coffee-table | model | 1장 거실·주방 | 커피 테이블 | [models/coffee-table.md](models/coffee-table.md) | `coffee_table_*` | livingKitchen | stage01, stage02 |
-| bookshelf | model | 1장 거실·주방 | 책장 | [models/bookshelf.md](models/bookshelf.md) | `bookshelf` | livingKitchen | stage01, stage02 |
-| floor-lamp | model | 1장 거실·주방 | 스탠드 조명 | [models/floor-lamp.md](models/floor-lamp.md) | `floor_lamp` | livingKitchen | stage01, stage02 |
-| curtain | model | 1장 거실·주방 | 창 커튼 | [models/curtain.md](models/curtain.md) | `curtain` | livingKitchen | stage01, stage02 |
-| aircon-indoor | model | 1장 거실·주방 | 벽걸이 에어컨 | [models/aircon-indoor.md](models/aircon-indoor.md) | `air_conditioner` | livingKitchen | stage01, stage02 |
-| hanging-plant | model | 1장 거실·주방 | 걸이 화분 | [models/hanging-plant.md](models/hanging-plant.md) | `hanging_plant` | livingKitchen | stage01, stage02 |
-| kitchen-counter | model | 1장 거실·주방 | 조리대와 위 찬장 | [models/kitchen-counter.md](models/kitchen-counter.md) | `kitchen_counter` `kitchen_upper_cabinet` | livingKitchen | stage01, stage02 |
-| fridge | model | 1장 거실·주방 | 냉장고 | [models/fridge.md](models/fridge.md) | `fridge` | livingKitchen | stage01, stage02 |
-| kitchen-island | model | 1장 거실·주방 | 아일랜드 식탁 | [models/kitchen-island.md](models/kitchen-island.md) | `kitchen_island` | livingKitchen | stage01, stage02 |
-| dining-set | model | 1장 거실·주방 | 식탁 세트 | [models/dining-set.md](models/dining-set.md) | `dining_table_*` `dining_chair_*` | livingKitchen | stage01, stage02 |
-| dining-lamp | model | 1장 거실·주방 | 식탁 펜던트 조명 | [models/dining-lamp.md](models/dining-lamp.md) | `dining_lamp` | livingKitchen | stage01, stage02 |
-| shoe-cabinet | model | 1장 거실·주방 | 신발장 | [models/shoe-cabinet.md](models/shoe-cabinet.md) | `shoe_cabinet` | livingKitchen | stage01, stage02 |
-| room-bedroom | model | 2장 침실 | 침실 방 껍데기 | [models/room-bedroom.md](models/room-bedroom.md) | `floor` `ceiling` `wall_*` `door_frame` | bedroom | stage03 |
-| bed | model | 2장 침실 | 침대 | [models/bed.md](models/bed.md) | `bed_*` | bedroom | stage03 |
-| nightstand | model | 2장 침실 | 협탁 | [models/nightstand.md](models/nightstand.md) | `nightstand` | bedroom | stage03 |
-| wardrobe | model | 2장 침실 | 옷장 | [models/wardrobe.md](models/wardrobe.md) | `wardrobe` | bedroom | stage03 |
-| ceiling-light | model | 2장 침실 | 천장 등 | [models/ceiling-light.md](models/ceiling-light.md) | `ceiling_light` | bedroom | stage03 |
-| fan | model | 기믹 | 선풍기 | [models/fan.md](models/fan.md) | `fan` | - | stage03, stage05 |
-| mosquito-net | model | 기믹 | 모기장 | [models/mosquito-net.md](models/mosquito-net.md) | `net_*` `netgap_*` | - | (표현 오브젝트) |
-| room-bathroom | model | 3장 물가 | 화장실 방 껍데기 | [models/room-bathroom.md](models/room-bathroom.md) | `floor` `ceiling` `wall_*` `vent` | bathroom | stage04 |
-| toilet | model | 3장 물가 | 변기 | [models/toilet.md](models/toilet.md) | `toilet_*` | bathroom | stage04 |
-| sink | model | 3장 물가 | 세면대와 수납장 거울 | [models/sink.md](models/sink.md) | `sink_*` `mirror_cabinet` | bathroom | stage04 |
-| shower-booth | model | 3장 물가 | 샤워 부스 | [models/shower-booth.md](models/shower-booth.md) | `shower_*` | bathroom | stage04 |
-| towel-rack | model | 3장 물가 | 수건과 수건걸이 | [models/towel-rack.md](models/towel-rack.md) | `towel` `towel_bar` | bathroom | stage04 |
-| room-veranda | model | 4장 베란다 | 베란다 방 껍데기 | [models/room-veranda.md](models/room-veranda.md) | `floor` `ceiling` `wall_*` `screen_window` | veranda | stage05 |
-| veranda-table | model | 4장 베란다 | 접이식 테이블 | [models/veranda-table.md](models/veranda-table.md) | `table_*` | veranda | stage05 |
-| icebox | model | 4장 베란다 | 아이스박스 | [models/icebox.md](models/icebox.md) | `icebox` | veranda | stage05 |
-| plant-shelf | model | 4장 베란다 | 화분 선반 | [models/plant-shelf.md](models/plant-shelf.md) | `plant_shelf` | veranda | stage05 |
-| drying-rack | model | 4장 베란다 | 빨래 건조대 | [models/drying-rack.md](models/drying-rack.md) | `drying_rack` | veranda | stage05 |
-| ac-outdoor | model | 4장 베란다 | 에어컨 실외기 | [models/ac-outdoor.md](models/ac-outdoor.md) | `ac_unit` | veranda | stage05 |
+| prop-beer-can | model | 도구·소품 | 맥주 캔 | [models/prop-beer-can.md](models/prop-beer-can.md) | `beer_can` | - | stage05, stage17, stage18, stage19, stage20 |
+| prop-snack-plate | model | 도구·소품 | 안주 접시 | [models/prop-snack-plate.md](models/prop-snack-plate.md) | `snack_plate` | - | stage05, stage17, stage18, stage19, stage20 |
+| prop-spray-can | model | 도구·소품 | 모기약 스프레이 캔 | [models/prop-spray-can.md](models/prop-spray-can.md) | `spray_can` | - | stage03, stage09, stage10, stage11, stage12 |
+| room-living-kitchen | model | 1장 거실·주방 | 거실·주방 방 껍데기 | [models/room-living-kitchen.md](models/room-living-kitchen.md) | `floor` `ceiling` `wall_*` | livingKitchen | stage01, stage02, stage06, stage07, stage08 |
+| sofa | model | 1장 거실·주방 | 소파 | [models/sofa.md](models/sofa.md) | `sofa_*` | livingKitchen | stage01, stage02, stage06, stage07, stage08 |
+| tv-set | model | 1장 거실·주방 | TV와 TV장 | [models/tv-set.md](models/tv-set.md) | `tv` `tv_stand` | livingKitchen | stage01, stage02, stage06, stage07, stage08 |
+| coffee-table | model | 1장 거실·주방 | 커피 테이블 | [models/coffee-table.md](models/coffee-table.md) | `coffee_table_*` | livingKitchen | stage01, stage02, stage06, stage07, stage08 |
+| bookshelf | model | 1장 거실·주방 | 책장 | [models/bookshelf.md](models/bookshelf.md) | `bookshelf` | livingKitchen | stage01, stage02, stage06, stage07, stage08 |
+| floor-lamp | model | 1장 거실·주방 | 스탠드 조명 | [models/floor-lamp.md](models/floor-lamp.md) | `floor_lamp` | livingKitchen | stage01, stage02, stage06, stage07, stage08 |
+| curtain | model | 1장 거실·주방 | 창 커튼 | [models/curtain.md](models/curtain.md) | `curtain` | livingKitchen | stage01, stage02, stage06, stage07, stage08 |
+| aircon-indoor | model | 1장 거실·주방 | 벽걸이 에어컨 | [models/aircon-indoor.md](models/aircon-indoor.md) | `air_conditioner` `aircon_*` | livingKitchen | stage01, stage02, stage06, stage07, stage08 |
+| hanging-plant | model | 1장 거실·주방 | 걸이 화분 | [models/hanging-plant.md](models/hanging-plant.md) | `hanging_plant` | livingKitchen | stage01, stage02, stage06, stage07, stage08 |
+| kitchen-counter | model | 1장 거실·주방 | 조리대와 위 찬장 | [models/kitchen-counter.md](models/kitchen-counter.md) | `kitchen_counter` `kitchen_upper_cabinet` | livingKitchen | stage01, stage02, stage06, stage07, stage08 |
+| fridge | model | 1장 거실·주방 | 냉장고 | [models/fridge.md](models/fridge.md) | `fridge` | livingKitchen | stage01, stage02, stage06, stage07, stage08 |
+| kitchen-island | model | 1장 거실·주방 | 아일랜드 식탁 | [models/kitchen-island.md](models/kitchen-island.md) | `kitchen_island` | livingKitchen | stage01, stage02, stage06, stage07, stage08 |
+| dining-set | model | 1장 거실·주방 | 식탁 세트 | [models/dining-set.md](models/dining-set.md) | `dining_table_*` `dining_chair_*` | livingKitchen | stage01, stage02, stage06, stage07, stage08 |
+| dining-lamp | model | 1장 거실·주방 | 식탁 펜던트 조명 | [models/dining-lamp.md](models/dining-lamp.md) | `dining_lamp` | livingKitchen | stage01, stage02, stage06, stage07, stage08 |
+| shoe-cabinet | model | 1장 거실·주방 | 신발장 | [models/shoe-cabinet.md](models/shoe-cabinet.md) | `shoe_cabinet` | livingKitchen | stage01, stage02, stage06, stage07, stage08 |
+| room-bedroom | model | 2장 침실 | 침실 방 껍데기 | [models/room-bedroom.md](models/room-bedroom.md) | `floor` `ceiling` `wall_*` `door_frame` | bedroom | stage03, stage09, stage10, stage11, stage12 |
+| bed | model | 2장 침실 | 침대 | [models/bed.md](models/bed.md) | `bed_*` | bedroom | stage03, stage09, stage10, stage11, stage12 |
+| nightstand | model | 2장 침실 | 협탁 | [models/nightstand.md](models/nightstand.md) | `nightstand` | bedroom | stage03, stage09, stage10, stage11, stage12 |
+| wardrobe | model | 2장 침실 | 옷장 | [models/wardrobe.md](models/wardrobe.md) | `wardrobe` | bedroom | stage03, stage09, stage10, stage11, stage12 |
+| ceiling-light | model | 2장 침실 | 천장 등 | [models/ceiling-light.md](models/ceiling-light.md) | `ceiling_light` | bedroom | stage03, stage09, stage10, stage11, stage12 |
+| fan | model | 기믹 | 선풍기 | [models/fan.md](models/fan.md) | `fan` `fan_*` | - | stage03, stage05, stage06, stage12, stage17, stage18, stage19, stage20 |
+| mosquito-net | model | 기믹 | 모기장 | [models/mosquito-net.md](models/mosquito-net.md) | `net_*` `netgap_*` | - | stage12 |
+| room-bathroom | model | 3장 물가 | 화장실 방 껍데기 | [models/room-bathroom.md](models/room-bathroom.md) | `floor` `ceiling` `wall_*` `vent` | bathroom | stage04, stage13, stage14, stage15, stage16 |
+| toilet | model | 3장 물가 | 변기 | [models/toilet.md](models/toilet.md) | `toilet_*` | bathroom | stage04, stage13, stage14, stage15, stage16 |
+| sink | model | 3장 물가 | 세면대와 수납장 거울 | [models/sink.md](models/sink.md) | `sink_*` `mirror_cabinet` | bathroom | stage04, stage13, stage14, stage15, stage16 |
+| shower-booth | model | 3장 물가 | 샤워 부스 | [models/shower-booth.md](models/shower-booth.md) | `shower_*` | bathroom | stage04, stage13, stage14, stage15, stage16 |
+| towel-rack | model | 3장 물가 | 수건과 수건걸이 | [models/towel-rack.md](models/towel-rack.md) | `towel` `towel_bar` | bathroom | stage04, stage13, stage14, stage15, stage16 |
+| room-veranda | model | 4장 베란다 | 베란다 방 껍데기 | [models/room-veranda.md](models/room-veranda.md) | `floor` `ceiling` `wall_*` `screen_window` | veranda | stage05, stage17, stage18, stage19, stage20 |
+| veranda-table | model | 4장 베란다 | 접이식 테이블 | [models/veranda-table.md](models/veranda-table.md) | `table_*` | veranda | stage05, stage17, stage18, stage19, stage20 |
+| icebox | model | 4장 베란다 | 아이스박스 | [models/icebox.md](models/icebox.md) | `icebox` | veranda | stage05, stage17, stage18, stage19, stage20 |
+| plant-shelf | model | 4장 베란다 | 화분 선반 | [models/plant-shelf.md](models/plant-shelf.md) | `plant_shelf` | veranda | stage05, stage17, stage18, stage19, stage20 |
+| drying-rack | model | 4장 베란다 | 빨래 건조대 | [models/drying-rack.md](models/drying-rack.md) | `drying_rack` | veranda | stage05, stage17, stage18, stage19, stage20 |
+| ac-outdoor | model | 4장 베란다 | 에어컨 실외기 | [models/ac-outdoor.md](models/ac-outdoor.md) | `ac_unit` | veranda | stage05, stage17, stage18, stage19, stage20 |
 | veranda-lantern | model | 4장 베란다 | 캠핑 등불 | [models/veranda-lantern.md](models/veranda-lantern.md) | - | veranda | (표현 오브젝트) |
-| spray-dispenser | model | 기믹 | 자동 모기약 분사기 | [models/spray-dispenser.md](models/spray-dispenser.md) | `spray_dispenser` `dispenser` | - | stage05 |
-| mosquito-coil | model | 기믹 | 모기향 | [models/mosquito-coil.md](models/mosquito-coil.md) | `coil` | - | stage05 |
-| spider-web | model | 기믹 | 거미줄 | [models/spider-web.md](models/spider-web.md) | `web_*` | - | stage05 |
+| spray-dispenser | model | 기믹 | 자동 모기약 분사기 | [models/spray-dispenser.md](models/spray-dispenser.md) | `spray_dispenser` `dispenser` | - | stage05, stage14, stage16, stage17, stage18, stage19, stage20 |
+| mosquito-coil | model | 기믹 | 모기향 | [models/mosquito-coil.md](models/mosquito-coil.md) | `coil` | - | stage05, stage10, stage17, stage18, stage19, stage20 |
+| spider-web | model | 기믹 | 거미줄 | [models/spider-web.md](models/spider-web.md) | `web_*` | - | stage05, stage17, stage18, stage19, stage20 |
 | water-drop | model | 기믹 | 물방울 | [models/water-drop.md](models/water-drop.md) | - | - | (표현 오브젝트) |
-| volume-shadow-zone | volume | 판정 볼륨 (모델 없음) | 은신처 | [models/volume-shadow-zone.md](models/volume-shadow-zone.md) | `shadow_*` | - | stage01, stage02, stage03, stage04, stage05 |
-| volume-humid | volume | 판정 볼륨 (모델 없음) | 습기·증기 영역 | [models/volume-humid.md](models/volume-humid.md) | `steam_*` `humid_*` | - | stage04 |
+| volume-shadow-zone | volume | 판정 볼륨 (모델 없음) | 은신처 | [models/volume-shadow-zone.md](models/volume-shadow-zone.md) | `shadow_*` | - | stage01, stage02, stage03, stage04, stage05, stage06, stage07, stage08, stage09, stage10, stage11, stage12, stage13, stage14, stage15, stage16, stage17, stage18, stage19, stage20 |
+| volume-humid | volume | 판정 볼륨 (모델 없음) | 습기·증기 영역 | [models/volume-humid.md](models/volume-humid.md) | `steam_*` `humid_*` | - | stage04, stage13, stage14, stage15, stage16 |
 
 ## 텍스처
 

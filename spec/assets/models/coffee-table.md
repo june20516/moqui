@@ -15,6 +15,21 @@
 | stage02 거실 · TV 보는 인간 | 1장 · 거실 | `coffee_table_leg_nw` | 상자 4 × 38 × 4u |
 | stage02 거실 · TV 보는 인간 | 1장 · 거실 | `coffee_table_leg_se` | 상자 4 × 38 × 4u |
 | stage02 거실 · TV 보는 인간 | 1장 · 거실 | `coffee_table_leg_sw` | 상자 4 × 38 × 4u |
+| stage06 거실 · 선풍기 앞 둘러보는 인간 | 1장 · 거실 | `coffee_table_top` | 상자 100 × 4 × 50u |
+| stage06 거실 · 선풍기 앞 둘러보는 인간 | 1장 · 거실 | `coffee_table_leg_ne` | 상자 4 × 38 × 4u |
+| stage06 거실 · 선풍기 앞 둘러보는 인간 | 1장 · 거실 | `coffee_table_leg_nw` | 상자 4 × 38 × 4u |
+| stage06 거실 · 선풍기 앞 둘러보는 인간 | 1장 · 거실 | `coffee_table_leg_se` | 상자 4 × 38 × 4u |
+| stage06 거실 · 선풍기 앞 둘러보는 인간 | 1장 · 거실 | `coffee_table_leg_sw` | 상자 4 × 38 × 4u |
+| stage07 거실 · 이미 물린 예민한 인간 | 1장 · 거실 | `coffee_table_top` | 상자 100 × 4 × 50u |
+| stage07 거실 · 이미 물린 예민한 인간 | 1장 · 거실 | `coffee_table_leg_ne` | 상자 4 × 38 × 4u |
+| stage07 거실 · 이미 물린 예민한 인간 | 1장 · 거실 | `coffee_table_leg_nw` | 상자 4 × 38 × 4u |
+| stage07 거실 · 이미 물린 예민한 인간 | 1장 · 거실 | `coffee_table_leg_se` | 상자 4 × 38 × 4u |
+| stage07 거실 · 이미 물린 예민한 인간 | 1장 · 거실 | `coffee_table_leg_sw` | 상자 4 × 38 × 4u |
+| stage08 넓은 거실 · 걸어 다니는 인간과 에어컨 | 1장 · 거실 | `coffee_table_top` | 상자 100 × 4 × 50u |
+| stage08 넓은 거실 · 걸어 다니는 인간과 에어컨 | 1장 · 거실 | `coffee_table_leg_ne` | 상자 4 × 38 × 4u |
+| stage08 넓은 거실 · 걸어 다니는 인간과 에어컨 | 1장 · 거실 | `coffee_table_leg_nw` | 상자 4 × 38 × 4u |
+| stage08 넓은 거실 · 걸어 다니는 인간과 에어컨 | 1장 · 거실 | `coffee_table_leg_se` | 상자 4 × 38 × 4u |
+| stage08 넓은 거실 · 걸어 다니는 인간과 에어컨 | 1장 · 거실 | `coffee_table_leg_sw` | 상자 4 × 38 × 4u |
 
 ## 형상 ID 패턴
 `coffee_table_*`

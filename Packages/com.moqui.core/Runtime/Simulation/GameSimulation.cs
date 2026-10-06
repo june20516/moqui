@@ -105,6 +105,7 @@ namespace Moqui.Core.Simulation
         {
             var human = new Human(definition, World, Settings.Body);
             human.ToolLength = Settings.Attack.SwatterLength;
+            human.BiteMarkCount = definition.StartBiteMarks;
             human.UpdatePose();
             var system = new HumanSystem(Settings, World, seed);
             system.Initialize(human, 0);

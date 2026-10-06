@@ -10,6 +10,7 @@
   - 물린 자국 `meta.carefulBiteMax`개 이하: `meta.carefulBiteBonus` (신중한 흡혈)
   - 스테이지별 `meta.parTime` 이내: `meta.parTimeBonus`
 - 반복 클리어해도 매번 지급한다. 실패 시 지급하지 않으며 잃는 것도 없다.
+- **20스테이지 경제 (M14 G, D-069):** 스킬 트리 전체 5,440점, 스테이지당 100~220점. 보너스를 다 받는 첫 플레이(20 × 220 = 4,400)로도 트리를 다 사지 못하고(반복·숙련의 보상), 절반 이상은 산다. 클리어 봇이 쓰는 스킬은 목록 순서대로 앞 스테이지를 클리어만 해도(보너스 없이) 살 수 있다(1장 마지막 = 마취 타액 2레벨 240점 ≤ 400점, 3장 첫 스테이지 = 420점 ≤ 1,000점). 비용 단계는 그대로 둔다.
 
 ## 2. 스킬
 - 패시브 스킬은 레벨별로 구매한다. 효과는 레벨마다 누적되며, "(합)" 표기가 없으면 곱연산이다.
@@ -61,6 +62,7 @@
 
 ## 수용 기준
 - [x] 보상 계산: 기본/광분 0회/신중한 흡혈/기준시간 조합 8가지가 맞다 (Core). — 증거: `MetaTests.Reward_AllEightCombinations`(8케이스)
+- [x] 20스테이지 경제: 봇 스킬은 앞 스테이지 최소 보상으로 살 수 있고, 완벽한 첫 플레이로도 트리 전체는 못 산다 (Core). (M14) — 증거: `EconomyTests`
 - [x] 포인트가 부족하면 구매할 수 없고, 최대 레벨 이후 구매할 수 없다 (Core). — 증거: `MetaTests.Purchase_NeedsEnoughPoints_AndStopsAtMaxLevel`, `Costs_FollowTierTables`, `Equip_OnlyOwnedActiveSkills`
 - [x] 모든 패시브 스킬 효과가 레벨별로 정확히 적용된다 (스킬당 1개 테스트) (Core). — 증거: `SkillTests.ResistSpray_*`, `ResistWet_*`, `ResistSatiety_*`, `SilentWings_*`, `SwiftWings_*`, `Stamina_*`, `FeatherLanding_*`, `NumbingSaliva_*`, `ShadowBlend_*`, `MagicWand_*`, `CompoundEyes_*`, `VortexControl_*` (D-043). 해독 체질의 중독·모기향 적용은 M9에서 기믹과 함께 검증
 - [x] 와류 제어가 레벨당 가감속 시간을 0.8배로 줄이고, 3레벨에서 대시 쿨타임이 0.7배가 된다 (Core). (M12) — 증거: `SkillTests.VortexControl_AccelTimesScaledPerLevel_DashCooldownReducedAtMaxLevel` (tuning `skill.vortexControl.maxLevelDashCooldownMul` 0.7)

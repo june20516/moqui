@@ -8,6 +8,18 @@
 | stage04 화장실 · 볼일 보는 인간 | 3장 · 물가 | `shower_glass_side` | 상자 4 × 200 × 90u |
 | stage04 화장실 · 볼일 보는 인간 | 3장 · 물가 | `shower_glass_front` | 상자 50 × 200 × 4u |
 | stage04 화장실 · 볼일 보는 인간 | 3장 · 물가 | `shower_head` | 상자 10 × 6 × 10u |
+| stage13 화장실 · 김 서린 샤워 뒤 | 3장 · 물가 | `shower_glass_side` | 상자 4 × 200 × 90u |
+| stage13 화장실 · 김 서린 샤워 뒤 | 3장 · 물가 | `shower_glass_front` | 상자 50 × 200 × 4u |
+| stage13 화장실 · 김 서린 샤워 뒤 | 3장 · 물가 | `shower_head` | 상자 10 × 6 × 10u |
+| stage14 화장실 · 자동 분사기 | 3장 · 물가 | `shower_glass_side` | 상자 4 × 200 × 90u |
+| stage14 화장실 · 자동 분사기 | 3장 · 물가 | `shower_glass_front` | 상자 50 × 200 × 4u |
+| stage14 화장실 · 자동 분사기 | 3장 · 물가 | `shower_head` | 상자 10 × 6 × 10u |
+| stage15 화장실 · 전기 모기채를 든 인간 | 3장 · 물가 | `shower_glass_side` | 상자 4 × 200 × 90u |
+| stage15 화장실 · 전기 모기채를 든 인간 | 3장 · 물가 | `shower_glass_front` | 상자 50 × 200 × 4u |
+| stage15 화장실 · 전기 모기채를 든 인간 | 3장 · 물가 | `shower_head` | 상자 10 × 6 × 10u |
+| stage16 화장실 · 김 속의 숨바꼭질 | 3장 · 물가 | `shower_glass_side` | 상자 4 × 200 × 90u |
+| stage16 화장실 · 김 속의 숨바꼭질 | 3장 · 물가 | `shower_glass_front` | 상자 50 × 200 × 4u |
+| stage16 화장실 · 김 속의 숨바꼭질 | 3장 · 물가 | `shower_head` | 상자 10 × 6 × 10u |
 
 ## 형상 ID 패턴
 `shower_*`

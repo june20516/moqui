@@ -19,6 +19,27 @@
 | stage02 거실 · TV 보는 인간 | 1장 · 거실 | `dining_table_leg_sw` | 상자 4 × 72 × 4u |
 | stage02 거실 · TV 보는 인간 | 1장 · 거실 | `dining_chair_n` | 상자 40 × 50 × 40u |
 | stage02 거실 · TV 보는 인간 | 1장 · 거실 | `dining_chair_s` | 상자 40 × 50 × 40u |
+| stage06 거실 · 선풍기 앞 둘러보는 인간 | 1장 · 거실 | `dining_table_top` | 상자 120 × 4 × 80u |
+| stage06 거실 · 선풍기 앞 둘러보는 인간 | 1장 · 거실 | `dining_table_leg_ne` | 상자 4 × 72 × 4u |
+| stage06 거실 · 선풍기 앞 둘러보는 인간 | 1장 · 거실 | `dining_table_leg_nw` | 상자 4 × 72 × 4u |
+| stage06 거실 · 선풍기 앞 둘러보는 인간 | 1장 · 거실 | `dining_table_leg_se` | 상자 4 × 72 × 4u |
+| stage06 거실 · 선풍기 앞 둘러보는 인간 | 1장 · 거실 | `dining_table_leg_sw` | 상자 4 × 72 × 4u |
+| stage06 거실 · 선풍기 앞 둘러보는 인간 | 1장 · 거실 | `dining_chair_n` | 상자 40 × 50 × 40u |
+| stage06 거실 · 선풍기 앞 둘러보는 인간 | 1장 · 거실 | `dining_chair_s` | 상자 40 × 50 × 40u |
+| stage07 거실 · 이미 물린 예민한 인간 | 1장 · 거실 | `dining_table_top` | 상자 120 × 4 × 80u |
+| stage07 거실 · 이미 물린 예민한 인간 | 1장 · 거실 | `dining_table_leg_ne` | 상자 4 × 72 × 4u |
+| stage07 거실 · 이미 물린 예민한 인간 | 1장 · 거실 | `dining_table_leg_nw` | 상자 4 × 72 × 4u |
+| stage07 거실 · 이미 물린 예민한 인간 | 1장 · 거실 | `dining_table_leg_se` | 상자 4 × 72 × 4u |
+| stage07 거실 · 이미 물린 예민한 인간 | 1장 · 거실 | `dining_table_leg_sw` | 상자 4 × 72 × 4u |
+| stage07 거실 · 이미 물린 예민한 인간 | 1장 · 거실 | `dining_chair_n` | 상자 40 × 50 × 40u |
+| stage07 거실 · 이미 물린 예민한 인간 | 1장 · 거실 | `dining_chair_s` | 상자 40 × 50 × 40u |
+| stage08 넓은 거실 · 걸어 다니는 인간과 에어컨 | 1장 · 거실 | `dining_table_top` | 상자 120 × 4 × 80u |
+| stage08 넓은 거실 · 걸어 다니는 인간과 에어컨 | 1장 · 거실 | `dining_table_leg_ne` | 상자 4 × 72 × 4u |
+| stage08 넓은 거실 · 걸어 다니는 인간과 에어컨 | 1장 · 거실 | `dining_table_leg_nw` | 상자 4 × 72 × 4u |
+| stage08 넓은 거실 · 걸어 다니는 인간과 에어컨 | 1장 · 거실 | `dining_table_leg_se` | 상자 4 × 72 × 4u |
+| stage08 넓은 거실 · 걸어 다니는 인간과 에어컨 | 1장 · 거실 | `dining_table_leg_sw` | 상자 4 × 72 × 4u |
+| stage08 넓은 거실 · 걸어 다니는 인간과 에어컨 | 1장 · 거실 | `dining_chair_n` | 상자 40 × 50 × 40u |
+| stage08 넓은 거실 · 걸어 다니는 인간과 에어컨 | 1장 · 거실 | `dining_chair_s` | 상자 40 × 50 × 40u |
 
 ## 형상 ID 패턴
 `dining_table_*`, `dining_chair_*`

@@ -5,8 +5,18 @@
 ## 사용처
 | 스테이지 | 장 | 형상 ID | 판정 형상 |
 |---|---|---|---|
+| stage14 화장실 · 자동 분사기 | 3장 · 물가 | `dispenser` | 상자 0 × 0 × 0u |
+| stage16 화장실 · 김 속의 숨바꼭질 | 3장 · 물가 | `dispenser` | 상자 0 × 0 × 0u |
 | stage05 베란다 술자리 · 맥주 마시는 인간 | 4장 · 베란다 | `spray_dispenser` | 상자 16 × 24 × 6u |
 | stage05 베란다 술자리 · 맥주 마시는 인간 | 4장 · 베란다 | `dispenser` | 상자 0 × 0 × 0u |
+| stage17 베란다 · 거미줄 많은 구석 | 4장 · 베란다 | `spray_dispenser` | 상자 16 × 24 × 6u |
+| stage17 베란다 · 거미줄 많은 구석 | 4장 · 베란다 | `dispenser` | 상자 0 × 0 × 0u |
+| stage18 베란다 · 두 사람의 술자리 | 4장 · 베란다 | `spray_dispenser` | 상자 16 × 24 × 6u |
+| stage18 베란다 · 두 사람의 술자리 | 4장 · 베란다 | `dispenser` | 상자 0 × 0 × 0u |
+| stage19 베란다 · 모기채를 든 예민한 친구 | 4장 · 베란다 | `spray_dispenser` | 상자 16 × 24 × 6u |
+| stage19 베란다 · 모기채를 든 예민한 친구 | 4장 · 베란다 | `dispenser` | 상자 0 × 0 × 0u |
+| stage20 베란다 · 마지막 술자리 | 4장 · 베란다 | `spray_dispenser` | 상자 16 × 24 × 6u |
+| stage20 베란다 · 마지막 술자리 | 4장 · 베란다 | `dispenser` | 상자 0 × 0 × 0u |
 
 ## 형상 ID 패턴
 `spray_dispenser`, `dispenser`

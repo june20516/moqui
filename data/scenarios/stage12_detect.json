@@ -1,0 +1,17 @@
+{
+  "formatVersion": 1,
+  "id": "stage12_detect",
+  "level": "stage12",
+  "seeds": [1, 2, 3, 4, 5],
+  "minSuccesses": 5,
+  "steps": [
+    { "do": "flyTo", "point": [120, 120, -150] },
+    { "do": "flyTo", "point": [60, 15, -20] },
+    { "do": "flyTo", "point": [-10, 15, -6] },
+    { "do": "flyTo", "point": [-10, 72, -6] },
+    { "do": "flyTo", "point": [-10, 72, 6] },
+    { "do": "flyTo", "point": [-10, 130, 6] },
+    { "do": "hover", "point": [0, 110, 150], "seconds": 60 }
+  ],
+  "expect": { "outcome": "Died", "maxTicks": 3600 }
+}

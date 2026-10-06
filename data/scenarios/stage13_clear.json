@@ -1,0 +1,29 @@
+{
+  "formatVersion": 1,
+  "id": "stage13_clear",
+  "level": "stage13",
+  "seeds": [1, 2, 3, 4, 5],
+  "minSuccesses": 4,
+  "loop": true,
+  "flee": true,
+  "hideSpots": [
+    [-34, 85, 124]
+  ],
+  "start": [
+    { "do": "flyTo", "point": [-34, 160, 124] },
+    { "do": "flyTo", "point": [-34, 85, 124] }
+  ],
+  "steps": [
+    { "do": "flyTo", "point": [-34, 85, 124] },
+    { "do": "flyTo", "point": [0, 102, 126], "precise": true },
+    { "do": "flyTo", "point": [0, 102, 110], "precise": true },
+    { "do": "attachSite", "part": "neck" },
+    { "do": "suck", "session": 50 },
+    { "do": "detach" },
+    { "do": "flyTo", "point": [0, 102, 126], "precise": true },
+    { "do": "flyTo", "point": [-34, 85, 124] },
+    { "do": "hide" }
+  ],
+  "expect": { "outcome": "Cleared", "maxTicks": 36000 },
+  "skills": { "numbingSaliva": 2, "featherLanding": 2 }
+}

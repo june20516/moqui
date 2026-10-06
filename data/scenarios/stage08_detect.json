@@ -1,0 +1,11 @@
+{
+  "formatVersion": 1,
+  "id": "stage08_detect",
+  "level": "stage08",
+  "seeds": [1, 2, 3, 4, 5],
+  "minSuccesses": 5,
+  "steps": [
+    { "do": "hover", "point": [320, 160, -150], "seconds": 60 }
+  ],
+  "expect": { "outcome": "Died", "deathCause": "Attack", "maxTicks": 3600 }
+}
