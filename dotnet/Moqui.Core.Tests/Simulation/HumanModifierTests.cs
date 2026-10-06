@@ -11,12 +11,12 @@ namespace Moqui.Core.Tests.Simulation
 {
     public class HumanModifierTests
     {
-        private static readonly Vector3 Head = new Vector3(0f, 115f, 140f);
+        private static readonly Vector3 Head = new Vector3(-150f, 115f, 240f);
 
         /// <summary>거실 인간은 −Z(TV)를 본다. 정면 distance 지점.</summary>
         private static Vector3 InFront(float distance) => Head + new Vector3(0f, 0f, -distance);
 
-        private static Vector3 FarAway => new Vector3(-240f, 120f, -190f);
+        private static Vector3 FarAway => new Vector3(-370f, 120f, -290f);
 
         private static LevelDefinition Level(string id) => new LevelLoader(FileSystemDataSource.ForRepoData()).Load(id);
 
@@ -234,7 +234,7 @@ namespace Moqui.Core.Tests.Simulation
             Assert.That(snapshot.Human.ExhalePosition, Is.EqualTo(simulation.Human.ExhalePosition));
             Assert.That(snapshot.Human.SkinSites.Select(s => s.Type).OrderBy(t => t), Is.EqualTo(new[] { SkinSiteType.Forearm, SkinSiteType.Forearm, SkinSiteType.Calf, SkinSiteType.Calf, SkinSiteType.Neck }.OrderBy(t => t)));
             Assert.That(snapshot.Human.SkinSites.All(s => s.Radius > 0f && s.Position != Vector3.Zero), Is.True);
-            Assert.That(snapshot.ShadowZones.Select(z => z.Id), Is.EquivalentTo(new[] { "shadow_coffee_table", "shadow_bookshelf", "shadow_curtain" }));
+            Assert.That(snapshot.ShadowZones.Select(z => z.Id), Is.EquivalentTo(new[] { "shadow_coffee_table", "shadow_bookshelf", "shadow_curtain", "shadow_under_cabinet", "shadow_dining_table" }));
             Assert.That(snapshot.WindZones, Is.Empty, "no fans in the living room");
             Assert.That(snapshot.Player.IsHidden, Is.False);
             Assert.That(snapshot.PlayerVisibleToHuman, Is.False);

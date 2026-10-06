@@ -101,13 +101,13 @@ namespace Moqui.Core.Tests.Data
         }
 
         [Test]
-        public void Stage1And2_ReferenceTheSameLivingRoom()
+        public void Stage1And2_ReferenceTheSameLivingKitchen()
         {
             var loader = Loader;
             var stage1 = loader.Load("stage01");
             var stage2 = loader.Load("stage02");
 
-            Assert.That(stage1.Room.Id, Is.EqualTo("livingRoom"));
+            Assert.That(stage1.Room.Id, Is.EqualTo("livingKitchen"));
             Assert.That(stage2.Room, Is.SameAs(stage1.Room), "one room definition shared by both stages");
         }
 
@@ -145,7 +145,7 @@ namespace Moqui.Core.Tests.Data
         [Test]
         public void Validator_SpawnInsideYellowZone_Reported()
         {
-            string text = File.ReadAllText(Path.Combine(RepoPaths.Data, "levels", "stage02.json")).Replace("\"playerSpawn\": [-240, 120, -190]", "\"playerSpawn\": [0, 115, 0]");
+            string text = File.ReadAllText(Path.Combine(RepoPaths.Data, "levels", "stage02.json")).Replace("\"playerSpawn\": [-370, 120, -290]", "\"playerSpawn\": [-150, 115, 100]");
             var level = LevelDefinition.Parse(text, "stage02-mutated", Loader.LoadRoom);
 
             var errors = LevelValidator.Validate(level, TestSimulations.Settings);

@@ -1,12 +1,12 @@
 {
   "formatVersion": 1,
   "id": "stage01",
-  "room": "livingRoom",
+  "room": "livingKitchen",
   "seed": 101,
-  "playerSpawn": [-240, 120, -190],
+  "playerSpawn": [-370, 120, -290],
   "human": {
     "id": "human",
-    "position": [0, 0, 140],
+    "position": [-150, 0, 240],
     "facingYaw": 180,
     "head": "head",
     "shoulders": [[-20, 95, -6], [20, 95, -6]],

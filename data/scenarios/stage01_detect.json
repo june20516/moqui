@@ -5,7 +5,7 @@
   "seeds": [1, 2, 3, 4, 5],
   "minSuccesses": 5,
   "steps": [
-    { "do": "hover", "point": [0, 115, 115], "seconds": 60 }
+    { "do": "hover", "point": [-150, 115, 215], "seconds": 60 }
   ],
   "expect": { "outcome": "Died", "deathCause": "Attack", "maxTicks": 3600 }
 }
