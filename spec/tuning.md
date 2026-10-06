@@ -432,3 +432,14 @@
 | 키 | 값 | 설명 |
 |---|---|---|
 | perf.targetFps | 60 | 1080p 기준 |
+
+## 체감 검증 대상 (D-065)
+
+사람이 플레이하며 맞출 수치. 목록과 슬라이더 범위의 정본은 `data/playtest-keys.json`이고, 조정 패널(F10)과 덮어쓰기 파일 `playtest.json`은 이 키만 받는다. 확정은 에디터 메뉴 **Moqui/Playtest/정본으로 올리기**(이 문서와 `tuning.json`을 함께 고친다, `plan/gulf-improvements.md` §11).
+
+- 비행: `flight.speed`, `flight.verticalSpeed`, `flight.precisionSpeedMul`, `flight.accelTime`, `flight.decelTime`, `dash.distance`, `dash.cooldown`, `stamina.regenRate`
+- 카메라·조작: `camera.distance`, `camera.heightOffset`, `camera.fov`, `camera.fp.fov`, `input.mouseSensitivity`, `input.gamepadLookSpeed`
+- 흡혈·흡혈 중 이벤트: `suck.rateStart`, `suck.rateMax`, `suck.rampTime`, `suck.itchRate`, `suck.attachRange`, `suckEvent.shiftRate`, `suckEvent.shiftTelegraph`, `suckEvent.glanceRate`, `suckEvent.glanceHold`
+- 인간 감각: `vision.yellow.range`, `vision.yellow.rateNear`, `noise.flightRadius`, `awareness.decayRate`, `frenzy.minDuration`, `frenzy.slapTelegraph`, `attack.minTelegraph`
+- 움직임: `head.idleTurnSpeed`, `head.turnAccelTime`, `human.walkSpeed`, `human.walkAccelTime`, `human.walkBob`, `posture.leanTime`
+- 모기 감각·조명: `senses.clearRange`, `senses.fogFullRange`, `senses.fogMaxDensity`, `light.visionMul`, `light.switchDelay`

@@ -1,0 +1,83 @@
+{
+  "formatVersion": 1,
+  "description": "사람이 플레이하며 체감으로 맞출 수치 (plan/gulf-improvements.md §11, D-065). 조정 패널(F10)에 이 키만 나온다. min/max는 슬라이더 범위이며 tuning.json 값이 그 안에 있어야 한다.",
+  "groups": [
+    {
+      "id": "flight",
+      "title": "비행",
+      "keys": [
+        { "key": "flight.speed", "min": 30, "max": 120 },
+        { "key": "flight.verticalSpeed", "min": 20, "max": 90 },
+        { "key": "flight.precisionSpeedMul", "min": 0.15, "max": 0.7 },
+        { "key": "flight.accelTime", "min": 0.02, "max": 0.5 },
+        { "key": "flight.decelTime", "min": 0.02, "max": 0.5 },
+        { "key": "dash.distance", "min": 30, "max": 120 },
+        { "key": "dash.cooldown", "min": 0.1, "max": 1.5 },
+        { "key": "stamina.regenRate", "min": 5, "max": 40 }
+      ]
+    },
+    {
+      "id": "camera",
+      "title": "카메라·조작",
+      "keys": [
+        { "key": "camera.distance", "min": 3, "max": 12 },
+        { "key": "camera.heightOffset", "min": 0, "max": 3 },
+        { "key": "camera.fov", "min": 50, "max": 95 },
+        { "key": "camera.fp.fov", "min": 60, "max": 100 },
+        { "key": "input.mouseSensitivity", "min": 0.03, "max": 0.4 },
+        { "key": "input.gamepadLookSpeed", "min": 60, "max": 360 }
+      ]
+    },
+    {
+      "id": "suck",
+      "title": "흡혈·흡혈 중 이벤트",
+      "keys": [
+        { "key": "suck.rateStart", "min": 0.5, "max": 6 },
+        { "key": "suck.rateMax", "min": 2, "max": 12 },
+        { "key": "suck.rampTime", "min": 1, "max": 12 },
+        { "key": "suck.itchRate", "min": 1, "max": 15 },
+        { "key": "suck.attachRange", "min": 0.5, "max": 6 },
+        { "key": "suckEvent.shiftRate", "min": 0, "max": 0.3 },
+        { "key": "suckEvent.shiftTelegraph", "min": 0.2, "max": 2 },
+        { "key": "suckEvent.glanceRate", "min": 0, "max": 0.15 },
+        { "key": "suckEvent.glanceHold", "min": 0.3, "max": 3 }
+      ]
+    },
+    {
+      "id": "human",
+      "title": "인간 감각",
+      "keys": [
+        { "key": "vision.yellow.range", "min": 150, "max": 500 },
+        { "key": "vision.yellow.rateNear", "min": 5, "max": 60 },
+        { "key": "noise.flightRadius", "min": 20, "max": 120 },
+        { "key": "awareness.decayRate", "min": 2, "max": 30 },
+        { "key": "frenzy.minDuration", "min": 3, "max": 15 },
+        { "key": "frenzy.slapTelegraph", "min": 0.2, "max": 1 },
+        { "key": "attack.minTelegraph", "min": 0.1, "max": 0.6 }
+      ]
+    },
+    {
+      "id": "motion",
+      "title": "움직임",
+      "keys": [
+        { "key": "head.idleTurnSpeed", "min": 20, "max": 150 },
+        { "key": "head.turnAccelTime", "min": 0, "max": 0.8 },
+        { "key": "human.walkSpeed", "min": 30, "max": 140 },
+        { "key": "human.walkAccelTime", "min": 0, "max": 1.5 },
+        { "key": "human.walkBob", "min": 0, "max": 6 },
+        { "key": "posture.leanTime", "min": 0.1, "max": 1 }
+      ]
+    },
+    {
+      "id": "senses",
+      "title": "모기 감각·조명",
+      "keys": [
+        { "key": "senses.clearRange", "min": 20, "max": 150 },
+        { "key": "senses.fogFullRange", "min": 80, "max": 400 },
+        { "key": "senses.fogMaxDensity", "min": 0.3, "max": 0.98 },
+        { "key": "light.visionMul", "min": 1, "max": 3 },
+        { "key": "light.switchDelay", "min": 0.3, "max": 4 }
+      ]
+    }
+  ]
+}

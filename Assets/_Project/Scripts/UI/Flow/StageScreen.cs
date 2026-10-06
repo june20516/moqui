@@ -1,5 +1,7 @@
 using System.Linq;
+using Moqui.Core.Data;
 using Moqui.Core.Simulation;
+using Moqui.Unity.Data;
 using Moqui.Unity.Presentation.Stage;
 using Moqui.Unity.Simulation;
 using UnityEngine;
@@ -61,6 +63,12 @@ namespace Moqui.Unity.UI.Flow
         public Button StageSelectButton { get; private set; }
 
         public bool IsPaused => PausePanel.activeSelf;
+
+        /// <summary>플레이 검증 조정 패널 (F10, D-065).</summary>
+        public PlaytestPanel Playtest { get; private set; }
+
+        /// <summary>덮어쓴 플레이 검증 값이 있으면 화면 왼쪽 위에 보이는 표시.</summary>
+        public Text PlaytestBadge { get; private set; }
 
         public StageOutcomeInfo Outcome { get; private set; }
 
@@ -145,10 +153,61 @@ namespace Moqui.Unity.UI.Flow
             ResultPanel.SetActive(false);
 
             Settings = SettingsPanel.Create(canvas, Flow.Session.Settings, ApplyLookPreferences);
+            BuildPlaytest(canvas);
+        }
+
+        private void BuildPlaytest(RectTransform canvas)
+        {
+            var baseTuning = SimulationRunner.LoadBaseTuning();
+            var store = new PlaytestStore();
+            var session = new PlaytestSession(baseTuning, PlaytestKeyCatalog.Load(new UnityDataSource(), baseTuning), PlaytestStore.IsActive ? store.Load() : new PlaytestOverrides());
+            Playtest = PlaytestPanel.Create(canvas, session, store, () => _stage != null && _stage.Level != null ? _stage.Level.Id : string.Empty, Retry, ResumeFromPlaytest);
+
+            PlaytestBadge = UiFactory.CreateText("PlaytestBadge", canvas, string.Empty, 20, TextAnchor.UpperLeft, 600f, 30f);
+            var badge = PlaytestBadge.rectTransform;
+            badge.anchorMin = badge.anchorMax = badge.pivot = new Vector2(0f, 1f);
+            badge.anchoredPosition = new Vector2(16f, -12f);
+            RefreshPlaytestBadge();
+        }
+
+        /// <summary>스테이지가 실제로 쓴 덮어쓰기 수를 보인다 (StageBootstrap이 수치를 읽은 뒤 부른다).</summary>
+        public void RefreshPlaytestBadge()
+        {
+            int count = PlaytestTuning.Applied.Count;
+            PlaytestBadge.text = $"플레이 검증 값 {count}개 적용 중 (F10)";
+            PlaytestBadge.gameObject.SetActive(count > 0);
+        }
+
+        /// <summary>F10: 조정 패널을 열면 일시정지(Pause 화면 없이), 닫으면 이어서 한다.</summary>
+        public void TogglePlaytest()
+        {
+            if (Playtest.IsOpen)
+            {
+                Playtest.Close();
+                return;
+            }
+
+            if (Outcome != null || IsPaused)
+            {
+                return;
+            }
+
+            _runner.Paused = true;
+            Time.timeScale = 0f;
+            CursorPolicy.ForMenu();
+            Playtest.Open();
+        }
+
+        private void ResumeFromPlaytest()
+        {
+            Time.timeScale = 1f;
+            _runner.Paused = false;
+            CursorPolicy.ForGameplay();
         }
 
         private void Start()
         {
+            RefreshPlaytestBadge();
             ApplyLookPreferences();
         }
 
@@ -168,6 +227,16 @@ namespace Moqui.Unity.UI.Flow
             }
 
             Subscribe(_runner.Driver.Simulation);
+            if (Keyboard.current != null && Keyboard.current.f10Key.wasPressedThisFrame)
+            {
+                TogglePlaytest();
+            }
+
+            if (Playtest.IsOpen)
+            {
+                return;
+            }
+
             if (PausePressed())
             {
                 if (IsPaused)

@@ -20,7 +20,7 @@
 - [x] C0. 표현 기반 (D-062) — 증거: 모키 표현 큐(spec/12, EditMode `MokiCueTests` 4), 애셋 스펙 47종·텍스처 37·VFX 12(`spec/assets`, Core `AssetIndexTests`), gulf 보완 계획(`plan/gulf-improvements.md`)
 - [x] C1. 자연스러운 움직임: 머리 회전 가감속, 걷기 가감속·몸 흔들림, 호흡, 미세 움직임 (D-063) — 증거: Core `HumanAwarenessTests.Head_IdlePattern_EasesInAndOut_NoOvershoot`·`WalkTests`, EditMode `HumanBodyViewTests.Breath_SwellsTorso_AsleepClosesEyes`·`HoverBob_LargestWhenStill_ZeroAtFullSpeed`
 - [x] C2. 조명 디테일: 방 분위기 조명(TV·스탠드·달빛·형광등·도시 불빛) + 자연스러운 깜빡임, 조명 스펙(`spec/assets/lighting.md`) (D-064) — 증거: Core `RoomLightingTests`, EditMode `RoomLightingViewTests`, 캡처 검토
-- [ ] C3. 플레이 검증 변수 구조(`playtest.json`, 다시 읽기, 패널)
+- [x] C3. 플레이 검증 변수 구조(`playtest.json`, 다시 읽기, 패널) (D-065) — 증거: Core `PlaytestTests` 10, EditMode `PlaytestStoreTests` 3, PlayMode `FlowPlayModeTests.Playtest_OverrideApplies_PanelPausesAndSaveRestartsWithNewValue`
 - [ ] C. 1장 거실 5스테이지 (데이터 → 봇 → 캡처 → 애셋 스펙)
 - [ ] D. 2장 침실 5스테이지
 - [ ] E. 3장 물가 5스테이지
@@ -94,7 +94,8 @@
 ## 반복 로그
 | 일시 | 마일스톤 | 한 일 | 증거 | 커밋 |
 |---|---|---|---|---|
-| 2026-10-06 | M14 | C1 자연스러운 움직임(머리·걷기 가감속, 걸음 출렁임, 호흡·눈 깜빡임, 모키 둥실거림, D-063) · C2 방 분위기 조명(14개 + 흔들림 곡선, 툰 셰이더 추가 조명 수정, 조명 스펙·등불·쿠키·빛줄기 애셋, D-064), gulf §8·§12·§13 | Core 402 + EditMode 152 + PlayMode 22 통과, 캡처 검토(화장실 점 조명 그림자 톱니 → 그림자 끔) | (이 커밋) |
+| 2026-10-06 | M14 | C3 플레이 검증 변수 구조(playtest-keys.json 목록, playtest.json 덮어쓰기, F10 패널·프리셋·기록, 저장하고 다시 시작, 정본 올리기 메뉴, D-065), 문서 갱신(ideas·stage-expansion 결정 반영) | Core 412 + EditMode 155 + PlayMode 23 통과 | (이 커밋) |
+| 2026-10-06 | M14 | C1 자연스러운 움직임(머리·걷기 가감속, 걸음 출렁임, 호흡·눈 깜빡임, 모키 둥실거림, D-063) · C2 방 분위기 조명(14개 + 흔들림 곡선, 툰 셰이더 추가 조명 수정, 조명 스펙·등불·쿠키·빛줄기 애셋, D-064), gulf §8·§12·§13 | Core 402 + EditMode 152 + PlayMode 22 통과, 캡처 검토(화장실 점 조명 그림자 톱니 → 그림자 끔) | a887407 |
 | 2026-10-06 | M14 | C0 표현 기반: 모키 표현 큐(글자 표시기), 애셋 스펙 문서·인덱스·검사, gulf 계획 | Core 392 + EditMode 141 + PlayMode 22 통과 | 24b41e6 |
 | 2026-10-06 | M14 | G 구조: 스테이지 목록 데이터화(레벨 추가 = 데이터만) | Core 390 + EditMode 137 + PlayMode 22 통과 | (이 커밋) |
 | 2026-10-06 | M14 | B 표현: 두 사람(인간별 뷰·감각·HUD 예고·소리), 전기 모기채 모델 | Core 385 + EditMode 137 + PlayMode 22 통과 | (이 커밋) |

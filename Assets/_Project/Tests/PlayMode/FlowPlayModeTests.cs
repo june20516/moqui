@@ -1,5 +1,7 @@
 using System.Collections;
+using Moqui.Core.Data;
 using Moqui.Core.Meta;
+using Moqui.Unity.Data;
 using Moqui.Unity.Presentation.Stage;
 using Moqui.Unity.Simulation;
 using Moqui.Unity.UI;
@@ -98,6 +100,66 @@ namespace Moqui.Unity.Tests
             Assert.That(simulation.Player.LastDashStartTick, Is.EqualTo(dashTick), "dash pressed during pause is not delivered");
         }
     
+
+        /// <summary>
+        /// 플레이 검증 (D-065): playtest.json 값으로 스테이지가 시작되고, F10 패널은 일시정지하며,
+        /// 저장하고 다시 시작하면 새 값으로 스테이지를 다시 열고 기록을 남긴다.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator Playtest_OverrideApplies_PanelPausesAndSaveRestartsWithNewValue()
+        {
+            string directory = System.IO.Path.Combine(System.IO.Path.GetTempPath(), "moqui-playtest-" + System.Guid.NewGuid().ToString("N"));
+            PlaytestStore.DirectoryOverride = directory;
+            PlaytestStore.ActiveOverride = true;
+            try
+            {
+                var keyboard = InputSystem.AddDevice<Keyboard>();
+                var overrides = new PlaytestOverrides();
+                overrides.Set("flight.speed", 75);
+                new PlaytestStore().Save(overrides);
+                StageBootstrap.RequestedLevelId = "stage01";
+                yield return SceneManager.LoadSceneAsync(ScreenId.Stage.ToString(), LoadSceneMode.Single);
+                yield return WaitForScene(ScreenId.Stage.ToString());
+
+                var runner = Object.FindAnyObjectByType<SimulationRunner>();
+                var screen = Object.FindAnyObjectByType<StageScreen>();
+                Assert.That(runner.Tuning.GetFloat("flight.speed"), Is.EqualTo(75f));
+                Assert.That(screen.PlaytestBadge.gameObject.activeSelf, Is.True);
+
+                PressAndRelease(keyboard.f10Key);
+                yield return null;
+                yield return null;
+                Assert.That(screen.Playtest.IsOpen, Is.True);
+                int tick = runner.Driver.Simulation.Tick;
+                yield return new WaitForSecondsRealtime(WaitSeconds);
+                Assert.That(runner.Driver.Simulation.Tick, Is.EqualTo(tick), "paused while the panel is open");
+
+                screen.Playtest.Rows["flight.speed"].Increase.onClick.Invoke();
+                screen.Playtest.SaveButton.onClick.Invoke();
+                yield return null;
+                yield return WaitForScene(ScreenId.Stage.ToString());
+
+                var restarted = Object.FindAnyObjectByType<SimulationRunner>();
+                Catalog(out var speedKey);
+                Assert.That(restarted.Tuning.GetFloat("flight.speed"), Is.EqualTo(75f + (float)PlaytestSession.StepOf(speedKey)).Within(1e-3f));
+                Assert.That(System.IO.File.ReadAllText(new PlaytestStore().LogPath), Does.Contain("flight.speed"));
+            }
+            finally
+            {
+                PlaytestStore.ActiveOverride = null;
+                PlaytestStore.DirectoryOverride = null;
+                if (System.IO.Directory.Exists(directory))
+                {
+                    System.IO.Directory.Delete(directory, true);
+                }
+            }
+        }
+
+        private static void Catalog(out PlaytestKey speedKey)
+        {
+            var source = new UnityDataSource();
+            PlaytestKeyCatalog.Load(source, TuningLoader.Load(source)).TryGet("flight.speed", out speedKey);
+        }
 
         /// <summary>마우스로 메뉴를 누를 수 있도록 플레이 중에만 커서를 잠근다 (M11 버그 수정).</summary>
         [UnityTest]

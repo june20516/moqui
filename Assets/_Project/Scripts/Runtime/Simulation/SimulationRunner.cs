@@ -65,7 +65,18 @@ namespace Moqui.Unity.Simulation
             Driver = new SimulationDriver(simulation, _collector);
         }
 
+        /// <summary>
+        /// tuning.json을 읽고, 사람이 플레이 검증 중이면 playtest.json 덮어쓰기를 얹는다 (D-065).
+        /// 배치 모드(테스트·캡처·성능)에서는 덮어쓰지 않는다.
+        /// </summary>
         public static Tuning LoadTuning()
+        {
+            var source = new UnityDataSource();
+            return PlaytestTuning.Apply(TuningLoader.Load(source), source, new PlaytestStore());
+        }
+
+        /// <summary>덮어쓰기 없이 정본 tuning.json만 (조정 패널의 기본값 표시용).</summary>
+        public static Tuning LoadBaseTuning()
         {
             return TuningLoader.Load(new UnityDataSource());
         }
