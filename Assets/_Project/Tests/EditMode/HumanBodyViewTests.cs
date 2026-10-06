@@ -20,6 +20,30 @@ namespace Moqui.Unity.Tests
             Object.DestroyImmediate(_root);
         }
 
+        /// <summary>함께 있는 인간도 그려지고(인간별 뷰), 전기 모기채는 채 끝(판정 중심)을 따라간다 (spec/02 §7·§10, M14).</summary>
+        [Test]
+        public void Companion_HasItsOwnView_SwatterFollowsToolTip()
+        {
+            Tuning tuning = TuningLoader.Load(new UnityDataSource());
+            LevelDefinition level = new LevelLoader(new UnityDataSource()).Load("stage01");
+            var primary = level.Human;
+            var friend = new HumanDefinition("friend", primary.Position + new System.Numerics.Vector3(200f, 0f, 0f), primary.FacingYaw, primary.Parts, primary.HeadPartId, primary.ShoulderLocals,
+                primary.IdleLookYaws, primary.Actions, primary.Traits, primary.FacingPitch, primary.RestPitch, primary.MaxPosture, null, HumanTool.Swatter);
+            var setup = new SimulationSetup(new Moqui.Core.Collision.CollisionWorld(), level.PlayerSpawn, primary, level.Seed, companions: new[] { friend });
+            var simulation = new GameSimulation(GameSettings.FromTuning(tuning), setup);
+            _root = new GameObject("HumanViewTest");
+            var view = _root.AddComponent<HumanView>();
+            view.Build(simulation.Human);
+            var friendView = view.AddCompanion(simulation.Humans[1]);
+            view.Refresh(simulation.Tick);
+
+            Assert.That(view.Companions, Has.Count.EqualTo(1));
+            Assert.That(view.SwatterHead, Is.Null, "the primary human has no tool");
+            var friendHuman = simulation.Humans[1];
+            Assert.That(friendView.SwatterHead, Is.Not.Null);
+            Assert.That(Vector3.Distance(friendView.SwatterHead.position, friendHuman.Palm(friendHuman.ToolArm).ToUnity()), Is.LessThan(1e-3f));
+        }
+
         /// <summary>공격 예고 표시가 예고 진행률에 따라 변하고(좁혀 오는 고리·차오름), 판정 순간 번쩍임으로 바뀐다 (spec/02 §7, M12).</summary>
         [Test]
         public void Telegraph_IndicatorChangesWithProgress_ThenFlashesOnStrike()

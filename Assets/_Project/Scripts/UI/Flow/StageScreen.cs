@@ -102,7 +102,7 @@ namespace Moqui.Unity.UI.Flow
             _runner.Paused = true;
             PausePanel.SetActive(false);
             Flow.Session.SelectedLevelId ??= _stage.Level.Id;
-            var result = _clearResult ?? new StageResult(simulation.Tick, simulation.Human?.FrenzyCount ?? 0, simulation.Human?.BiteMarkCount ?? 0);
+            var result = _clearResult ?? new StageResult(simulation.Tick, simulation.Humans.Sum(human => human.FrenzyCount), simulation.Humans.Sum(human => human.BiteMarkCount));
             Outcome = Flow.CompleteStage(simulation.Outcome, result, _deathCause, result.ClearSeconds);
 
             bool cleared = Outcome.Outcome == StageOutcome.Cleared;

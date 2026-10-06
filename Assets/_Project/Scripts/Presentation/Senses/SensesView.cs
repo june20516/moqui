@@ -28,6 +28,7 @@ namespace Moqui.Unity.Presentation.Senses
         private GameSimulation _simulation;
         private SensesSettings _settings;
         private Co2Plume _plume;
+        private readonly List<Co2Plume> _plumes = new List<Co2Plume>();
         private MaterialPropertyBlock _block;
         private Renderer _decoy;
 
@@ -67,11 +68,21 @@ namespace Moqui.Unity.Presentation.Senses
                 return;
             }
 
-            foreach (var site in simulation.Human.SkinSites)
+            foreach (var human in simulation.Humans)
             {
-                _heatGlows.Add(site.PartId, CreateCue(PrimitiveType.Capsule, $"Heat_{site.PartId}", materials != null ? materials.Heat : null));
+                foreach (var site in human.SkinSites)
+                {
+                    string key = GlowKey(human, site.PartId);
+                    _heatGlows.Add(key, CreateCue(PrimitiveType.Capsule, $"Heat_{key}", materials != null ? materials.Heat : null));
+                }
+
+                // 주 인간의 날숨은 기존 Plume, 함께 있는 인간은 각자 따로 (M14).
+                _plumes.Add(human == simulation.Human ? _plume : new Co2Plume(settings));
             }
         }
+
+        /// <summary>체온 표시 키: 주 인간은 부위 ID, 함께 있는 인간은 "인간ID.부위ID" (M14).</summary>
+        private string GlowKey(Human human, string partId) => human == _simulation.Human ? partId : $"{human.Id}.{partId}";
 
         public Renderer HeatGlow(string partId) => _heatGlows[partId];
 
@@ -112,16 +123,20 @@ namespace Moqui.Unity.Presentation.Senses
             Vector3 viewer = _simulation.Player.Position.ToUnity();
             RenderShadowCues(viewer);
             RenderDecoy();
-            var human = _simulation.Human;
-            if (human == null)
+            if (_simulation.Human == null)
             {
                 return;
             }
 
-            RenderHeat(human, viewer);
+            RenderHeat(viewer);
             int tick = _simulation.Tick;
             var fans = _simulation.Fans;
-            _plume.Update(deltaTime, human.IsExhaling, human.ExhalePosition.ToUnity(), human.HeadForward.ToUnity(), human.ExhaleStrength, position => fans.WindAt(position.ToCore(), tick).ToUnity());
+            for (int i = 0; i < _simulation.Humans.Count; i++)
+            {
+                var human = _simulation.Humans[i];
+                _plumes[i].Update(deltaTime, human.IsExhaling, human.ExhalePosition.ToUnity(), human.HeadForward.ToUnity(), human.ExhaleStrength, position => fans.WindAt(position.ToCore(), tick).ToUnity());
+            }
+
             RenderCo2(viewer);
         }
 
@@ -165,15 +180,37 @@ namespace Moqui.Unity.Presentation.Senses
             }
         }
 
-        private void RenderHeat(Human human, Vector3 viewer)
+        private void RenderHeat(Vector3 viewer)
         {
             _heatIntensity.Clear();
+            int dotIndex = 0;
+            foreach (var human in _simulation.Humans)
+            {
+                RenderHeat(human, viewer);
+                dotIndex = RenderBiteDots(human, dotIndex);
+            }
+
+            VisibleBiteDots = 0;
+            for (int i = 0; i < dotIndex; i++)
+            {
+                VisibleBiteDots += _biteDots[i].enabled ? 1 : 0;
+            }
+
+            for (int i = dotIndex; i < _biteDots.Count; i++)
+            {
+                _biteDots[i].enabled = false;
+            }
+        }
+
+        private void RenderHeat(Human human, Vector3 viewer)
+        {
             foreach (var site in human.SkinSites)
             {
-                Renderer glow = _heatGlows[site.PartId];
+                string key = GlowKey(human, site.PartId);
+                Renderer glow = _heatGlows[key];
                 float distance = Vector3.Distance(site.Shape.Center.ToUnity(), viewer);
                 float intensity = SenseCueModel.HeatIntensity(distance, _settings.HeatRange);
-                _heatIntensity[site.PartId] = intensity;
+                _heatIntensity[key] = intensity;
                 glow.enabled = intensity > 0f;
                 if (!glow.enabled)
                 {
@@ -187,13 +224,15 @@ namespace Moqui.Unity.Presentation.Senses
                 SetAlpha(glow, intensity);
             }
 
-            // 자국 점은 실제로 문 자리에, 그 부위의 체온이 보일 때만 (spec/04 §4, spec/11 §3, M12).
-            VisibleBiteDots = 0;
-            for (int i = 0; i < human.BiteMarks.Count; i++)
+        }
+
+        /// <summary>자국 점은 실제로 문 자리에, 그 부위의 체온이 보일 때만 (spec/04 §4, spec/11 §3, M12). 다음 점 번호를 돌려준다.</summary>
+        private int RenderBiteDots(Human human, int dotIndex)
+        {
+            foreach (var mark in human.BiteMarks)
             {
-                var mark = human.BiteMarks[i];
-                Renderer dot = BiteDotAt(i);
-                dot.enabled = _heatIntensity.TryGetValue(mark.PartId, out float intensity) && intensity > 0f;
+                Renderer dot = BiteDotAt(dotIndex++);
+                dot.enabled = _heatIntensity.TryGetValue(GlowKey(human, mark.PartId), out float intensity) && intensity > 0f;
                 if (!dot.enabled)
                 {
                     continue;
@@ -202,13 +241,9 @@ namespace Moqui.Unity.Presentation.Senses
                 mark.Resolve(out var position, out var normal);
                 dot.transform.position = (position + (normal * (_settings.BiteMarkDotRadius * 0.5f))).ToUnity();
                 dot.transform.localScale = Vector3.one * (_settings.BiteMarkDotRadius * 2f);
-                VisibleBiteDots++;
             }
 
-            for (int i = human.BiteMarks.Count; i < _biteDots.Count; i++)
-            {
-                _biteDots[i].enabled = false;
-            }
+            return dotIndex;
         }
 
         private Renderer BiteDotAt(int index)
@@ -224,18 +259,21 @@ namespace Moqui.Unity.Presentation.Senses
         private void RenderCo2(Vector3 viewer)
         {
             VisibleCo2Puffs = 0;
-            foreach (var puff in _plume.Puffs)
+            foreach (var plume in _plumes)
             {
-                if (!_plume.IsVisibleFrom(puff, viewer))
+                foreach (var puff in plume.Puffs)
                 {
-                    continue;
-                }
+                    if (!plume.IsVisibleFrom(puff, viewer))
+                    {
+                        continue;
+                    }
 
-                Renderer renderer = Co2Renderer(VisibleCo2Puffs++);
-                renderer.enabled = true;
-                renderer.transform.position = puff.Position;
-                renderer.transform.localScale = Vector3.one * (_plume.Radius(puff) * 2f);
-                SetAlpha(renderer, _plume.Opacity(puff));
+                    Renderer renderer = Co2Renderer(VisibleCo2Puffs++);
+                    renderer.enabled = true;
+                    renderer.transform.position = puff.Position;
+                    renderer.transform.localScale = Vector3.one * (plume.Radius(puff) * 2f);
+                    SetAlpha(renderer, plume.Opacity(puff));
+                }
             }
 
             for (int i = VisibleCo2Puffs; i < _co2Pool.Count; i++)

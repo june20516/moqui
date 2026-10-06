@@ -41,6 +41,22 @@ namespace Moqui.Unity.Presentation
         private Transform _approach;
         private Renderer _approachRenderer;
         private MaterialPropertyBlock _telegraphBlock;
+        private readonly List<HumanView> _companions = new List<HumanView>();
+        private bool _drivenByParent;
+        private Transform _swatterHandle;
+        private Transform _swatterHead;
+
+        /// <summary>전기 모기채 머리 지름 (표현, u).</summary>
+        private const float SwatterHeadDiameter = 26f;
+        private const float SwatterHeadThickness = 1.5f;
+        private const float SwatterHandleThickness = 2.5f;
+        private static readonly Color SwatterColor = new Color(0.95f, 0.85f, 0.2f);
+
+        /// <summary>함께 있는 인간들의 뷰 (M14 두 사람). 주 인간 뷰가 만들고 갱신한다.</summary>
+        public IReadOnlyList<HumanView> Companions => _companions;
+
+        /// <summary>전기 모기채 머리 (도구가 없으면 null).</summary>
+        public Transform SwatterHead => _swatterHead;
 
         public bool IsBuilt => _human != null;
 
@@ -62,6 +78,7 @@ namespace Moqui.Unity.Presentation
             }
 
             BuildFace(human.HeadShape.Radius);
+            BuildSwatter(human);
 
             // 공격 예고: 카메라를 향한 판에 좁혀 오는 고리·차오름·번쩍임 (화면에서 가장 높은 위상, M12).
             _attackMarker = Art.Primitives.Create(PrimitiveType.Quad, "AttackTarget", transform, Art.ToonMaterials.Telegraph).transform;
@@ -89,6 +106,54 @@ namespace Moqui.Unity.Presentation
             WorldView.Tint(_headRenderer, HeadColor(_human.State));
 
             RefreshAttack(tick);
+            RefreshSwatter();
+            foreach (var companion in _companions)
+            {
+                companion.Refresh(tick);
+            }
+        }
+
+        /// <summary>함께 있는 인간의 뷰를 만든다 (주 인간 뷰 아래, 갱신은 주 뷰가 한다).</summary>
+        public HumanView AddCompanion(Human human)
+        {
+            var view = new GameObject($"HumanView_{human.Id}").AddComponent<HumanView>();
+            view.transform.SetParent(transform, false);
+            view._drivenByParent = true;
+            view.Build(human);
+            _companions.Add(view);
+            return view;
+        }
+
+        /// <summary>전기 모기채: 손목에서 채 머리까지 손잡이, 채 끝(판정 중심)에 납작한 머리 (spec/02 §7, M14).</summary>
+        private void BuildSwatter(Human human)
+        {
+            if (human.ToolArm < 0)
+            {
+                return;
+            }
+
+            _swatterHandle = Art.Primitives.Create(PrimitiveType.Capsule, "SwatterHandle", transform).transform;
+            WorldView.Tint(_swatterHandle.GetComponent<Renderer>(), SwatterColor);
+            _swatterHead = Art.Primitives.Create(PrimitiveType.Cylinder, "SwatterHead", transform).transform;
+            WorldView.Tint(_swatterHead.GetComponent<Renderer>(), SwatterColor);
+        }
+
+        private void RefreshSwatter()
+        {
+            if (_swatterHead == null)
+            {
+                return;
+            }
+
+            int arm = _human.ToolArm;
+            Vector3 wrist = _human.Shapes[_human.Rig.Arms[arm].ForearmId].PointB.ToUnity();
+            Vector3 tip = _human.Palm(arm).ToUnity();
+            Vector3 along = (tip - wrist).sqrMagnitude > 1e-6f ? (tip - wrist).normalized : Vector3.forward;
+            PlaceBetween(_swatterHandle, wrist, tip - (along * (SwatterHeadDiameter * 0.5f)), SwatterHandleThickness);
+            _swatterHead.position = tip;
+            Vector3 side = Vector3.Cross(along, Vector3.up);
+            _swatterHead.rotation = Quaternion.FromToRotation(Vector3.up, side.sqrMagnitude > 1e-6f ? side.normalized : Vector3.right);
+            _swatterHead.localScale = new Vector3(SwatterHeadDiameter, SwatterHeadThickness * 0.5f, SwatterHeadDiameter);
         }
 
         public static Color HeadColor(AwarenessState state)
@@ -182,9 +247,19 @@ namespace Moqui.Unity.Presentation
 
         private void LateUpdate()
         {
+            if (_drivenByParent)
+            {
+                return;
+            }
+
             if (_human == null && _runner != null && _runner.IsRunning && _runner.Driver.Simulation.Human != null)
             {
-                Build(_runner.Driver.Simulation.Human);
+                var simulation = _runner.Driver.Simulation;
+                Build(simulation.Human);
+                for (int i = 1; i < simulation.Humans.Count; i++)
+                {
+                    AddCompanion(simulation.Humans[i]);
+                }
             }
 
             if (_human != null)

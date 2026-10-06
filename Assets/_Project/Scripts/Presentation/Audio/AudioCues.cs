@@ -42,13 +42,13 @@ namespace Moqui.Unity.Presentation.Audio
         public const float WindPitchMin = 0.8f;
         public const float WindPitchRange = 0.4f;
 
-        private AttackPhase _lastAttackPhase = AttackPhase.Idle;
+        private readonly Dictionary<Human, AttackPhase> _lastAttackPhases = new Dictionary<Human, AttackPhase>();
+        private readonly Dictionary<Human, float> _lastBreathPhases = new Dictionary<Human, float>();
+        private readonly Dictionary<Human, int> _lastSteps = new Dictionary<Human, int>();
         private int _lastToxinTier;
         private bool _decoyWasActive;
         private int _lastDropCount;
-        private float _lastBreathPhase = -1f;
         private bool _wasInWind;
-        private int _lastStep;
 
         /// <summary>이벤트 하나에 대응하는 효과음 (없으면 null).</summary>
         public static string FromEvent(SimulationEvent simulationEvent)
@@ -145,8 +145,7 @@ namespace Moqui.Unity.Presentation.Audio
 
             _wasInWind = inWind;
 
-            var human = simulation.Human;
-            if (human != null)
+            foreach (var human in simulation.Humans)
             {
                 AddHumanCues(human, ids);
             }
@@ -167,9 +166,16 @@ namespace Moqui.Unity.Presentation.Audio
             float wind = WindStrength(simulation);
             yield return new LoopCue(AudioIds.WindLoop, wind > WindAudibleStrength, WindPitchMin + (WindPitchRange * wind), WindGainMin + ((1f - WindGainMin) * wind));
 
-            var human = simulation.Human;
-            yield return new LoopCue(AudioIds.FrenzyLoop, human != null && human.State == AwarenessState.Frenzy);
-            yield return new LoopCue(AudioIds.Snore, human != null && human.IsAsleep);
+            bool frenzy = false;
+            bool asleep = false;
+            foreach (var human in simulation.Humans)
+            {
+                frenzy |= human.State == AwarenessState.Frenzy;
+                asleep |= human.IsAsleep;
+            }
+
+            yield return new LoopCue(AudioIds.FrenzyLoop, frenzy);
+            yield return new LoopCue(AudioIds.Snore, asleep);
         }
 
         /// <summary>플레이어를 미는 바람 세기 0~1 (바람 속도 ÷ fan.windSpeed).</summary>
@@ -188,7 +194,8 @@ namespace Moqui.Unity.Presentation.Audio
         private void AddHumanCues(Human human, List<string> ids)
         {
             var attack = human.Attack;
-            if (attack.Phase == AttackPhase.Active && _lastAttackPhase != AttackPhase.Active)
+            _lastAttackPhases.TryGetValue(human, out var lastPhase);
+            if (attack.Phase == AttackPhase.Active && lastPhase != AttackPhase.Active)
             {
                 string hit = HitSound(attack.Kind);
                 if (hit != null)
@@ -197,24 +204,24 @@ namespace Moqui.Unity.Presentation.Audio
                 }
             }
 
-            _lastAttackPhase = attack.Phase;
+            _lastAttackPhases[human] = attack.Phase;
 
             // 숨소리: 호흡 주기가 한 바퀴 돌 때마다 (CO₂ 날숨 표현과 같은 주기). 자는 동안은 코골이 반복음이 대신한다.
-            if (_lastBreathPhase >= 0f && human.BreathPhase < _lastBreathPhase && !human.IsAsleep)
+            if (_lastBreathPhases.TryGetValue(human, out float lastBreath) && human.BreathPhase < lastBreath && !human.IsAsleep)
             {
                 ids.Add(AudioIds.Breath);
             }
 
-            _lastBreathPhase = human.BreathPhase;
+            _lastBreathPhases[human] = human.BreathPhase;
 
             // 걷는 인간: 한 걸음(다리 위상 반 바퀴)마다 발소리 (spec/02 §9, M14).
             int step = (int)System.Math.Floor(human.WalkPhase / System.Math.PI);
-            if (step > _lastStep)
+            if (_lastSteps.TryGetValue(human, out int lastStep) && step > lastStep)
             {
                 ids.Add(AudioIds.Footstep);
             }
 
-            _lastStep = step;
+            _lastSteps[human] = step;
         }
 
         private static string HitSound(AttackKind kind)

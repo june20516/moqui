@@ -164,15 +164,17 @@ namespace Moqui.Unity.UI.Hud
             }
 
             state.HasHuman = true;
-            state.BiteMarks = human.BiteMarkCount;
+            state.BiteMarks = simulation.Humans.Sum(each => each.BiteMarkCount);
             state.Awareness = human.State;
             state.AwarenessFill = Mathf.Clamp01(human.Awareness / settings.Awareness.FrenzyEnter);
             state.FrenzyMinRemaining = human.FrenzyMinRemaining;
             state.CalmProgress = human.CalmProgress;
             state.Occluded = human.PlayerOccluded;
             state.HeadArrow = ScreenEdge.OffscreenMarker(camera, human.HeadCenter.ToUnity(), EdgeMargin);
-            state.AttackTelegraphing = human.Attack.Phase == AttackPhase.Telegraph;
-            state.AttackWarning = state.AttackTelegraphing ? ScreenEdge.OffscreenMarker(camera, human.Attack.Target.ToUnity(), EdgeMargin) : EdgeMarker.Hidden;
+            // 공격 예고는 어느 인간이든 (M14 두 사람). 경계 눈 아이콘·머리 화살표는 주 인간 기준.
+            var telegraphing = simulation.Humans.FirstOrDefault(each => each.Attack.Phase == AttackPhase.Telegraph);
+            state.AttackTelegraphing = telegraphing != null;
+            state.AttackWarning = telegraphing != null ? ScreenEdge.OffscreenMarker(camera, telegraphing.Attack.Target.ToUnity(), EdgeMargin) : EdgeMarker.Hidden;
             state.HidingDirection = human.State == AwarenessState.Frenzy && !player.IsHidden
                 ? NearestShadowZoneMarker(simulation, camera)
                 : EdgeMarker.Hidden;

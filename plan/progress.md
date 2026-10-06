@@ -11,12 +11,12 @@
 > 사람 결정(2026-10-06): 20스테이지, 신규 요소 5종, 걷는 인간 허용, 방 1.5~2배.
 
 - [x] A. 기술 검증 — 증거: 방 `livingKitchen`(800×260×650, 1.6배)로 Stage 1·2 이전, Core 364 + EditMode 133 + PlayMode 22 통과, 봇 Stage 1 4/5·Stage 2 통과, 캡처 `Captures/2026-10-06_212936/Stage_stage01_*`(안개 속 넓은 방, 천장 관망), 성능 stage01 평균 0.98ms·예산 초과 0%: 넓은 거실·주방 방 1개(약 1.6배) — 성능, 봇 경로, 카메라·안개·관망 거리, 레벨 검사
-- [ ] B1. 걷는 인간(Core): 경로점 사이 보행, 걸음 소리, 걷는 중 시선·공격, 광분 추격 걸음 (spec/02) — Core 완료(`WalkTests` 6, 레벨 검사, 발소리 `sfx_footstep`), Unity 테스트 통과
-- [ ] B2. 조명 스위치(Core + 표현): 켜짐/꺼짐에 따른 시야·흐림·은신처 (spec/06) — Core 완료(`LightTests` 4), 표현(점광원·전구) 작성, Unity 테스트 통과
-- [ ] B3. 모기장(Core + 표현): 통로 차단, 틈, 통과 소음 (spec/06) — Core 완료(`NetTests` 3), 표현(격자 머티리얼) 작성, Unity 테스트 통과
-- [ ] B4. 전기 모기채(Core + 표현): 광분 도구, 넓은 판정 (spec/02 §7) — Core 완료(`BodyAttackTests.Swatter_*` 3), 표현(채 모델) 미작성
-- [ ] B5. 두 사람(Core): 인간 여럿, 광분 전염 (spec/02) — Core 완료(`CompanionTests` 3), 표현(인간별 뷰·HUD) 미작성
-- [ ] B6. 에어컨 타이머(Core + 표현): 주기적 강풍 (spec/06) — Core 완료(`GimmickTests.AirConditioner_*`), 표현(송풍 날개) 작성, Unity 테스트 통과
+- [x] B1. 걷는 인간(Core): 경로점 사이 보행, 걸음 소리, 걷는 중 시선·공격, 광분 추격 걸음 (spec/02) — Core 완료(`WalkTests` 6, 레벨 검사, 발소리 `sfx_footstep`), Unity 테스트 통과
+- [x] B2. 조명 스위치(Core + 표현): 켜짐/꺼짐에 따른 시야·흐림·은신처 (spec/06) — Core 완료(`LightTests` 4), 표현(점광원·전구) 작성, Unity 테스트 통과
+- [x] B3. 모기장(Core + 표현): 통로 차단, 틈, 통과 소음 (spec/06) — Core 완료(`NetTests` 3), 표현(격자 머티리얼) 작성, Unity 테스트 통과
+- [x] B4. 전기 모기채(Core + 표현): 광분 도구, 넓은 판정 (spec/02 §7) — Core 완료(`BodyAttackTests.Swatter_*` 3), 표현(채 모델) EditMode `HumanBodyViewTests.Companion_HasItsOwnView_SwatterFollowsToolTip`
+- [x] B5. 두 사람(Core): 인간 여럿, 광분 전염 (spec/02) — Core 완료(`CompanionTests` 3), 표현(인간별 뷰·체온·CO₂·자국·HUD 예고·소리) EditMode `HumanBodyViewTests.Companion_HasItsOwnView_SwatterFollowsToolTip`
+- [x] B6. 에어컨 타이머(Core + 표현): 주기적 강풍 (spec/06) — Core 완료(`GimmickTests.AirConditioner_*`), 표현(송풍 날개) 작성, Unity 테스트 통과
 - [ ] C. 1장 거실 5스테이지 (데이터 → 봇 → 캡처)
 - [ ] D. 2장 침실 5스테이지
 - [ ] E. 3장 물가 5스테이지
@@ -90,6 +90,7 @@
 ## 반복 로그
 | 일시 | 마일스톤 | 한 일 | 증거 | 커밋 |
 |---|---|---|---|---|
+| 2026-10-06 | M14 | B 표현: 두 사람(인간별 뷰·감각·HUD 예고·소리), 전기 모기채 모델 | Core 385 + EditMode 137 + PlayMode 22 통과 | (이 커밋) |
 | 2026-10-06 | M14 | B1~B6 Core(걷는 인간·조명·모기장·전기 모기채·두 사람·에어컨) + 일부 표현 | Core 385 + EditMode 136 + PlayMode 22 통과 | (이 커밋) |
 | 2026-10-06 | M14 | A 넓은 거실·주방 방(1.6배), Stage 1·2 이전 | 테스트 전부 통과, 봇 기준 유지, 성능 0.98ms | (이 커밋) |
 | 2026-10-05 | M13 | G 마무리: 빌드·성능 재측정, GOAL D3~D5 재체크, 최종 보고서 M13 반영, M13 종료 | 빌드 성공, 테스트 전부 통과 | (이 커밋) |
