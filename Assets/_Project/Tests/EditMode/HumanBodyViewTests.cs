@@ -20,6 +20,38 @@ namespace Moqui.Unity.Tests
             Object.DestroyImmediate(_root);
         }
 
+        /// <summary>살아 있는 몸: 숨 주기에 따라 몸통이 부풀고, 졸면 눈을 감는다 (표현 전용, M14).</summary>
+        [Test]
+        public void Breath_SwellsTorso_AsleepClosesEyes()
+        {
+            Tuning tuning = TuningLoader.Load(new UnityDataSource());
+            LevelDefinition level = new LevelLoader(new UnityDataSource()).Load("stage01");
+            var simulation = new GameSimulation(GameSettings.FromTuning(tuning), level.CreateSetup());
+            var human = simulation.Human;
+            _root = new GameObject("HumanViewTest");
+            var view = _root.AddComponent<HumanView>();
+            view.Build(human);
+
+            human.BreathPhase = 0f;
+            view.Refresh(1);
+            Assert.That(view.TorsoSwell, Is.EqualTo(1f).Within(1e-4f), "breathed out");
+            human.BreathPhase = 0.5f;
+            view.Refresh(1);
+            Assert.That(view.TorsoSwell, Is.EqualTo(1f + HumanView.BreathSwell).Within(1e-4f), "breathed in");
+
+            human.Doze = DozeState.Sleeping;
+            view.Refresh(1);
+            Assert.That(view.EyesClosed, Is.True);
+        }
+
+        [Test]
+        public void HoverBob_LargestWhenStill_ZeroAtFullSpeed()
+        {
+            float quarter = 0.25f / PlayerView.HoverBobFrequency;
+            Assert.That(PlayerView.HoverBob(quarter, 0f), Is.EqualTo(PlayerView.HoverBobAmplitude).Within(1e-4f));
+            Assert.That(PlayerView.HoverBob(quarter, 1f), Is.EqualTo(0f).Within(1e-4f));
+        }
+
         /// <summary>함께 있는 인간도 그려지고(인간별 뷰), 전기 모기채는 채 끝(판정 중심)을 따라간다 (spec/02 §7·§10, M14).</summary>
         [Test]
         public void Companion_HasItsOwnView_SwatterFollowsToolTip()

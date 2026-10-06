@@ -52,6 +52,7 @@ namespace Moqui.Unity.Presentation.Stage
             Level = new LevelLoader(new UnityDataSource()).Load(RequestedLevelId);
             var simulation = new GameSimulation(GameSettings.FromTuning(tuning), Level.CreateSetup(RequestedSkills, RequestedSeed));
             var visuals = LevelView.Build(Level, simulation.World, transform, _materials);
+            gameObject.AddComponent<RoomLightingView>().Build(Level.Room, visuals);
             var senses = new SensesSettings(tuning);
             _senses.Bind(simulation, senses, visuals, _materials);
             _gimmicks.Bind(simulation, senses, _materials);

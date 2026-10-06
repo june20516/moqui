@@ -44,6 +44,24 @@ namespace Moqui.Unity.Presentation
         private readonly List<HumanView> _companions = new List<HumanView>();
         private bool _drivenByParent;
         private Transform _swatterHandle;
+        private Transform _torso;
+        private readonly List<Transform> _eyes = new List<Transform>();
+        private float _nextBlink;
+        private System.Random _blinkRandom;
+
+        /// <summary>호흡(표현 전용, M14): 숨을 들이쉬면 몸통이 이만큼 굵어진다.</summary>
+        public const float BreathSwell = 0.05f;
+
+        /// <summary>눈 깜빡임(표현 전용): 간격 범위(s)와 감고 있는 시간(s).</summary>
+        public const float BlinkIntervalMin = 3f;
+        public const float BlinkIntervalMax = 6f;
+        public const float BlinkDuration = 0.12f;
+
+        /// <summary>지금 몸통 굵기 배율 (테스트용).</summary>
+        public float TorsoSwell { get; private set; } = 1f;
+
+        /// <summary>지금 눈이 감겨 있는가 (테스트용).</summary>
+        public bool EyesClosed { get; private set; }
         private Transform _swatterHead;
 
         /// <summary>전기 모기채 머리 지름 (표현, u).</summary>
@@ -79,6 +97,13 @@ namespace Moqui.Unity.Presentation
 
             BuildFace(human.HeadShape.Radius);
             BuildSwatter(human);
+            if (human.Shapes.TryGetValue("torso", out var torsoShape))
+            {
+                _torso = _parts.Find(part => part.Key == torsoShape).Value;
+            }
+
+            _blinkRandom = new System.Random(human.Id.GetHashCode());
+            _nextBlink = NextBlinkInterval();
 
             // 공격 예고: 카메라를 향한 판에 좁혀 오는 고리·차오름·번쩍임 (화면에서 가장 높은 위상, M12).
             _attackMarker = Art.Primitives.Create(PrimitiveType.Quad, "AttackTarget", transform, Art.ToonMaterials.Telegraph).transform;
@@ -104,6 +129,7 @@ namespace Moqui.Unity.Presentation
             Vector3 faceUp = Mathf.Abs(Vector3.Dot(forward, Vector3.up)) > 0.99f ? Vector3.forward : Vector3.up;
             _face.SetPositionAndRotation(_human.HeadCenter.ToUnity(), Quaternion.LookRotation(forward, faceUp));
             WorldView.Tint(_headRenderer, HeadColor(_human.State));
+            RefreshBreathAndBlink(tick * Moqui.Core.Simulation.GameSimulation.DeltaTime);
 
             RefreshAttack(tick);
             RefreshSwatter();
@@ -111,6 +137,38 @@ namespace Moqui.Unity.Presentation
             {
                 companion.Refresh(tick);
             }
+        }
+
+        /// <summary>
+        /// 살아 있는 몸 (표현 전용, M14): 숨 주기(Core BreathPhase)에 맞춰 몸통이 부풀었다 줄고, 눈은 3~6초마다 깜빡인다.
+        /// 졸고 있으면 눈을 감고 있다. 판정 형상은 바꾸지 않는다.
+        /// </summary>
+        private void RefreshBreathAndBlink(float seconds)
+        {
+            float breath = 0.5f - (0.5f * Mathf.Cos(2f * Mathf.PI * _human.BreathPhase));
+            TorsoSwell = 1f + (BreathSwell * breath);
+            if (_torso != null)
+            {
+                Vector3 scale = _torso.localScale;
+                _torso.localScale = new Vector3(scale.x * TorsoSwell, scale.y, scale.z * TorsoSwell);
+            }
+
+            if (seconds >= _nextBlink + BlinkDuration)
+            {
+                _nextBlink = seconds + NextBlinkInterval();
+            }
+
+            EyesClosed = _human.IsAsleep || (seconds >= _nextBlink && seconds < _nextBlink + BlinkDuration);
+            foreach (var eye in _eyes)
+            {
+                Vector3 scale = eye.localScale;
+                eye.localScale = new Vector3(scale.x, EyesClosed ? scale.x * 0.15f : scale.x, scale.z);
+            }
+        }
+
+        private float NextBlinkInterval()
+        {
+            return BlinkIntervalMin + ((float)_blinkRandom.NextDouble() * (BlinkIntervalMax - BlinkIntervalMin));
         }
 
         /// <summary>함께 있는 인간의 뷰를 만든다 (주 인간 뷰 아래, 갱신은 주 뷰가 한다).</summary>
@@ -237,6 +295,7 @@ namespace Moqui.Unity.Presentation
                 eye.localPosition = new Vector3(side * EyeSpacing, EyeHeight, EyeDepth) * headRadius;
                 eye.localScale = Vector3.one * (EyeSize * headRadius);
                 WorldView.Tint(eye.GetComponent<Renderer>(), EyeColor);
+                _eyes.Add(eye);
             }
 
             Transform nose = CreateMarker(PrimitiveType.Cube, "HeadDirection", _face);

@@ -77,6 +77,7 @@
     "head.pitchLimit": 60,
     "head.suspiciousStareTime": 2,
     "head.searchAngle": 45,
+    "head.turnAccelTime": 0.25,
 
     "frenzy.minDuration": 8,
     "frenzy.calmTime": 6,
@@ -102,6 +103,8 @@
     "human.walkRadius": 18,
     "human.stepLength": 60,
     "human.legSwing": 18,
+    "human.walkAccelTime": 0.5,
+    "human.walkBob": 2.5,
     "human.alarmShare": 70,
     "human.breathPeriod": 4,
     "human.exhaleDuration": 1.5,

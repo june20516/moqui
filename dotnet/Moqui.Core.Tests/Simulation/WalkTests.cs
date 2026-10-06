@@ -38,11 +38,19 @@ namespace Moqui.Core.Tests.Simulation
             float height = Root(simulation).Y;
 
             Run(simulation, PlayerCommand.None, SecondsToTicks(1f));
-            Assert.That(Root(simulation).Z, Is.EqualTo(Walk.WalkSpeed).Within(2f), "walks straight ahead at walkSpeed");
+            Assert.That(Root(simulation).Z, Is.EqualTo(Walk.WalkSpeed * (1f - (Walk.AccelTime * 0.5f))).Within(2f), "speeds up over walkAccelTime, then walks at walkSpeed");
+            Assert.That(simulation.Human.WalkSpeed, Is.EqualTo(Walk.WalkSpeed).Within(0.5f));
             Assert.That(Root(simulation).Y, Is.EqualTo(height), "the pelvis keeps its height");
 
-            Run(simulation, PlayerCommand.None, SecondsToTicks((200f / Walk.WalkSpeed) - 1f + 0.1f));
+            // 경로점 앞에서 미리 줄여 멈춘다(가감속): 도착할 때까지 진행한다.
+            int ticks = 0;
+            while (simulation.Human.WalkPauseEndTick <= simulation.Tick && ticks++ < SecondsToTicks(6f))
+            {
+                simulation.Step(PlayerCommand.None);
+            }
+
             Assert.That(HorizontalDistance(Root(simulation), first), Is.LessThan(HumanWalkSystem.ArriveDistance + 0.5f));
+            Assert.That(simulation.Human.WalkSpeed, Is.LessThan(Walk.WalkSpeed * 0.5f), "arrives slowing down, not at full speed");
             Vector3 arrived = Root(simulation);
             Run(simulation, PlayerCommand.None, SecondsToTicks(Pause * 0.8f));
             Assert.That(Vector3.Distance(Root(simulation), arrived), Is.LessThan(0.1f), "pauses at the point");
@@ -60,15 +68,21 @@ namespace Moqui.Core.Tests.Simulation
             TestHumans.Provoke(simulation, 50f);
             simulation.Step(PlayerCommand.None);
             Assert.That(simulation.Human.State, Is.EqualTo(AwarenessState.Suspicious));
-            Vector3 stopped = Root(simulation);
+            for (int i = 0; i < SecondsToTicks(Walk.AccelTime + 0.1f); i++)
+            {
+                TestHumans.Provoke(simulation, 50f);
+                simulation.Step(PlayerCommand.None);
+            }
 
+            Assert.That(simulation.Human.WalkSpeed, Is.EqualTo(0f), "slows to a stop within walkAccelTime");
+            Vector3 stopped = Root(simulation);
             for (int i = 0; i < SecondsToTicks(1f); i++)
             {
                 TestHumans.Provoke(simulation, 50f);
                 simulation.Step(PlayerCommand.None);
             }
 
-            Assert.That(Vector3.Distance(Root(simulation), stopped), Is.LessThan(0.1f));
+            Assert.That(Vector3.Distance(Root(simulation), stopped), Is.LessThan(0.1f), "and stays");
         }
 
         [Test]
@@ -93,14 +107,14 @@ namespace Moqui.Core.Tests.Simulation
             }
 
             Assert.That(reached, Is.True, "walked close enough to reach");
-            Vector3 stopped = Root(simulation);
-            for (int i = 0; i < SecondsToTicks(0.5f); i++)
+            for (int i = 0; i < SecondsToTicks(1.5f); i++)
             {
                 simulation.Step(PlayerCommand.None);
                 human.LastSeenPosition = target;
             }
 
-            Assert.That(HorizontalDistance(Root(simulation), new Vector2(target.X, target.Z)), Is.GreaterThan(HorizontalDistance(stopped, new Vector2(target.X, target.Z)) - 2f), "stops once it can reach");
+            Assert.That(human.WalkSpeed, Is.EqualTo(0f), "stops (after a few slowing steps) once it can reach");
+            Assert.That(HorizontalDistance(Root(simulation), new Vector2(target.X, target.Z)), Is.GreaterThan(30f), "does not walk into the target");
         }
 
         [Test]

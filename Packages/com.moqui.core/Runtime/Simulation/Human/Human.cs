@@ -183,6 +183,14 @@ namespace Moqui.Core.Simulation
         /// <summary>왼다리 무릎·발 쪽의 앞(+)뒤 흔들림 (u). 오른다리는 반대.</summary>
         public float LegSwing { get; set; }
 
+        /// <summary>지금 걷는 속도 (u/s, 가감속)와 방향.</summary>
+        public float WalkSpeed { get; set; }
+
+        public Vector3 WalkDirection { get; set; } = Vector3.UnitZ;
+
+        /// <summary>걸음에 따른 골반 위아래 출렁임 (u, 0 이하). 모든 부위가 함께 움직인다.</summary>
+        public float BodyBob { get; set; }
+
         /// <summary>광분 추격으로 걷는 중인가.</summary>
         public bool IsChasing { get; set; }
 
@@ -243,6 +251,11 @@ namespace Moqui.Core.Simulation
         public float HeadYaw { get; set; }
 
         public float HeadPitch { get; set; }
+
+        /// <summary>머리 회전 각속도 (°/s, 가감속, M14).</summary>
+        public float HeadYawVelocity { get; set; }
+
+        public float HeadPitchVelocity { get; set; }
 
         public Vector3 HeadCenter => HeadShape.Center;
 
@@ -497,13 +510,13 @@ namespace Moqui.Core.Simulation
 
         public Vector3 ToWorld(Vector3 local)
         {
-            return RootPosition + Vector3.Transform(local, BodyRotation);
+            return RootPosition + new Vector3(0f, BodyBob, 0f) + Vector3.Transform(local, BodyRotation);
         }
 
         /// <summary>월드 점 → 몸 로컬.</summary>
         public Vector3 ToLocal(Vector3 world)
         {
-            return Vector3.Transform(world - RootPosition, Quaternion.Conjugate(BodyRotation));
+            return Vector3.Transform(world - RootPosition - new Vector3(0f, BodyBob, 0f), Quaternion.Conjugate(BodyRotation));
         }
 
         /// <summary>world 점을 바라보는 머리 상대각(도). 몸 정면 기준.</summary>

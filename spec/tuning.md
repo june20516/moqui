@@ -104,6 +104,7 @@
 | head.pitchLimit | ±60° | 몸통 정면 기준. 의심·광분 중 목표를 향해 고개를 드는 한계 (D-029) |
 | head.suspiciousStareTime | 2s | 의심 상태에서 마지막 자극 위치를 응시하는 시간 (spec/02 §3) |
 | head.searchAngle | ±45° | 응시 후 좌우 탐색 폭, 자극 방향 기준 (D-029) |
+| head.turnAccelTime | 0.25s | 머리가 멈춘 상태에서 최고 회전 속도에 이르는 시간. 남은 각에 맞춰 감속해 멈춘다 (자연스러운 움직임, M14) |
 
 ## frenzy (광분)
 | 키 | 값 | 설명 |
@@ -138,6 +139,8 @@
 | human.walkRadius | 18u | 골반 높이에서 가구 충돌을 보는 구 반지름 |
 | human.stepLength | 60u | 한 걸음 길이 (다리 흔들기 주기) |
 | human.legSwing | 18u | 걸을 때 무릎·발 쪽이 앞뒤로 흔들리는 폭 (걷는 속도에서 최고 약 66u/s > human.dislodgeSpeed: 종아리·발에 붙으면 튕길 수 있음) |
+| human.walkAccelTime | 0.5s | 걷기 가감속: 걷는 속도까지 걸리는 시간, 경로점·멈춤 앞에서 미리 줄인다 (M14) |
+| human.walkBob | 2.5u | 걸음마다 골반이 위아래로 출렁이는 폭 (M14) |
 | human.alarmShare | 70 | 두 사람: 한 사람이 광분하면 다른 사람의 경계를 이 값까지 올린다 (M14) |
 | human.breathPeriod | 4s | 호흡 주기 |
 | human.exhaleDuration | 1.5s | 날숨 구간 |

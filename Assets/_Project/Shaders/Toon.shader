@@ -1,4 +1,5 @@
 // 프로젝트 공통 툰 셰이더 (spec/10): 메인 라이트 기준 셀 셰이딩(_Bands 단) + 남보라 그림자 색 + 월드 공간 외곽선.
+// 방 분위기 조명·기믹 램프 같은 추가 조명(점·스포트)도 단계로 끊어 더한다 (spec/assets/lighting.md, M14).
 // 출처가 다른 에셋도 베이스 컬러만 쓰고 이 셰이더로 통일한다. 렌더러별 색은 _BaseColor(MaterialPropertyBlock)로 준다.
 Shader "Moqui/Toon"
 {
@@ -13,6 +14,7 @@ Shader "Moqui/Toon"
         _OutlineDistanceRatio ("Outline Width per View Distance", Float) = 0.006
         _OutlineColor ("Outline Color", Color) = (0.12, 0.1, 0.2, 1)
         _SelfIllumination ("Self Illumination", Range(0, 1)) = 0
+        _AdditionalBandSoftness ("Additional Light Band Softness", Range(0, 1)) = 0.35
     }
 
     SubShader
@@ -32,6 +34,7 @@ Shader "Moqui/Toon"
             float _OutlineDistanceRatio;
             float4 _OutlineColor;
             float _SelfIllumination;
+            float _AdditionalBandSoftness;
         CBUFFER_END
 
         TEXTURE2D(_BaseMap);
@@ -48,9 +51,51 @@ Shader "Moqui/Toon"
             #pragma fragment Frag
             #pragma multi_compile _ _MAIN_LIGHT_SHADOWS _MAIN_LIGHT_SHADOWS_CASCADE _MAIN_LIGHT_SHADOWS_SCREEN
             #pragma multi_compile_fragment _ _SHADOWS_SOFT _SHADOWS_SOFT_LOW _SHADOWS_SOFT_MEDIUM _SHADOWS_SOFT_HIGH
+            #pragma multi_compile _ _ADDITIONAL_LIGHTS_VERTEX _ADDITIONAL_LIGHTS
+            #pragma multi_compile _ _CLUSTER_LIGHT_LOOP
+            #pragma multi_compile_fragment _ _ADDITIONAL_LIGHT_SHADOWS
+            #pragma multi_compile_fragment _ _LIGHT_COOKIES
             #pragma multi_compile_instancing
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Lighting.hlsl"
+
+            // 추가 조명의 월드 위치 (URP 내부 저장 방식에 따라 읽는 곳이 다르다).
+            float4 ToonAdditionalLightPosition(int perObjectIndex)
+            {
+            #if USE_STRUCTURED_BUFFER_FOR_LIGHT_DATA
+                return _AdditionalLightsBuffer[perObjectIndex].position;
+            #else
+                return _AdditionalLightsPosition[perObjectIndex];
+            #endif
+            }
+
+            // 추가 조명 합: 게임 단위(1u ≈ 1cm)에서는 물리 감쇠(1/거리²)가 너무 빨리 꺼지므로 그 몫을 상쇄하고
+            // 범위 창(가까우면 1, range에서 0)과 스포트 원뿔만 남긴다. 빛의 양은 _Bands 단으로 끊고 _AdditionalBandSoftness만큼 부드럽게 섞는다.
+            float3 ToonAdditionalLights(float3 positionWS, float3 normal, float4 positionCS, float bands)
+            {
+                float3 sum = 0;
+            #if defined(_ADDITIONAL_LIGHTS) || USE_CLUSTER_LIGHT_LOOP
+                InputData inputData = (InputData)0;
+                inputData.positionWS = positionWS;
+                inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(positionCS);
+                half4 shadowMask = half4(1, 1, 1, 1);
+                uint lightCount = GetAdditionalLightsCount();
+                LIGHT_LOOP_BEGIN(lightCount)
+                    Light light = GetAdditionalLight(lightIndex, positionWS, shadowMask);
+                #if USE_CLUSTER_LIGHT_LOOP
+                    int perObjectIndex = lightIndex;
+                #else
+                    int perObjectIndex = GetPerObjectLightIndex(lightIndex);
+                #endif
+                    float3 toLight = ToonAdditionalLightPosition(perObjectIndex).xyz - positionWS;
+                    float window = saturate(light.distanceAttenuation * max(dot(toLight, toLight), HALF_MIN));
+                    float amount = saturate(dot(normal, light.direction)) * window * light.shadowAttenuation;
+                    float stepped = ceil(amount * bands - 0.15) / bands;
+                    sum += light.color * lerp(saturate(stepped), amount, _AdditionalBandSoftness);
+                LIGHT_LOOP_END
+            #endif
+                return sum;
+            }
 
             struct Attributes
             {
@@ -92,7 +137,8 @@ Shader "Moqui/Toon"
                 float3 shade = lerp(_ShadowTint.rgb, 1.0, saturate(level));
                 float3 ambient = SampleSH(normal) * _AmbientStrength;
                 // 자체 밝기: 어두운 곳에서도 플레이어가 배경과 구분되도록 바탕색 쪽으로 끌어올린다 (spec/10 가독성).
-                float3 litColor = albedo * (shade * light.color + ambient);
+                float3 additional = ToonAdditionalLights(input.positionWS, normal, input.positionCS, bands);
+                float3 litColor = albedo * (shade * light.color + ambient + additional);
                 return half4(lerp(litColor, albedo, _SelfIllumination), 1.0);
             }
             ENDHLSL

@@ -9,10 +9,16 @@ namespace Moqui.Core.Data.Levels
         public const int SupportedFormatVersion = 1;
 
         public RoomDefinition(string id, Vector3 size, IReadOnlyList<ShapeDefinition> shapes)
+            : this(id, size, shapes, new RoomLightDefinition[0])
+        {
+        }
+
+        public RoomDefinition(string id, Vector3 size, IReadOnlyList<ShapeDefinition> shapes, IReadOnlyList<RoomLightDefinition> lights)
         {
             Id = id;
             Size = size;
             Shapes = shapes;
+            Lights = lights;
         }
 
         public string Id { get; }
@@ -21,6 +27,9 @@ namespace Moqui.Core.Data.Levels
         public Vector3 Size { get; }
 
         public IReadOnlyList<ShapeDefinition> Shapes { get; }
+
+        /// <summary>분위기 조명 (표현 전용, M14). 없으면 빈 목록.</summary>
+        public IReadOnlyList<RoomLightDefinition> Lights { get; }
 
         public static string FilePath(string id)
         {
@@ -41,7 +50,13 @@ namespace Moqui.Core.Data.Levels
                 shapes.Add(ShapeDefinition.Parse(item));
             }
 
-            return new RoomDefinition(root.Get("id").String(), root.Get("size").Vector3(), shapes);
+            var lights = new List<RoomLightDefinition>();
+            foreach (var item in root.OptionalItems("lights"))
+            {
+                lights.Add(RoomLightDefinition.Parse(item));
+            }
+
+            return new RoomDefinition(root.Get("id").String(), root.Get("size").Vector3(), shapes, lights);
         }
     }
 }

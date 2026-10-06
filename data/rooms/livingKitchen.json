@@ -41,5 +41,12 @@
     { "id": "dining_chair_s", "type": "box", "center": [250, 25, -290], "size": [40, 50, 40], "flags": ["obstacle", "attachable"] },
     { "id": "dining_lamp", "type": "sphere", "center": [250, 200, -220], "radius": 18, "flags": ["obstacle", "attachable"] },
     { "id": "shoe_cabinet", "type": "box", "center": [-60, 50, -310], "size": [120, 100, 30], "flags": ["obstacle", "attachable"] }
+  ],
+  "lights": [
+    { "id": "tv_screen", "type": "spot", "position": [-150, 85, -84], "direction": [0, -0.1, 1], "color": [0.55, 0.68, 1.0], "intensity": 1.2, "range": 450, "spotAngle": 110, "flicker": "tv", "glowShape": "tv", "shadows": true },
+    { "id": "floor_lamp", "type": "point", "position": [-350, 150, 250], "color": [1.0, 0.74, 0.45], "intensity": 0.9, "range": 230, "flicker": "lamp", "glowShape": "floor_lamp" },
+    { "id": "moonlight_window", "type": "spot", "position": [-396, 200, -115], "direction": [1, -0.6, -0.05], "color": [0.55, 0.66, 1.0], "intensity": 0.6, "range": 650, "spotAngle": 45, "flicker": "none", "shadows": true, "cookie": "tex-light-cookie-window" },
+    { "id": "under_cabinet", "type": "point", "position": [370, 158, 0], "color": [1.0, 0.9, 0.75], "intensity": 0.4, "range": 140, "flicker": "lamp" },
+    { "id": "fridge_led", "type": "point", "position": [324, 150, 290], "color": [0.4, 0.8, 1.0], "intensity": 0.3, "range": 45, "flicker": "none" }
   ]
 }

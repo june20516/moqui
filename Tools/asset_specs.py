@@ -87,6 +87,7 @@ ASSETS = [
     dict(id='plant-shelf', kind='model', group='4장 베란다', name='화분 선반', patterns=['plant_shelf'], rooms=['veranda'], form='3단 선반, 화분 여러 개. 뒤는 은신처.', anim='잎이 바람에 흔들림(표현)', textures='`tex-leaves`', effects='-', budget='1,500 삼각형'),
     dict(id='drying-rack', kind='model', group='4장 베란다', name='빨래 건조대', patterns=['drying_rack'], rooms=['veranda'], form='X자 빨래 건조대와 걸린 옷', anim='옷이 바람에 흔들림(표현)', textures='`tex-fabric-laundry`', effects='-', budget='1,200 삼각형'),
     dict(id='ac-outdoor', kind='model', group='4장 베란다', name='에어컨 실외기', patterns=['ac_unit'], rooms=['veranda'], form='실외기, 큰 원형 팬 그릴. 뒤 틈은 은신처. 돌아갈 때 진동.', anim='팬 회전', textures='-', effects='뜨거운 바람 아지랑이(선택)', budget='600 삼각형'),
+    dict(id='veranda-lantern', kind='model', group='4장 베란다', name='캠핑 등불', patterns=[], rooms=['veranda'], hook='판정 형상 없음(표현 전용). 테이블 위 건조대 고리에 매단다. 조명 `light-lantern`의 위치(0, 120, 10)에 둔다.', size='15 × 25 × 15u', form='한지 갓을 씌운 작은 LED 캠핑 등불, 손잡이 고리', anim='바람에 아주 느리게 흔들림(±3°), 빛 일렁임과 함께', textures='`tex-lantern-paper`(빛이 비치는 한지, 투과 마스크)', effects='`light-lantern`(일렁이는 주황빛), 주위를 도는 작은 날벌레 2~3마리(선택)', budget='300 삼각형'),
     dict(id='spray-dispenser', kind='model', group='기믹', name='자동 모기약 분사기', patterns=['spray_dispenser', 'dispenser'], form='벽걸이 자동 분사기, 분사 전 LED 깜빡', hook='레벨 데이터 sprayDispensers[] 위치 + 방 형상.', anim='분사 직전 LED 깜빡(예고), 분사 때 노즐 움찔', textures='-', effects='`vfx-spray-cloud`', budget='300 삼각형'),
     dict(id='mosquito-coil', kind='model', group='기믹', name='모기향', patterns=['coil'], form='나선 모기향과 금속 받침, 끝이 붉게 탐', hook='레벨 데이터 coils[] 위치 + `GimmickView`(지금은 원기둥).', anim='타는 끝 빛 깜빡', textures='`tex-coil`', effects='`vfx-coil-smoke`', budget='600 삼각형'),
     dict(id='spider-web', kind='model', group='기믹', name='거미줄', patterns=['web_*'], form='모서리 거미줄, 이슬이 맺힌 실', hook='레벨 데이터 webs[](Hazard 상자)', anim='바람에 흔들림', textures='`tex-web`(알파)', effects='걸리면 실이 휘감기는 이펙트', budget='판 + 실 몇 가닥'),
@@ -134,6 +135,7 @@ TEXTURES = [
     ('tex-spray-label', '스프레이 라벨', '256², 모기 경고 그림'),
     ('tex-light-cookie-window', '창틀 빛 쿠키', '256² 흑백, 창살 모양(달빛 스팟 조명 쿠키)'),
     ('tex-light-cookie-blinds', '블라인드 빛 쿠키', '256² 흑백 줄무늬(선택)'),
+    ('tex-lantern-paper', '등불 한지', '256², 빛이 비치는 한지 결(투과 마스크)'),
 ]
 
 VFX = [
@@ -149,6 +151,7 @@ VFX = [
     ('vfx-wind-dust', '바람 먼지 줄기', None),
     ('vfx-water-drop', '물방울 맺힘·낙하·튀김', None),
     ('vfx-swatter-zap', '전기 모기채 스파크', None),
+    ('vfx-light-shaft', '달빛 빛줄기와 떠다니는 먼지 (lighting.md)', None),
 ]
 
 

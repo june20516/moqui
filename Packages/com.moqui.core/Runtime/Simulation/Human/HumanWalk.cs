@@ -43,7 +43,15 @@ namespace Moqui.Core.Simulation
             Radius = tuning.GetFloat("human.walkRadius");
             StepLength = tuning.GetFloat("human.stepLength");
             LegSwing = tuning.GetFloat("human.legSwing");
+            AccelTime = tuning.GetFloat("human.walkAccelTime");
+            Bob = tuning.GetFloat("human.walkBob");
         }
+
+        /// <summary>멈춘 상태에서 걷는 속도에 이르는 시간 (가감속, M14).</summary>
+        public float AccelTime { get; }
+
+        /// <summary>걸음마다 골반이 위아래로 출렁이는 폭 (u).</summary>
+        public float Bob { get; }
 
         public float WalkSpeed { get; }
 
@@ -100,11 +108,12 @@ namespace Moqui.Core.Simulation
             }
 
             human.IsChasing = target.HasValue && human.State == AwarenessState.Frenzy;
-            float moved = target.HasValue ? MoveToward(human, target.Value, speed, deltaTime) : 0f;
+            float moved = target.HasValue ? MoveToward(human, target.Value, speed, deltaTime) : Coast(human, deltaTime);
+            float stride = speed > 0f ? Math.Clamp(human.WalkSpeed / _settings.WalkSpeed, 0f, 1f) : 0f;
             if (moved > 0f)
             {
                 human.WalkPhase += moved / _settings.StepLength * MathF.PI;
-                human.LegSwing = MathF.Sin(human.WalkPhase) * _settings.LegSwing;
+                human.LegSwing = MathF.Sin(human.WalkPhase) * _settings.LegSwing * stride;
             }
             else
             {
@@ -112,6 +121,8 @@ namespace Moqui.Core.Simulation
                 human.LegSwing *= 0.8f;
             }
 
+            // 걸음마다 골반이 디딜 때 낮아지고 다리를 모을 때 높아진다 (한 걸음 = 위상 반 바퀴).
+            human.BodyBob = -_settings.Bob * stride * MathF.Abs(MathF.Cos(human.WalkPhase));
             human.UpdatePose();
         }
 
@@ -144,7 +155,8 @@ namespace Moqui.Core.Simulation
                 return waypoint;
             }
 
-            // 경로점에 닿았다: 잠깐 멈추고 다음 점으로.
+            // 경로점에 닿았다(이미 감속해 왔다): 그 자리에 서서 잠깐 멈추고 다음 점으로.
+            human.WalkSpeed = 0f;
             human.WalkPauseEndTick = tick + SimulationTime.ToTicks(_random.Range(walk.Pause.Min, walk.Pause.Max));
             int next = human.WalkWaypoint + 1;
             human.WalkWaypoint = next < walk.Route.Count ? next : walk.Loop ? 0 : human.WalkWaypoint;
@@ -171,13 +183,46 @@ namespace Moqui.Core.Simulation
             }
 
             Vector3 direction = toTarget / distance;
-            float step = Math.Min(speed * deltaTime, distance);
+
+            // 가감속: walkAccelTime에 걸쳐 빨라지고, 남은 거리에서 멈출 수 있게 미리 줄인다.
+            float accel = _settings.AccelTime > 0f ? speed / _settings.AccelTime : float.PositiveInfinity;
+            float stoppable = float.IsPositiveInfinity(accel) ? speed : MathF.Sqrt(2f * accel * Math.Max(0f, distance - ArriveDistance * 0.5f));
+            float desired = Math.Min(speed, Math.Max(stoppable, accel * deltaTime));
+            human.WalkSpeed = float.IsPositiveInfinity(accel) ? desired : human.WalkSpeed + Math.Clamp(desired - human.WalkSpeed, -accel * deltaTime, accel * deltaTime);
+            float step = Math.Min(human.WalkSpeed * deltaTime, distance);
             if (_world.SphereSweep(human.RootPosition, _settings.Radius, direction, step, ShapeFlags.Obstacle, out var hit, ShapeFlags.Body))
             {
                 step = Math.Max(0f, hit.Distance - SphereMover.Skin);
             }
 
             human.RootPosition += direction * step;
+            human.WalkDirection = direction;
+            return step;
+        }
+
+        /// <summary>목표가 없으면(멈춤·의심·공격) 하던 걸음을 걷는 가속도로 줄이며 몇 걸음 미끄러지듯 멈춘다.</summary>
+        private float Coast(Human human, float deltaTime)
+        {
+            if (human.WalkSpeed <= 0f)
+            {
+                return 0f;
+            }
+
+            float decel = _settings.AccelTime > 0f ? _settings.WalkSpeed / _settings.AccelTime : float.PositiveInfinity;
+            human.WalkSpeed = float.IsPositiveInfinity(decel) ? 0f : Math.Max(0f, human.WalkSpeed - (decel * deltaTime));
+            float step = human.WalkSpeed * deltaTime;
+            if (step <= 0f)
+            {
+                return 0f;
+            }
+
+            if (_world.SphereSweep(human.RootPosition, _settings.Radius, human.WalkDirection, step, ShapeFlags.Obstacle, out var hit, ShapeFlags.Body))
+            {
+                step = Math.Max(0f, hit.Distance - SphereMover.Skin);
+                human.WalkSpeed = 0f;
+            }
+
+            human.RootPosition += human.WalkDirection * step;
             return step;
         }
 

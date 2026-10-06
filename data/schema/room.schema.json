@@ -4,62 +4,220 @@
   "title": "Room",
   "description": "방 데이터 (data/rooms/*.json): 벽, 가구 형상, Shadow Zone. 단위 u = 1cm, 원점은 바닥 중앙, +Y 위, +Z 북쪽 (spec/07).",
   "type": "object",
-  "required": ["formatVersion", "id", "size", "shapes"],
+  "required": [
+    "formatVersion",
+    "id",
+    "size",
+    "shapes"
+  ],
   "additionalProperties": false,
   "properties": {
-    "formatVersion": { "const": 1 },
-    "id": { "type": "string", "minLength": 1 },
-    "size": { "$ref": "#/$defs/vector3" },
-    "shapes": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/shape" } }
+    "formatVersion": {
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "size": {
+      "$ref": "#/$defs/vector3"
+    },
+    "shapes": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/shape"
+      }
+    },
+    "lights": {
+      "type": "array",
+      "description": "분위기 조명 (표현 전용, spec/assets/lighting.md, M14). 게임 규칙에 쓰는 조명 스위치는 레벨 데이터 lights[] (spec/06)",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "type",
+          "position",
+          "color",
+          "intensity",
+          "range"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "point",
+              "spot"
+            ]
+          },
+          "position": {
+            "$ref": "#/$defs/vector3"
+          },
+          "direction": {
+            "$ref": "#/$defs/vector3"
+          },
+          "color": {
+            "$ref": "#/$defs/vector3"
+          },
+          "intensity": {
+            "type": "number",
+            "minimum": 0
+          },
+          "range": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "spotAngle": {
+            "type": "number",
+            "exclusiveMinimum": 0,
+            "maximum": 179
+          },
+          "flicker": {
+            "enum": [
+              "none",
+              "lamp",
+              "tv",
+              "fluorescent",
+              "phone",
+              "ember",
+              "city"
+            ]
+          },
+          "shadows": {
+            "type": "boolean"
+          },
+          "glowShape": {
+            "type": "string"
+          },
+          "cookie": {
+            "type": "string"
+          }
+        }
+      }
+    }
   },
   "$defs": {
-    "vector3": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
+    "vector3": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 3,
+      "maxItems": 3
+    },
     "flags": {
       "type": "array",
-      "items": { "enum": ["obstacle", "attachable", "skinSite", "shadowZone", "hazard", "wind", "glass", "humidWeak", "humidStrong",
-            "netGap",
-            "net"] },
+      "items": {
+        "enum": [
+          "obstacle",
+          "attachable",
+          "skinSite",
+          "shadowZone",
+          "hazard",
+          "wind",
+          "glass",
+          "humidWeak",
+          "humidStrong",
+          "netGap",
+          "net"
+        ]
+      },
       "uniqueItems": true
     },
     "shape": {
       "type": "object",
-      "required": ["id", "type", "flags"],
+      "required": [
+        "id",
+        "type",
+        "flags"
+      ],
       "properties": {
-        "id": { "type": "string", "minLength": 1 },
-        "type": { "enum": ["box", "sphere", "capsule"] },
-        "flags": { "$ref": "#/$defs/flags" }
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "type": {
+          "enum": [
+            "box",
+            "sphere",
+            "capsule"
+          ]
+        },
+        "flags": {
+          "$ref": "#/$defs/flags"
+        }
       },
       "oneOf": [
         {
           "properties": {
-            "type": { "const": "box" },
-            "id": true, "flags": true,
-            "center": { "$ref": "#/$defs/vector3" },
-            "size": { "$ref": "#/$defs/vector3" },
-            "rotation": { "$ref": "#/$defs/vector3" }
+            "type": {
+              "const": "box"
+            },
+            "id": true,
+            "flags": true,
+            "center": {
+              "$ref": "#/$defs/vector3"
+            },
+            "size": {
+              "$ref": "#/$defs/vector3"
+            },
+            "rotation": {
+              "$ref": "#/$defs/vector3"
+            }
           },
-          "required": ["center", "size"],
+          "required": [
+            "center",
+            "size"
+          ],
           "additionalProperties": false
         },
         {
           "properties": {
-            "type": { "const": "sphere" },
-            "id": true, "flags": true,
-            "center": { "$ref": "#/$defs/vector3" },
-            "radius": { "type": "number", "exclusiveMinimum": 0 }
+            "type": {
+              "const": "sphere"
+            },
+            "id": true,
+            "flags": true,
+            "center": {
+              "$ref": "#/$defs/vector3"
+            },
+            "radius": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
           },
-          "required": ["center", "radius"],
+          "required": [
+            "center",
+            "radius"
+          ],
           "additionalProperties": false
         },
         {
           "properties": {
-            "type": { "const": "capsule" },
-            "id": true, "flags": true,
-            "a": { "$ref": "#/$defs/vector3" },
-            "b": { "$ref": "#/$defs/vector3" },
-            "radius": { "type": "number", "exclusiveMinimum": 0 }
+            "type": {
+              "const": "capsule"
+            },
+            "id": true,
+            "flags": true,
+            "a": {
+              "$ref": "#/$defs/vector3"
+            },
+            "b": {
+              "$ref": "#/$defs/vector3"
+            },
+            "radius": {
+              "type": "number",
+              "exclusiveMinimum": 0
+            }
           },
-          "required": ["a", "b", "radius"],
+          "required": [
+            "a",
+            "b",
+            "radius"
+          ],
           "additionalProperties": false
         }
       ]

@@ -48,6 +48,7 @@
 | plant-shelf | model | 4장 베란다 | 화분 선반 | [models/plant-shelf.md](models/plant-shelf.md) | `plant_shelf` | veranda | stage05 |
 | drying-rack | model | 4장 베란다 | 빨래 건조대 | [models/drying-rack.md](models/drying-rack.md) | `drying_rack` | veranda | stage05 |
 | ac-outdoor | model | 4장 베란다 | 에어컨 실외기 | [models/ac-outdoor.md](models/ac-outdoor.md) | `ac_unit` | veranda | stage05 |
+| veranda-lantern | model | 4장 베란다 | 캠핑 등불 | [models/veranda-lantern.md](models/veranda-lantern.md) | - | veranda | (표현 오브젝트) |
 | spray-dispenser | model | 기믹 | 자동 모기약 분사기 | [models/spray-dispenser.md](models/spray-dispenser.md) | `spray_dispenser` `dispenser` | - | stage05 |
 | mosquito-coil | model | 기믹 | 모기향 | [models/mosquito-coil.md](models/mosquito-coil.md) | `coil` | - | stage05 |
 | spider-web | model | 기믹 | 거미줄 | [models/spider-web.md](models/spider-web.md) | `web_*` | - | stage05 |
@@ -96,6 +97,7 @@
 | tex-spray-label | 스프레이 라벨 | 256², 모기 경고 그림 |
 | tex-light-cookie-window | 창틀 빛 쿠키 | 256² 흑백, 창살 모양(달빛 스팟 조명 쿠키) |
 | tex-light-cookie-blinds | 블라인드 빛 쿠키 | 256² 흑백 줄무늬(선택) |
+| tex-lantern-paper | 등불 한지 | 256², 빛이 비치는 한지 결(투과 마스크) |
 
 ## VFX·조명
 
@@ -113,4 +115,5 @@
 | vfx-wind-dust | 바람 먼지 줄기 | `spec/10`·`spec/11`의 현재 셰이더 표현을 정식 VFX로 교체 |
 | vfx-water-drop | 물방울 맺힘·낙하·튀김 | `spec/10`·`spec/11`의 현재 셰이더 표현을 정식 VFX로 교체 |
 | vfx-swatter-zap | 전기 모기채 스파크 | `spec/10`·`spec/11`의 현재 셰이더 표현을 정식 VFX로 교체 |
+| vfx-light-shaft | 달빛 빛줄기와 떠다니는 먼지 (lighting.md) | `spec/10`·`spec/11`의 현재 셰이더 표현을 정식 VFX로 교체 |
 | light-* | 분위기 조명 | [lighting.md](lighting.md) |

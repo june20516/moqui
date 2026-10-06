@@ -111,7 +111,11 @@ namespace Moqui.Core.Simulation
             PitchLimit = tuning.GetFloat("head.pitchLimit");
             SuspiciousStareTime = tuning.GetFloat("head.suspiciousStareTime");
             SearchAngle = tuning.GetFloat("head.searchAngle");
+            TurnAccelTime = tuning.GetFloat("head.turnAccelTime");
         }
+
+        /// <summary>머리가 멈춘 상태에서 최고 회전 속도에 이르는 시간 (가속·감속, 자연스러운 움직임 M14).</summary>
+        public float TurnAccelTime { get; }
 
         public float IdleTurnSpeed { get; }
 

@@ -96,6 +96,8 @@ namespace Moqui.Unity.Editor
             var simulation = new GameSimulation(GameSettings.FromTuning(tuning), level.CreateSetup());
             var materials = UnityEngine.Object.FindAnyObjectByType<LevelMaterials>();
             var visuals = LevelView.Build(level, simulation.World, null, materials);
+            // 방 분위기 조명 (spec/assets/lighting.md): 캡처는 t=0 상태로 고정된다.
+            new GameObject("RoomLighting").AddComponent<RoomLightingView>().Build(level.Room, visuals);
             var humanView = UnityEngine.Object.FindAnyObjectByType<HumanView>();
             humanView.Build(simulation.Human);
             var senses = new SensesSettings(tuning);

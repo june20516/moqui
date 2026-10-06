@@ -17,6 +17,16 @@ namespace Moqui.Unity.Presentation
 
         private Vector2 _lean;
 
+        /// <summary>호버링 둥실거림 (표현 전용, M14): 폭(u)과 주기(Hz). 빠르게 날수록 줄어든다.</summary>
+        public const float HoverBobAmplitude = 0.06f;
+        public const float HoverBobFrequency = 1.4f;
+
+        /// <summary>정지 비행일수록 크게 위아래로 둥실거린다. 최고 속도에서는 0.</summary>
+        public static float HoverBob(float time, float speedRatio)
+        {
+            return HoverBobAmplitude * (1f - Mathf.Clamp01(speedRatio)) * Mathf.Sin(2f * Mathf.PI * HoverBobFrequency * time);
+        }
+
         private void LateUpdate()
         {
             if (!_runner.IsRunning)
@@ -39,7 +49,9 @@ namespace Moqui.Unity.Presentation
             Vector2 target = Lean(localVelocity, simulation.Settings.Flight.Speed);
             _lean = Vector2.Lerp(_lean, target, 1f - Mathf.Exp(-LeanResponse * Time.deltaTime));
 
-            transform.SetPositionAndRotation(_runner.Driver.InterpolatedPlayerPosition, yaw * Quaternion.Euler(_lean.x, 0f, _lean.y));
+            float speedRatio = player.Velocity.Length() / simulation.Settings.Flight.Speed;
+            Vector3 bob = Vector3.up * HoverBob(Time.time, speedRatio);
+            transform.SetPositionAndRotation(_runner.Driver.InterpolatedPlayerPosition + bob, yaw * Quaternion.Euler(_lean.x, 0f, _lean.y));
         }
 
         /// <summary>부착 중 몸 방향: up = 표면 법선, 앞 = 시점 방향을 표면에 투영한 방향 (투영이 거의 0이면 월드 위쪽을 투영).</summary>

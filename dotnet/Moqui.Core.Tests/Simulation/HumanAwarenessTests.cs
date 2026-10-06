@@ -81,15 +81,37 @@ namespace Moqui.Core.Tests.Simulation
             Assert.That(System.Math.Abs(simulation.Human.HeadYaw), Is.EqualTo(limit).Within(1e-3f), "head reached the limit while looking back");
         }
 
+        /// <summary>머리는 가속해 출발하고(최고 속도까지 head.turnAccelTime), 남은 각에 맞춰 감속해 넘치지 않고 멈춘다 (M14).</summary>
         [Test]
-        public void Head_IdlePattern_TurnsAtIdleSpeed()
+        public void Head_IdlePattern_EasesInAndOut_NoOvershoot()
         {
             var definition = TestHumans.Seated(idleLookYaws: new[] { 60f, -60f });
             var simulation = TestHumans.Simulation(TestHumans.FarBehind, human: definition);
+            float speed = Settings.Head.IdleTurnSpeed;
+            float accelTime = Settings.Head.TurnAccelTime;
 
-            Run(simulation, PlayerCommand.None, SecondsToTicks(0.5f));
+            Run(simulation, PlayerCommand.None, SecondsToTicks(0.1f));
+            Assert.That(simulation.Human.HeadYaw, Is.LessThan(speed * 0.1f * 0.6f), "starts slowly");
 
-            Assert.That(simulation.Human.HeadYaw, Is.EqualTo(Settings.Head.IdleTurnSpeed * 0.5f).Within(0.5f));
+            Run(simulation, PlayerCommand.None, SecondsToTicks(0.4f));
+            Assert.That(simulation.Human.HeadYaw, Is.EqualTo(speed * (0.5f - (accelTime * 0.5f))).Within(1.5f), "then turns at idle speed");
+
+            float maxYaw = 0f;
+            float lastVelocity = 0f;
+            for (int i = 0; i < SecondsToTicks(1f); i++)
+            {
+                simulation.Step(PlayerCommand.None);
+                maxYaw = System.Math.Max(maxYaw, simulation.Human.HeadYaw);
+                if (simulation.Human.HeadYaw >= 59.9f)
+                {
+                    break;
+                }
+
+                lastVelocity = simulation.Human.HeadYawVelocity;
+            }
+
+            Assert.That(maxYaw, Is.LessThanOrEqualTo(60f + 1e-3f), "no overshoot");
+            Assert.That(lastVelocity, Is.LessThan(speed * 0.5f), "slows down before stopping");
         }
     }
 }
