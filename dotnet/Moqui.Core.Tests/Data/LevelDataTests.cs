@@ -153,6 +153,26 @@ namespace Moqui.Core.Tests.Data
             Assert.That(errors.Any(e => e.Contains("Yellow Zone")), Is.True, string.Join("\n", errors));
         }
 
+        /// <summary>걷기 경로가 가구를 지나거나 가구 안에 경로점이 있으면 보고한다 (spec/02 §9, M14).</summary>
+        [Test]
+        public void Validator_WalkRouteThroughFurniture_Reported()
+        {
+            var world = new CollisionWorld();
+            world.Add(CollisionShape.Box("table", new System.Numerics.Vector3(0f, 80f, 100f), new System.Numerics.Vector3(60f, 10f, 30f), ShapeFlags.Obstacle | ShapeFlags.Attachable));
+            var walk = new HumanWalkDefinition(new[] { new System.Numerics.Vector2(0f, 300f), new System.Numerics.Vector2(0f, 100f) }, new FloatRange(1f, 1f), true);
+            var human = new Human(TestHumans.Standing(walk), world, TestSimulations.Settings.Body);
+
+            var errors = LevelValidator.WalkRouteErrors(human, world, TestSimulations.Settings.Walk).ToList();
+
+            Assert.That(errors, Has.Some.Contains("segment to point 0 is blocked"));
+            Assert.That(errors, Has.Some.Contains("walk point 1 overlaps furniture"));
+
+            var clearWorld = new CollisionWorld();
+            clearWorld.Add(CollisionShape.Box("table", new System.Numerics.Vector3(0f, 80f, 100f), new System.Numerics.Vector3(60f, 10f, 30f), ShapeFlags.Obstacle | ShapeFlags.Attachable));
+            var clear = new Human(TestHumans.Standing(new HumanWalkDefinition(new[] { new System.Numerics.Vector2(200f, 0f) }, new FloatRange(1f, 1f), true)), clearWorld, TestSimulations.Settings.Body);
+            Assert.That(LevelValidator.WalkRouteErrors(clear, clearWorld, TestSimulations.Settings.Walk), Is.Empty);
+        }
+
         [Test]
         public void Validator_FurnitureWithoutObstacleFlag_Reported()
         {

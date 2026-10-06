@@ -67,7 +67,11 @@ namespace Moqui.Core.Simulation
             DislodgeSpeed = tuning.GetFloat("human.dislodgeSpeed");
             DislodgePush = tuning.GetFloat("human.dislodgePush");
             DislodgeStun = tuning.GetFloat("human.dislodgeStun");
+            AlarmShare = tuning.GetFloat("human.alarmShare");
         }
+
+        /// <summary>한 사람이 광분하면 다른 사람의 경계를 이 값까지 올린다 (광분 전염, M14).</summary>
+        public float AlarmShare { get; }
 
         public FloatRange ActionInterval { get; }
 

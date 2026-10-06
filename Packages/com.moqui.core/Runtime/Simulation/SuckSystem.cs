@@ -86,18 +86,35 @@ namespace Moqui.Core.Simulation
             return 1f - ((1f - _suck.SatietyMinDashMul) * SatietyPenaltyMultiplier * (bloodGauge / GaugeMax));
         }
 
+        /// <summary>인간 하나 (기존 호출).</summary>
         public void Step(Player player, Human human, in PlayerCommand command, int tick, float deltaTime, List<SimulationEvent> events)
+        {
+            Step(player, human != null ? new[] { human } : System.Array.Empty<Human>(), command, tick, deltaTime, events);
+        }
+
+        /// <summary>인간 여럿 (M14 두 사람): 붙은 부위의 주인에게서 빨고, 가려움은 모든 인간에게서 내린다.</summary>
+        public void Step(Player player, IReadOnlyList<Human> humans, in PlayerCommand command, int tick, float deltaTime, List<SimulationEvent> events)
         {
             SkinSiteState suckedSite = null;
             SkinSiteState attachedSite = null;
-            bool attachedToSkin = human != null
-                && player.State == PlayerState.Attached
-                && human.TryGetSite(player.Anchor.Shape, out attachedSite);
+            Human human = null;
+            if (player.State == PlayerState.Attached)
+            {
+                foreach (var candidate in humans)
+                {
+                    if (candidate.TryGetSite(player.Anchor.Shape, out attachedSite))
+                    {
+                        human = candidate;
+                        break;
+                    }
+                }
+            }
 
+            bool attachedToSkin = human != null;
             var session = player.SuckSession;
             if (session != null && (!attachedToSkin || session.Site != attachedSite || session.AttachedTick != player.AttachedTick))
             {
-                EndSession(player, human, tick, events);
+                EndSession(player, OwnerOf(humans, session.Site), tick, events);
                 session = null;
             }
 
@@ -123,9 +140,9 @@ namespace Moqui.Core.Simulation
                 suckedSite = attachedSite;
             }
 
-            if (human != null)
+            foreach (var each in humans)
             {
-                foreach (var site in human.SkinSites)
+                foreach (var site in each.SkinSites)
                 {
                     if (site != suckedSite)
                     {
@@ -133,6 +150,19 @@ namespace Moqui.Core.Simulation
                     }
                 }
             }
+        }
+
+        private static Human OwnerOf(IReadOnlyList<Human> humans, SkinSiteState site)
+        {
+            foreach (var human in humans)
+            {
+                if (human.Owns(site.Shape))
+                {
+                    return human;
+                }
+            }
+
+            return null;
         }
 
         private void EndSession(Player player, Human human, int tick, List<SimulationEvent> events)

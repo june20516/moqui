@@ -61,6 +61,20 @@ namespace Moqui.Core.Data.Levels
             }
 
             var traits = new HumanTraits(modifiers, json.Get("canSpray").Bool(), glance);
+            HumanWalkDefinition walk = null;
+            if (json.Has("walk"))
+            {
+                var walkJson = json.Get("walk");
+                var route = new List<Vector2>();
+                foreach (var item in walkJson.Get("route").Items())
+                {
+                    var values = item.Items();
+                    route.Add(new Vector2(values[0].Float(), values[1].Float()));
+                }
+
+                walk = new HumanWalkDefinition(route, walkJson.Get("pause").Range(), !walkJson.Has("loop") || walkJson.Get("loop").Bool());
+            }
+
             try
             {
                 return new HumanDefinition(
@@ -75,7 +89,9 @@ namespace Moqui.Core.Data.Levels
                     traits,
                     json.Has("facingPitch") ? json.Get("facingPitch").Float() : 0f,
                     json.Has("restPitch") ? json.Get("restPitch").Float() : 0f,
-                    json.Has("maxPosture") ? json.Get("maxPosture").Enum<PostureLevel>() : PostureLevel.Rise);
+                    json.Has("maxPosture") ? json.Get("maxPosture").Enum<PostureLevel>() : PostureLevel.Rise,
+                    walk,
+                    json.Has("tool") ? json.Get("tool").Enum<HumanTool>() : HumanTool.None);
             }
             catch (System.ArgumentException exception)
             {

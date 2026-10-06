@@ -25,6 +25,8 @@ namespace Moqui.Core.Simulation
         private readonly SphereMover _mover;
         private readonly FallingBodySystem _fallingBodies;
         private readonly HumanSystem _humanSystem;
+        private readonly List<Human> _humans = new List<Human>();
+        private readonly List<HumanSystem> _humanSystems = new List<HumanSystem>();
         private readonly List<FallingBody> _bodies = new List<FallingBody>();
         private readonly List<SimulationEvent> _events = new List<SimulationEvent>();
         private readonly List<ZoneSnapshot> _shadowZones = new List<ZoneSnapshot>();
@@ -54,6 +56,7 @@ namespace Moqui.Core.Simulation
             _dash.ChainLevel = setup.Skills.Level(SkillCatalog.ChainVortex);
             Decoy = new DecoySystem(settings.Decoy, World, setup.Skills.ActiveLevel(SkillCatalog.DecoyCharm));
             Fans = new FanSystem(settings.Fan, setup.Gimmicks.Fans);
+            Lights = new LightSystem(settings.Light, setup.Gimmicks.Lights);
             Toxin = new ToxinSystem(settings.Toxin, Fans, setup.Gimmicks.Coils, setup.Gimmicks.SprayDispensers, SeedStreams.Create(setup.Seed, SeedStreams.Debuff));
             foreach (var shape in World.Shapes)
             {
@@ -64,9 +67,13 @@ namespace Moqui.Core.Simulation
             }
             if (setup.Human != null)
             {
-                Human = new Human(setup.Human, World, settings.Body);
-                _humanSystem = new HumanSystem(settings, World, setup.Seed);
-                _humanSystem.Initialize(Human, 0);
+                Human = AddHuman(setup.Human, setup.Seed);
+                _humanSystem = _humanSystems[0];
+                for (int i = 0; i < setup.Companions.Count; i++)
+                {
+                    AddHuman(setup.Companions[i], SeedStreams.Derive(setup.Seed, $"companion{i + 1}"));
+                }
+
                 if (Human.IsDrunk)
                 {
                     // 취한 타겟 (spec/06): 흡혈 속도·가려움 배율.
@@ -91,10 +98,44 @@ namespace Moqui.Core.Simulation
 
         public HumanSystem HumanSystem => _humanSystem;
 
+        /// <summary>모든 인간 (주 인간이 첫째, M14 두 사람).</summary>
+        public IReadOnlyList<Human> Humans => _humans;
+
+        public HumanSystem HumanSystemOf(Human human) => _humanSystems[_humans.IndexOf(human)];
+
+        private Human AddHuman(HumanDefinition definition, ulong seed)
+        {
+            var human = new Human(definition, World, Settings.Body);
+            human.ToolLength = Settings.Attack.SwatterLength;
+            human.UpdatePose();
+            var system = new HumanSystem(Settings, World, seed);
+            system.Initialize(human, 0);
+            _humans.Add(human);
+            _humanSystems.Add(system);
+            return human;
+        }
+
+        /// <summary>그 형상을 가진 인간 (없으면 null).</summary>
+        private Human OwnerOf(CollisionShape shape)
+        {
+            foreach (var human in _humans)
+            {
+                if (human.Owns(shape))
+                {
+                    return human;
+                }
+            }
+
+            return null;
+        }
+
         public SuckSystem Suck { get; }
 
         /// <summary>선풍기 (spec/06).</summary>
         public FanSystem Fans { get; }
+
+        /// <summary>조명 스위치 (spec/06, M14).</summary>
+        public LightSystem Lights { get; }
 
         /// <summary>모기약 연무·모기향·중독 (spec/06).</summary>
         public ToxinSystem Toxin { get; }
@@ -146,9 +187,9 @@ namespace Moqui.Core.Simulation
                 return;
             }
 
-            if (Human != null)
+            for (int i = 0; i < _humans.Count; i++)
             {
-                _humanSystem.StepMotion(Human, Tick);
+                _humanSystems[i].StepMotion(_humans[i], Tick);
             }
 
             if (Player.State != PlayerState.Dead)
@@ -158,6 +199,7 @@ namespace Moqui.Core.Simulation
             }
 
             UpdateWeb();
+            UpdateNetGap();
             Decoy.Step(Player, command, Tick, _events);
             UpdateHidden();
             Water.Step(Player, Tick, DeltaTime, _events);
@@ -169,10 +211,12 @@ namespace Moqui.Core.Simulation
             }
 
             _stamina.Update(Player, Tick, DeltaTime);
-            if (Human != null)
+            for (int i = 0; i < _humans.Count; i++)
             {
-                _humanSystem.Step(Human, Player, Tick, DeltaTime, _events);
+                _humanSystems[i].Step(_humans[i], Player, Tick, DeltaTime, _events);
             }
+
+            ShareAlarm();
 
             foreach (var released in _events.OfType<SprayReleased>().ToList())
             {
@@ -181,7 +225,7 @@ namespace Moqui.Core.Simulation
 
             Toxin.StepClouds(Tick, DeltaTime);
             Toxin.UpdateGauge(Player, Tick, DeltaTime, _events);
-            Suck.Step(Player, Human, command, Tick, DeltaTime, _events);
+            Suck.Step(Player, _humans, command, Tick, DeltaTime, _events);
             UpdateOutcome();
             Tick++;
         }
@@ -215,7 +259,7 @@ namespace Moqui.Core.Simulation
             Player.DashDistanceMultiplier = Suck.DashMultiplier(Player.BloodGauge);
             Player.StaminaRegenMultiplier = 1f;
             Player.DashCostAdd = 0f;
-            Player.NoiseRadiusMultiplier = Fans.NoiseMultiplier(Player.Position);
+            Player.NoiseRadiusMultiplier = Fans.NoiseMultiplier(Player.Position, Tick);
 
             // 바람은 입력과 별개의 외력이다 (관성 규칙 미적용, spec/06). 부착 중에는 받지 않는다.
             Player.ExternalVelocity = Player.State == PlayerState.Attached ? Vector3.Zero : Fans.WindAt(Player.Position, Tick);
@@ -237,7 +281,7 @@ namespace Moqui.Core.Simulation
                     _attach.StepAttached(Player, command, Tick, DeltaTime, _events);
                     if (Player.State == PlayerState.Attached)
                     {
-                        _attach.TryDislodge(Player, Tick, _events, GripMultiplier());
+                        _attach.TryDislodge(Player, Tick, _events, GripMultiplier(), CarriedVelocity());
                     }
 
                     return;
@@ -280,12 +324,20 @@ namespace Moqui.Core.Simulation
             }
         }
 
+        /// <summary>걷는 인간에 붙어 있으면 몸 전체 이동으로 생긴 부착점 속도 (spec/02 §9).</summary>
+        private Vector3 CarriedVelocity()
+        {
+            var owner = OwnerOf(Player.Anchor.Shape);
+            return owner != null ? owner.CarriedVelocityAt(Player.Position, DeltaTime) : Vector3.Zero;
+        }
+
         /// <summary>
         /// 흡혈 중 "부위가 움직임" 이벤트에서 Suck을 누른 채 버티면 튕김 기준 속도에 suckEvent.gripMul을 곱한다 (D-056).
         /// </summary>
         private float GripMultiplier()
         {
-            bool shifting = Human != null && Human.SuckEvent.Is(SuckEventKind.Shift, SuckEventPhase.Active);
+            var owner = Player.Anchor != null ? OwnerOf(Player.Anchor.Shape) : null;
+            bool shifting = owner != null && owner.SuckEvent.Is(SuckEventKind.Shift, SuckEventPhase.Active);
             return shifting && Player.SuckHeld && Player.SuckSession != null ? Settings.SuckEvent.GripMul : 1f;
         }
 
@@ -304,8 +356,8 @@ namespace Moqui.Core.Simulation
             else if (Player.BloodGauge >= SuckSystem.GaugeMax)
             {
                 Outcome = StageOutcome.Cleared;
-                int frenzyCount = Human?.FrenzyCount ?? 0;
-                int biteMarks = Human?.BiteMarkCount ?? 0;
+                int frenzyCount = _humans.Sum(human => human.FrenzyCount);
+                int biteMarks = _humans.Sum(human => human.BiteMarkCount);
                 _events.Add(new StageCleared(Tick, new StageResult(Tick + 1, frenzyCount, biteMarks)));
             }
         }
@@ -340,9 +392,58 @@ namespace Moqui.Core.Simulation
         }
 
         /// <summary>숨은 상태 = 플레이어 충돌 구 중심이 Shadow Zone 볼륨 안 (spec/03, D-034).</summary>
+        private bool _wasInNetGap;
+
+        /// <summary>
+        /// 광분 전염 (spec/02 두 사람, M14): 한 사람이 광분하면 광분하지 않은 다른 사람의 경계를 human.alarmShare까지 올리고
+        /// 그 사람이 본 자극 위치를 쳐다보게 한다.
+        /// </summary>
+        private void ShareAlarm()
+        {
+            foreach (var changed in _events.OfType<AwarenessStateChanged>().ToList())
+            {
+                if (changed.To != AwarenessState.Frenzy)
+                {
+                    continue;
+                }
+
+                var source = _humans.FirstOrDefault(human => human.Id == changed.HumanId);
+                foreach (var other in _humans)
+                {
+                    if (other == source || other.State == AwarenessState.Frenzy || source == null)
+                    {
+                        continue;
+                    }
+
+                    other.Awareness = Math.Max(other.Awareness, Settings.HumanMotion.AlarmShare);
+                    other.HasStimulus = true;
+                    other.LastStimulusPosition = source.HasStimulus ? source.LastStimulusPosition : source.LastSeenPosition;
+                    other.LastStimulusTick = Tick;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 모기장 틈 (spec/06, M14): 비행 중 틈 볼륨에 들어서는 순간 정밀 비행이 아니면 그물을 스치는 소음을 낸다.
+        /// </summary>
+        private void UpdateNetGap()
+        {
+            bool inGap = Player.State != PlayerState.Dead && World.AnyOverlap(Player.Position, Player.CollisionRadius, ShapeFlags.NetGap);
+            if (inGap && !_wasInNetGap && !Player.PrecisionHeld)
+            {
+                var net = Settings.Net;
+                _events.Add(new NoiseEmitted(Tick, NoiseSource.Net, Player.Position, net.RustleRadius, net.RustleAwareness));
+            }
+
+            _wasInNetGap = inGap;
+        }
+
+        /// <summary>은신 (spec/03): Shadow Zone 안이고 켜진 조명 영역 밖이다 (불이 켜지면 그림자가 사라진다, spec/06 M14).</summary>
         private void UpdateHidden()
         {
-            Player.IsHidden = World.AnyOverlap(Player.Position, 0f, ShapeFlags.ShadowZone);
+            Lights.Step(_humans, Tick);
+            Player.InLight = Lights.IsLit(Player.Position);
+            Player.IsHidden = World.AnyOverlap(Player.Position, 0f, ShapeFlags.ShadowZone) && !Player.InLight;
         }
 
         private void Fly(in PlayerCommand command)

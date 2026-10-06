@@ -44,6 +44,31 @@ namespace Moqui.Core.Tests.Simulation
             Assert.That(speed, Is.EqualTo(40f).Within(0.5f));
         }
 
+        /// <summary>에어컨: 주기에 따라 켜진 동안만 고정 방향의 센 바람과 소음 마스킹 (spec/06, M14).</summary>
+        [Test]
+        public void AirConditioner_BlowsOnlyWhileOn_FixedDirection_Stronger()
+        {
+            var schedule = new FanSchedule(onTime: 2f, offTime: 3f, offset: 0f);
+            var aircon = new FanDefinition("aircon", FanPosition, 90f, 0f, FanKind.AirConditioner, schedule);
+            var simulation = World(FanPosition + new Vector3(50f, 0f, 0f), Fans(aircon));
+            var fans = simulation.Fans;
+            Vector3 inCone = FanPosition + new Vector3(100f, 0f, 0f);
+
+            Assert.That(fans.IsOn(aircon, SecondsToTicks(1f)), Is.True);
+            Assert.That(fans.IsOn(aircon, SecondsToTicks(3f)), Is.False);
+            Assert.That(fans.IsOn(aircon, SecondsToTicks(5.5f)), Is.True, "cycle repeats");
+            Assert.That(fans.HeadYaw(aircon, SecondsToTicks(2.3f)), Is.EqualTo(90f), "does not oscillate");
+            Assert.That(fans.WindAt(inCone, SecondsToTicks(1f)).X, Is.EqualTo(Settings.Fan.AirconWindSpeed).Within(1e-3f));
+            Assert.That(Settings.Fan.AirconWindSpeed, Is.GreaterThan(Settings.Fan.WindSpeed));
+            Assert.That(fans.WindAt(inCone, SecondsToTicks(3f)), Is.EqualTo(Vector3.Zero), "no wind while off");
+            Assert.That(fans.NoiseMultiplier(FanPosition, SecondsToTicks(1f)), Is.EqualTo(Settings.Fan.NoiseMaskMul));
+            Assert.That(fans.NoiseMultiplier(FanPosition, SecondsToTicks(3f)), Is.EqualTo(1f), "no noise masking while off");
+
+            Vector3 start = simulation.Player.Position;
+            Run(simulation, PlayerCommand.None, 6);
+            Assert.That((simulation.Player.Position.X - start.X) / (6 * GameSimulation.DeltaTime), Is.EqualTo(Settings.Fan.AirconWindSpeed).Within(0.5f));
+        }
+
         [Test]
         public void Fan_Attached_NotAffected()
         {

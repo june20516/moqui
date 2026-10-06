@@ -157,6 +157,13 @@ namespace Moqui.Core.Simulation
             }
 
             float windUpTime = WindUpDuration(human, kind, target, plan.Arm, peakSpeed);
+
+            // 전기 모기채를 든 팔로 치면 판정이 채 크기만큼 넓다 (spec/02 §7, M14).
+            if (plan.Arm == human.ToolArm)
+            {
+                radius = Math.Max(radius, _attack.SwatterRadius);
+            }
+
             Begin(human, kind, target, radius, Math.Max(telegraph, Math.Max(plan.PostureTime + _attack.MinTelegraph, windUpTime)), recovery, peakSpeed, plan.Posture, plan.PostureTime, tick, events);
             human.Attack.ArmA = plan.Arm;
             human.Attack.HandStart[0] = human.Palm(plan.Arm) - human.Shoulder(plan.Arm);
@@ -373,7 +380,7 @@ namespace Moqui.Core.Simulation
         private static float MinRadius(Human human, int arm)
         {
             var rig = human.Rig.Arms[arm];
-            return BodyKinematics.MinReach(rig.UpperLength, rig.ForearmLength, human.Body.HandReachExtra, human.Body.ElbowFlexMax) + 1f;
+            return BodyKinematics.MinReach(rig.UpperLength, rig.ForearmLength, human.HandExtra(arm), human.Body.ElbowFlexMax) + 1f;
         }
 
         /// <summary>손을 치켜드는 데 필요한 시간 (손 속도 상한 × PrepareSpeedRatio 이하).</summary>

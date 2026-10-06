@@ -15,8 +15,9 @@ namespace Moqui.Core.Simulation
     {
         private readonly Func<CollisionWorld> _worldFactory;
 
-        public SimulationSetup(Func<CollisionWorld> worldFactory, Vector3 playerSpawn, HumanDefinition human = null, ulong seed = 0, IReadOnlyList<Vector3> dripSources = null, SkillLoadout skills = null, GimmickSetup gimmicks = null)
+        public SimulationSetup(Func<CollisionWorld> worldFactory, Vector3 playerSpawn, HumanDefinition human = null, ulong seed = 0, IReadOnlyList<Vector3> dripSources = null, SkillLoadout skills = null, GimmickSetup gimmicks = null, IReadOnlyList<HumanDefinition> companions = null)
         {
+            Companions = companions ?? Array.Empty<HumanDefinition>();
             Skills = skills ?? SkillLoadout.None;
             Gimmicks = gimmicks ?? GimmickSetup.None;
             _worldFactory = worldFactory ?? throw new ArgumentNullException(nameof(worldFactory));
@@ -27,8 +28,8 @@ namespace Moqui.Core.Simulation
         }
 
         /// <summary>이미 만든 월드로 구성한다. 인간 캡슐이 월드에 등록되므로 이 구성은 한 번만 쓸 수 있다 (재시도 불가).</summary>
-        public SimulationSetup(CollisionWorld world, Vector3 playerSpawn, HumanDefinition human = null, ulong seed = 0, IReadOnlyList<Vector3> dripSources = null, SkillLoadout skills = null, GimmickSetup gimmicks = null)
-            : this(SingleUse(world), playerSpawn, human, seed, dripSources, skills, gimmicks)
+        public SimulationSetup(CollisionWorld world, Vector3 playerSpawn, HumanDefinition human = null, ulong seed = 0, IReadOnlyList<Vector3> dripSources = null, SkillLoadout skills = null, GimmickSetup gimmicks = null, IReadOnlyList<HumanDefinition> companions = null)
+            : this(SingleUse(world), playerSpawn, human, seed, dripSources, skills, gimmicks, companions)
         {
         }
 
@@ -44,6 +45,9 @@ namespace Moqui.Core.Simulation
         public GimmickSetup Gimmicks { get; }
 
         public HumanDefinition Human { get; }
+
+        /// <summary>함께 있는 다른 인간들 (M14 두 사람). 주 인간은 Human.</summary>
+        public IReadOnlyList<HumanDefinition> Companions { get; }
 
         public ulong Seed { get; }
 

@@ -48,6 +48,7 @@ namespace Moqui.Unity.Presentation.Audio
         private int _lastDropCount;
         private float _lastBreathPhase = -1f;
         private bool _wasInWind;
+        private int _lastStep;
 
         /// <summary>이벤트 하나에 대응하는 효과음 (없으면 null).</summary>
         public static string FromEvent(SimulationEvent simulationEvent)
@@ -205,6 +206,15 @@ namespace Moqui.Unity.Presentation.Audio
             }
 
             _lastBreathPhase = human.BreathPhase;
+
+            // 걷는 인간: 한 걸음(다리 위상 반 바퀴)마다 발소리 (spec/02 §9, M14).
+            int step = (int)System.Math.Floor(human.WalkPhase / System.Math.PI);
+            if (step > _lastStep)
+            {
+                ids.Add(AudioIds.Footstep);
+            }
+
+            _lastStep = step;
         }
 
         private static string HitSound(AttackKind kind)

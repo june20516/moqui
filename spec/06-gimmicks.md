@@ -20,6 +20,21 @@
 - 바람 원뿔 안에서는 CO₂ 흐름이 흩어진다 (후각 교란, spec/11 §2). 스프레이 연무도 바람에 떠밀리고, 모기향의 중독 하한이 낮아진다.
 - 선풍기 본체는 Obstacle이다.
 
+## 에어컨 타이머 (`AirConditioner`, M14)
+- 레벨 데이터 `fans[]`에 `"kind": "airConditioner"`와 주기 `schedule` {on, off, offset}(s)를 둔다. 머리가 돌지 않고 `yaw`/`pitch` 방향으로만 분다.
+- 바람: 원뿔 반경 `aircon.range`, 반각 `aircon.halfAngle`, 속도 `aircon.windSpeed`. 켜져 있을 때만 바람·소음 마스킹·CO₂ 흩어짐이 있다. 시작 후 `offset`초가 지난 것처럼 주기가 돈다.
+- 해법: 주기를 읽고 꺼진 동안 지나가거나, 켜진 동안 소음 마스킹을 이용한다. 본체는 Obstacle.
+
+## 조명 스위치 (`Light`, M14)
+- 레벨 데이터 `lights[]`: 전구 위치 `position`, 비추는 영역 `area` {center, size}(상자), 켜는 방식은 주기 `schedule` {on, off, offset} 또는 `onWhenAlert`(인간이 의심·광분하면 `light.switchDelay` 뒤 켜고, 평온이 `light.offDelay` 이어지면 끈다).
+- 켜진 영역 안에서는 그림자가 사라져 Shadow Zone이 숨겨 주지 못하고, 인간의 시각 증가가 `light.visionMul`배가 된다.
+- 해법: 불이 켜지기 전에 빠져나가거나 영역 밖의 은신처로, 꺼질 때까지 기다리기. 들키면 불이 켜지므로 다음 접근이 어려워진다.
+
+## 모기장 (`Net`, M14)
+- 레벨 데이터 `nets[]`(그물 판 상자)와 `netGaps[]`(틈 볼륨 상자). 그물은 유리처럼 몸은 막고 시야는 막지 않으며, 붙을 수 있다. 표현은 반투명 그물.
+- 비행 중 틈 볼륨에 들어서는 순간 정밀 비행이 아니면 그물을 스쳐 소음(`net.rustleRadius`, 경계 +`net.rustleAwareness`)을 낸다.
+- 해법: 관망으로 틈을 찾고 정밀 비행으로 조용히 통과한다.
+
 ## 거미줄 (`SpiderWeb`)
 - 얇은 평면형 트리거. 시각적으로 잘 보여야 한다 (화이트박스: 흰색 반투명 격자).
 - 접촉하면 이동 입력을 막고 `web.struggleTime` 후 사망한다 (DeathCause.Web). 탈출할 수 없다.
@@ -88,6 +103,9 @@
 - [x] 경계 40 이상이면 완전히 깨고, 20 미만 5초 유지 후 다시 존다 (Core). — 증거: `HumanModifierTests.Doze_AwarenessAtSuspicion_FullyWakes_ThenResleepsAfter5CalmSeconds`
 - [x] 졸음 수정자 아래의 광분 최소 유지 시간이 0.5배이다 (Core). — 증거: `HumanModifierTests.Doze_FrenzyMinimumHalved_CalmsSoonerThanAwakeHuman`
 - [x] 무작위 휘두르기가 4~7초 간격으로, 같은 시드에서 같은 위치로 발생한다 (Core). — 증거: `GimmickTests.Drunk_RandomSwatsEvery4To7Seconds_ReproducibleWithSeed` (D-046)
+- [x] 에어컨은 주기에 따라 켜진 동안만 고정 방향의 센 바람과 소음 마스킹을 주고, 송풍 날개는 켜진 동안만 보인다 (Core + Unity). (M14) — 증거: `GimmickTests.AirConditioner_BlowsOnlyWhileOn_FixedDirection_Stronger`, EditMode `GimmickViewTests.AirConditionerVane_VisibleOnlyWhileOn`
+- [x] 조명이 주기 또는 인간 경계에 따라 켜지고 꺼지며, 켜진 영역 안에서는 은신이 풀리고 시각 증가가 배가된다 (Core + Unity). (M14) — 증거: `LightTests.Scheduled_LitOnlyWhileOnAndInsideArea`, `OnWhenAlert_SwitchesOnAfterDelay_OffAfterCalm`, `Lit_ShadowZoneNoLongerHides`, `Lit_VisionGainMultiplied`, EditMode `GimmickViewTests.Lamp_LitOnlyWhileOn`
+- [x] 모기장 그물은 몸을 막고 시야는 막지 않으며, 틈을 정밀 비행 없이 지나면 소음이 난다 (Core). (M14) — 증거: `NetTests.Net_BlocksBody_NotSight`, `Gap_FlyingThroughWithoutPrecision_Rustles`(정밀 비행이면 무음)
 
 ## 범위 외
 - 잠자리 등 포식자 AI, 모기향, 전기 모기채

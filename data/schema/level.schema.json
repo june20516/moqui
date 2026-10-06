@@ -101,6 +101,34 @@
           "yaw": {
             "type": "number"
           },
+          "kind": {
+            "enum": [
+              "fan",
+              "airConditioner"
+            ],
+            "description": "airConditioner: 방향 고정, 센 바람, 켜짐/꺼짐 주기 (M14)"
+          },
+          "schedule": {
+            "type": "object",
+            "required": [
+              "on",
+              "off"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "on": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "off": {
+                "type": "number",
+                "minimum": 0
+              },
+              "offset": {
+                "type": "number"
+              }
+            }
+          },
           "pitch": {
             "type": "number"
           },
@@ -178,6 +206,122 @@
       "type": "array",
       "items": {
         "type": "string"
+      }
+    },
+    "lights": {
+      "type": "array",
+      "description": "조명 스위치 (spec/06, M14)",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "position",
+          "area"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "position": {
+            "$ref": "#/$defs/vector3"
+          },
+          "area": {
+            "type": "object",
+            "required": [
+              "center",
+              "size"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "center": {
+                "$ref": "#/$defs/vector3"
+              },
+              "size": {
+                "$ref": "#/$defs/vector3"
+              }
+            }
+          },
+          "schedule": {
+            "type": "object",
+            "required": [
+              "on",
+              "off"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "on": {
+                "type": "number",
+                "exclusiveMinimum": 0
+              },
+              "off": {
+                "type": "number",
+                "minimum": 0
+              },
+              "offset": {
+                "type": "number"
+              }
+            }
+          },
+          "onWhenAlert": {
+            "type": "boolean"
+          }
+        }
+      }
+    },
+    "nets": {
+      "type": "array",
+      "description": "모기장 그물 판 (spec/06, M14)",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "center",
+          "size"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "center": {
+            "$ref": "#/$defs/vector3"
+          },
+          "size": {
+            "$ref": "#/$defs/vector3"
+          }
+        }
+      }
+    },
+    "netGaps": {
+      "type": "array",
+      "description": "모기장 틈 볼륨 (spec/06, M14)",
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "center",
+          "size"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "center": {
+            "$ref": "#/$defs/vector3"
+          },
+          "size": {
+            "$ref": "#/$defs/vector3"
+          }
+        }
+      }
+    },
+    "companions": {
+      "type": "array",
+      "description": "함께 있는 다른 인간들 (M14 두 사람). 형식은 human과 같고 id가 달라야 한다",
+      "items": {
+        "$ref": "#/$defs/human"
       }
     }
   },
@@ -409,8 +553,49 @@
           "description": "평소 머리 피치(도, − 아래)"
         },
         "maxPosture": {
-          "enum": ["arm", "lean", "turn", "rise"],
+          "enum": [
+            "arm",
+            "lean",
+            "turn",
+            "rise"
+          ],
           "description": "공격에 쓸 수 있는 가장 큰 몸동작 (기본 rise, D-053)"
+        },
+        "walk": {
+          "type": "object",
+          "description": "걷는 인간의 경로 (spec/02 §9, M14). 몸은 서 있는 자세로 정의한다",
+          "required": [
+            "route",
+            "pause"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "route": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                },
+                "minItems": 2,
+                "maxItems": 2
+              }
+            },
+            "pause": {
+              "$ref": "#/$defs/range"
+            },
+            "loop": {
+              "type": "boolean"
+            }
+          }
+        },
+        "tool": {
+          "enum": [
+            "none",
+            "swatter"
+          ],
+          "description": "손에 든 도구 (전기 모기채, M14)"
         }
       }
     }

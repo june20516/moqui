@@ -87,9 +87,10 @@ namespace Moqui.Core.Simulation
 
         /// <summary>부위 움직임으로 튕겨 나가야 하면 처리하고 참을 돌려준다.</summary>
         /// <param name="gripMultiplier">튕김 기준 속도 배율 (흡혈하며 버티기, D-056). 기본 1.</param>
-        public bool TryDislodge(Player player, int tick, List<SimulationEvent> events, float gripMultiplier = 1f)
+        /// <param name="carriedVelocity">몸 전체 이동만으로 생긴 부착점 속도 (걷는 인간, spec/02 §9). 이것을 빼고 판정한다.</param>
+        public bool TryDislodge(Player player, int tick, List<SimulationEvent> events, float gripMultiplier = 1f, Vector3 carriedVelocity = default)
         {
-            if (player.State != PlayerState.Attached || player.AnchorVelocity.Length() <= _motion.DislodgeSpeed * gripMultiplier)
+            if (player.State != PlayerState.Attached || (player.AnchorVelocity - carriedVelocity).Length() <= _motion.DislodgeSpeed * gripMultiplier)
             {
                 return false;
             }

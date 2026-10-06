@@ -188,6 +188,54 @@ namespace Moqui.Core.Tests.Simulation
             Assert.That(death.Cause, Is.EqualTo(DeathCause.Attack));
         }
 
+        /// <summary>전기 모기채를 든 오른팔은 채 길이만큼 더 닿는다 (spec/02 §7, M14).</summary>
+        [Test]
+        public void Swatter_ExtendsReachOfTheToolArm()
+        {
+            var plain = WithTool(HumanTool.None).Human;
+            var swatter = WithTool(HumanTool.Swatter).Human;
+            int right = swatter.ToolArm;
+            Assert.That(swatter.Rig.Arms[right].Side, Is.GreaterThan(0f), "held in the right hand");
+            Assert.That(swatter.ArmReach(right) - plain.ArmReach(right), Is.EqualTo(Settings.Attack.SwatterLength).Within(1e-3f));
+
+            Vector3 shoulder = swatter.Shoulder(right);
+            Vector3 target = shoulder + (Vector3.Normalize(new Vector3(0.3f, -0.2f, 1f)) * (plain.ArmReach(right) + 25f));
+            Assert.That(AttackPlanner.CanReach(plain, right, PostureState.Rest, target), Is.False);
+            Assert.That(AttackPlanner.CanReach(swatter, right, PostureState.Rest, target), Is.True);
+        }
+
+        /// <summary>모기채로 치면 판정이 넓다: 손바닥이면 비껴갈 거리에서도 맞는다.</summary>
+        [TestCase(HumanTool.None, false)]
+        [TestCase(HumanTool.Swatter, true)]
+        public void Swatter_WiderHit(HumanTool tool, bool dies)
+        {
+            var simulation = WithTool(tool);
+            var human = simulation.Human;
+            var target = new Vector3(20f, 60f, 45f);
+            Assert.That(simulation.HumanSystem.Attacks.Start(human, AttackKind.Slap, target, Settings.Attack.SlapRadius, 0.4f, 1f, Settings.Attack.HandPeakSpeedFrenzy, human.Rig.Arms.First(arm => arm.Side < 0f).Index, simulation.Tick, new List<SimulationEvent>()), Is.True);
+            float offset = (Settings.Attack.SlapRadius + Settings.Attack.SwatterRadius) * 0.5f + simulation.Player.CollisionRadius;
+            simulation.Player.Position = target + new Vector3(offset, 0f, 0f);
+
+            bool died = false;
+            for (int i = 0; i < SecondsToTicks(3f) && !died; i++)
+            {
+                simulation.Step(PlayerCommand.None);
+                died = simulation.Player.State == PlayerState.Dead;
+            }
+
+            Assert.That(died, Is.EqualTo(dies));
+        }
+
+        private static GameSimulation WithTool(HumanTool tool)
+        {
+            var seated = TestHumans.Seated();
+            var definition = new HumanDefinition(seated.Id, seated.Position, seated.FacingYaw, seated.Parts, seated.HeadPartId, seated.ShoulderLocals, seated.IdleLookYaws,
+                seated.Actions, seated.Traits, seated.FacingPitch, seated.RestPitch, seated.MaxPosture, null, tool);
+            var simulation = TestHumans.Simulation(new Vector3(0f, 300f, -400f), human: definition);
+            TestHumans.DisableReactions(simulation);
+            return simulation;
+        }
+
         private static AttackPlan Plan(Human human, Vector3 target)
         {
             Assert.That(AttackPlanner.TryPlan(human, target, -1, -1, out var plan), Is.True, $"reachable {target}");

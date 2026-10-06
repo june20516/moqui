@@ -7,6 +7,7 @@
 import math
 import os
 import random
+import zlib
 import struct
 import wave
 
@@ -297,6 +298,13 @@ def sfx_wind_gust(rng):
     return modulate(gust, lambda t: math.sin(math.pi * t / 0.6))
 
 
+
+def sfx_footstep(rng):
+    # 맨발 발소리: 낮은 쿵 + 짧은 잡음.
+    thump = decay(sweep(110.0, 60.0, 0.18), 18.0)
+    scuff = decay(lowpass(noise(0.18, rng), 900.0), 30.0)
+    return mix(thump, gain(scuff, 0.4))
+
 # ---- 환경음 (4초 루프) ----
 
 def tv_murmur(rng, seconds=4.2):
@@ -405,6 +413,7 @@ SOUNDS = {
     'sfx_steam': (sfx_steam, 0.4),
     'sfx_wind_loop': (sfx_wind_loop, 0.45),
     'sfx_wind_gust': (sfx_wind_gust, 0.6),
+    'sfx_footstep': (sfx_footstep, 0.6),
     'amb_stage1': (amb_stage1, 0.35),
     'amb_stage2': (amb_stage2, 0.35),
     'amb_stage3': (amb_stage3, 0.4),
@@ -424,10 +433,27 @@ def write_wav(path, signal):
         out.writeframes(frames)
 
 
+# 시드 고정: M13까지 있던 소리는 그때의 정렬 순번 시드를 그대로 쓴다. 새 소리는 ID의 crc32를 쓴다.
+# (소리를 추가해도 기존 소리가 다시 합성되어 바뀌지 않게 한다.)
+LEGACY_IDS = sorted([
+    'amb_stage1', 'amb_stage2', 'amb_stage3', 'amb_stage4', 'amb_stage5', 'bgm_stage', 'bgm_title',
+    'sfx_attach', 'sfx_breath', 'sfx_clap', 'sfx_dash', 'sfx_decoy', 'sfx_detach', 'sfx_dislodge', 'sfx_drip',
+    'sfx_drop_trap', 'sfx_escape', 'sfx_frenzy', 'sfx_frenzy_loop', 'sfx_slap', 'sfx_snore', 'sfx_spray',
+    'sfx_steam', 'sfx_suck_loop', 'sfx_telegraph', 'sfx_toxin', 'sfx_ui_cancel', 'sfx_ui_confirm', 'sfx_ui_select',
+    'sfx_wake', 'sfx_wind_gust', 'sfx_wind_loop', 'sfx_wing_loop',
+])
+
+
+def seed_for(sound_id):
+    if sound_id in LEGACY_IDS:
+        return 1000 + LEGACY_IDS.index(sound_id)
+    return zlib.crc32(sound_id.encode('utf-8'))
+
+
 def main():
     os.makedirs(OUTPUT_DIR, exist_ok=True)
-    for index, (sound_id, (generate, peak)) in enumerate(sorted(SOUNDS.items())):
-        rng = random.Random(1000 + index)
+    for sound_id, (generate, peak) in sorted(SOUNDS.items()):
+        rng = random.Random(seed_for(sound_id))
         signal = normalize(generate(rng), peak)
         write_wav(os.path.join(OUTPUT_DIR, sound_id + '.wav'), signal)
         print(f'{sound_id}: {len(signal) / SAMPLE_RATE:.2f}s')

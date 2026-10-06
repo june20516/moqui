@@ -132,6 +132,13 @@
 | human.dislodgeSpeed | 60 u/s | 부위 속도가 이를 넘으면 튕겨남 |
 | human.dislodgePush | 5u | |
 | human.dislodgeStun | 0.3s | 입력 무시 |
+| human.walkSpeed | 70u/s | 걷는 인간의 평소 걸음 (M14, 실내에서 느긋하게 걷기 0.7 m/s) |
+| human.walkTurnSpeed | 120°/s | 걷는 인간의 몸 회전 |
+| human.chaseSpeed | 110u/s | 광분 추격 걸음 |
+| human.walkRadius | 18u | 골반 높이에서 가구 충돌을 보는 구 반지름 |
+| human.stepLength | 60u | 한 걸음 길이 (다리 흔들기 주기) |
+| human.legSwing | 18u | 걸을 때 무릎·발 쪽이 앞뒤로 흔들리는 폭 (걷는 속도에서 최고 약 66u/s > human.dislodgeSpeed: 종아리·발에 붙으면 튕길 수 있음) |
+| human.alarmShare | 70 | 두 사람: 한 사람이 광분하면 다른 사람의 경계를 이 값까지 올린다 (M14) |
 | human.breathPeriod | 4s | 호흡 주기 |
 | human.exhaleDuration | 1.5s | 날숨 구간 |
 | human.co2Strength | 1.0 | CO₂ 흐름 세기 |
@@ -148,6 +155,8 @@
 | attack.selfSlap.telegraph | 0.5s | 반응 때리기 예고 |
 | attack.selfSlap.radius | 10u | 예고 시작 시점의 모기 위치 중심 |
 | attack.selfSlap.recovery | 1.0s | |
+| attack.swatter.length | 45u | 전기 모기채: 손목 앞으로 늘어나는 길이 (채 머리 중심까지, M14) |
+| attack.swatter.radius | 22u | 전기 모기채 판정 반경 (손바닥 12u보다 넓다) |
 | attack.handPeakSpeed.frenzy | 500u/s | 광분 손바닥·맹목 휘두르기·박수 손 최고 속도. 타격 시간 = 손 경로 ÷ (최고 속도 ÷ 1.5) (D-052, knowledge/human-arm-motion.md) |
 | attack.handPeakSpeed.reaction | 400u/s | 반사적 자기 몸 치기 |
 | attack.handPeakSpeed.drunk | 300u/s | 취한 사람 무작위 휘두르기 |
@@ -277,6 +286,14 @@
 | fan.oscillationPeriod | 8s | |
 | fan.noiseMaskRadius | 200u | 이 반경 안에서 플레이어 소음 반경 배율 적용 |
 | fan.noiseMaskMul | 0.5 | |
+| aircon.windSpeed | 70u/s | 에어컨 바람 (방향 고정, 선풍기보다 셈, M14) |
+| aircon.range | 320u | 에어컨 바람이 닿는 거리 |
+| aircon.halfAngle | 18° | 에어컨 바람 원뿔 반각 |
+| light.visionMul | 1.6 | 켜진 조명 영역 안 플레이어에 대한 인간 시각 증가 배율 (M14) |
+| light.switchDelay | 1.5s | 인간이 의심·광분한 뒤 불을 켜기까지 |
+| light.offDelay | 6s | 평온이 이만큼 이어지면 불을 끈다 |
+| net.rustleRadius | 80u | 모기장 틈을 정밀 비행 없이 지날 때 소음 반경 (M14) |
+| net.rustleAwareness | 15 | 그 소음을 들은 인간의 경계 증가 |
 
 ## gimmick: web
 | 키 | 값 | 설명 |

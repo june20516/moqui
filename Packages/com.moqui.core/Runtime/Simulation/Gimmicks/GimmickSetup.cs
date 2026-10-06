@@ -5,15 +5,65 @@ using System.Numerics;
 namespace Moqui.Core.Simulation
 {
     /// <summary>선풍기 하나 (spec/06). 본체 충돌 형상은 레벨 월드에 따로 있고, 여기에는 바람 원뿔의 기준만 둔다.</summary>
+    public enum FanKind
+    {
+        /// <summary>선풍기: 머리가 좌우로 돈다.</summary>
+        Fan,
+
+        /// <summary>에어컨: 방향 고정, 바람이 세고 켜짐/꺼짐 주기가 있다 (M14).</summary>
+        AirConditioner,
+    }
+
+    /// <summary>켜짐/꺼짐 주기 (s). 시작 후 offset초가 지난 것처럼 시작한다.</summary>
+    public sealed class FanSchedule
+    {
+        public FanSchedule(float onTime, float offTime, float offset)
+        {
+            if (onTime <= 0f || offTime < 0f)
+            {
+                throw new ArgumentOutOfRangeException(nameof(onTime));
+            }
+
+            OnTime = onTime;
+            OffTime = offTime;
+            Offset = offset;
+        }
+
+        public float OnTime { get; }
+
+        public float OffTime { get; }
+
+        public float Offset { get; }
+
+        public bool IsOn(float seconds)
+        {
+            float period = OnTime + OffTime;
+            float phase = (seconds + Offset) % period;
+            if (phase < 0f)
+            {
+                phase += period;
+            }
+
+            return phase < OnTime;
+        }
+    }
+
     public sealed class FanDefinition
     {
-        public FanDefinition(string id, Vector3 position, float yaw, float pitch = 0f)
+        public FanDefinition(string id, Vector3 position, float yaw, float pitch = 0f, FanKind kind = FanKind.Fan, FanSchedule schedule = null)
         {
             Id = id;
             Position = position;
             Yaw = yaw;
             Pitch = pitch;
+            Kind = kind;
+            Schedule = schedule;
         }
+
+        public FanKind Kind { get; }
+
+        /// <summary>켜짐/꺼짐 주기. 없으면 늘 켜져 있다.</summary>
+        public FanSchedule Schedule { get; }
 
         public string Id { get; }
 
@@ -34,14 +84,18 @@ namespace Moqui.Core.Simulation
     {
         public static readonly GimmickSetup None = new GimmickSetup(null, null, null);
 
-        public GimmickSetup(IReadOnlyList<FanDefinition> fans, IReadOnlyList<Vector3> coils, IReadOnlyList<Vector3> sprayDispensers)
+        public GimmickSetup(IReadOnlyList<FanDefinition> fans, IReadOnlyList<Vector3> coils, IReadOnlyList<Vector3> sprayDispensers, IReadOnlyList<LightDefinition> lights = null)
         {
+            Lights = lights ?? Array.Empty<LightDefinition>();
             Fans = fans ?? Array.Empty<FanDefinition>();
             Coils = coils ?? Array.Empty<Vector3>();
             SprayDispensers = sprayDispensers ?? Array.Empty<Vector3>();
         }
 
         public IReadOnlyList<FanDefinition> Fans { get; }
+
+        /// <summary>조명 스위치 (M14).</summary>
+        public IReadOnlyList<LightDefinition> Lights { get; }
 
         /// <summary>모기향 위치.</summary>
         public IReadOnlyList<Vector3> Coils { get; }

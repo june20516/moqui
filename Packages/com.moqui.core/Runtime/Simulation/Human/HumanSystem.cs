@@ -19,7 +19,7 @@ namespace Moqui.Core.Simulation
         public HumanSystem(GameSettings settings, CollisionWorld world, ulong seed)
         {
             _biteMarks = settings.BiteMark;
-            _vision = new VisionSensor(settings.Vision, world, settings.Humid.SteamVisionMul, settings.Drunk.VisionRateMul);
+            _vision = new VisionSensor(settings.Vision, world, settings.Humid.SteamVisionMul, settings.Drunk.VisionRateMul, settings.Light.VisionMul);
             _hearing = new HearingSensor(settings.Noise, settings.Hearing);
             Awareness = new AwarenessSystem(settings.Awareness);
             _brain = new HumanBrain(settings.Awareness, settings.Frenzy, settings.Head, settings.Doze, SeedStreams.Create(seed, SeedStreams.Glance), settings.SuckEvent);
@@ -28,6 +28,7 @@ namespace Moqui.Core.Simulation
             _attacks = new HumanAttackSystem(settings.Attack, settings.Frenzy, SeedStreams.Create(seed, SeedStreams.BlindSwat), settings.Toxin, settings.Drunk, SeedStreams.Create(seed, SeedStreams.DrunkSwat));
             Reactions = new ReactionSystem(settings, _attacks, SeedStreams.Create(seed, SeedStreams.Reactions));
             Motion = new HumanMotionSystem(settings.HumanMotion, SeedStreams.Create(seed, SeedStreams.HumanActions));
+            Walk = new HumanWalkSystem(settings.Walk, world, SeedStreams.Create(seed, SeedStreams.Walk));
             SuckEvents = new SuckEventSystem(settings.SuckEvent, settings.Vision, world, Motion, SeedStreams.Create(seed, SeedStreams.SuckEvents));
         }
 
@@ -41,6 +42,9 @@ namespace Moqui.Core.Simulation
 
         /// <summary>흡혈 중 이벤트 (spec/04 §8).</summary>
         public SuckEventSystem SuckEvents { get; }
+
+        /// <summary>걷는 인간 (spec/02 §9).</summary>
+        public HumanWalkSystem Walk { get; }
 
         public DozeSystem Doze { get; }
 
@@ -59,6 +63,7 @@ namespace Moqui.Core.Simulation
 
         public void StepMotion(Human human, int tick)
         {
+            Walk.Step(human, tick, GameSimulation.DeltaTime);
             Motion.Step(human, tick);
         }
 

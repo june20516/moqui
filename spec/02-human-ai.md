@@ -78,6 +78,8 @@
 | 반응 때리기 (reactSlap) | §5 | `attack.selfSlap.telegraph` | 예고 시작 시점의 모기 위치, 반경 `attack.selfSlap.radius` |
 | 스프레이 | 광분 + `canSpray` + 손이 닿지 않음 | `spray.telegraph` (캔을 드는 동작) | 연무 구역 생성 (spec/06) |
 
+- **전기 모기채 (M14):** 레벨 데이터 `human.tool` = `swatter`이면 오른손(없으면 첫 팔)에 채를 든다. 그 팔은 손목 앞으로 `attack.swatter.length`만큼 더 닿고(몸동작 계획·팔 IK·손 경로 모두 채 끝 기준), 그 팔로 치는 공격의 판정 반경은 `attack.swatter.radius` 이상이다. 표현: 손에 든 채(손잡이 + 납작한 머리).
+
 - 움직이는 손바닥 판정 구(박수는 두 손)가 지나가는 경로에 플레이어 충돌 구가 닿으면 즉사한다 (스프레이 제외, D-052).
 - **예고 피드백** (Unity): 손 동작, 판정 위치의 붉은 표시, 경고음 `sfx_telegraph`, 화면 밖 공격이면 화면 가장자리에 방향 표시 (spec/08).
 - 공격 후 `recovery` 동안 다음 공격을 하지 않는다.
@@ -91,6 +93,20 @@
 - 몸 전체로 쫓기 (M12) (D-053): 인간이 보이는 상태에서 팔이 늘어나거나 손이 총알처럼 날아오면 안 된다. 그래서 광분 공격은 사람 몸이 직접 움직여 닿는다. 목표에 닿기 위한 몸동작을 단계 순서로 고른다: **팔만 → 상체 기울이기 → 몸(허리·어깨) 돌리기 → 반쯤/완전히 일어서기**. 각 단계는 사람이 낼 수 있는 시간이 걸리고(자세 전환 시간), 그 사이 모기는 피할 수 있다. 일어서면 머리 위치·시야도 함께 바뀐다. 걷기(자리 이동)는 이번 범위가 아니다(D-011 유지).
   - 확장 구조: 몸은 뼈대(루트·골반·척추·어깨·팔꿈치·손목·목·머리)에 캡슐을 붙인 포즈로 표현하고, 루트(몸 위치·방향)는 상태로 둔다. 레벨 데이터 `human.maxPosture`(arm | lean | turn | rise, 기본 rise)로 허용 몸동작을 정한다. 이후 높은 난이도에서 `step`(걸음)·도구를 같은 계획기 단계로 추가한다 (plan/ideas.md).
 - 예고 피드백 강조 (M12): "맞을 자리" 정보는 화면에서 가장 높은 위상이어야 한다. 정지한 반투명 구 대신 움직이는 요소로 보여 준다 — 예고 진행률만큼 차오르는 링, 좁혀 오는 테두리, 일렁임·떨림, 판정 순간 번쩍임. 손이 다가오는 방향도 읽혀야 한다.
+
+## 9. 걷는 인간 (M14, D-058·D-059)
+- 레벨 데이터의 `human.walk`(경로점 목록 `route` [[x, z], ...], 경로점에서 멈추는 시간 `pause` {min, max}, 반복 `loop`)가 있는 인간은 **서 있는 몸**으로 경로를 따라 걷는다. 몸 루트(골반)는 경로점 높이를 유지하고 수평으로만 움직인다. 이런 인간은 `maxPosture`를 `turn` 이하로 둔다(이미 서 있음).
+- 평온: 다음 경로점 쪽으로 몸을 `human.walkTurnSpeed`로 돌리고, 정면과의 각이 45° 안이면 `human.walkSpeed`로 걷는다. 경로점에 닿으면 `pause` 동안 멈췄다가 다음 점으로 간다(끝이면 처음으로). 멈춤 시간은 레벨 시드의 walk 스트림.
+- 의심: 그 자리에 멈춰 자극 쪽을 본다(§3 머리 행동). 평온으로 돌아오면 경로를 이어 간다.
+- 광분: 마지막으로 본 위치가 몸동작(§7)으로 닿지 않으면 그 위치를 향해 `human.chaseSpeed`로 걸어 쫓는다(닿는 거리가 되면 멈춰서 때린다). 공격 중에는 걷지 않는다.
+- 몸은 가구를 통과하지 않는다: 골반 높이의 반지름 `human.walkRadius` 구를 이동 방향으로 sweep해 막히면 거기서 멈춘다.
+- 걸음: 다리는 걸은 거리에 맞춰 번갈아 흔들린다(보폭 `human.stepLength`, 무릎·발 쪽이 앞뒤로 `human.legSwing`). 걸음마다 표현용 발소리를 낸다.
+- 튕겨남(§6)은 **몸 전체의 이동·회전을 뺀** 부위 자체의 움직임 속도로 판정한다: 걷는 사람의 몸통·팔에 붙은 모기는 함께 실려 가고, 흔들리는 종아리·발에 붙은 모기는 튕겨 날 수 있다.
+
+## 10. 두 사람 (M14, D-058)
+- 레벨 데이터 `companions[]`(형식은 `human`과 같고 id가 다르다)로 인간을 더 둔다. 모든 인간이 각자 시각·청각·경계·공격·반응·무작위 동작·걷기를 한다. 모기가 붙은 부위의 주인만 그 흡혈에 반응한다.
+- **광분 전염:** 한 사람이 광분하면 광분하지 않은 다른 사람의 경계를 `human.alarmShare`까지 올리고, 그 사람이 본 자극 위치를 쳐다보게 한다.
+- 결과의 광분 횟수·물린 자국 수는 모든 인간의 합이다.
 
 ## 수용 기준
 - [x] 상태 전이와 히스테리시스(40 진입 / 20 이탈)가 동작한다 (Core). — 증거: `HumanAwarenessTests.StateTransitions_Hysteresis_Enter40Exit20`
@@ -123,6 +139,12 @@
 - [x] 광분 중 목표가 팔 길이 밖이면 기울이기 → 돌기 → 일어서기 순서로 필요한 만큼만 몸을 움직여 닿고, 각 자세 전환에 tuning의 시간이 걸린다 (Core). (M12) — 증거: `BodyAttackTests.Planner_UsesOnlyAsMuchBodyAsNeeded`(팔·기울이기·일어서기), `Planner_TargetBehindNeedsTurn_NotJustArm`, `Rise_TakesHumanTime_AndHeadAndVisionFollowTheBody`(posture.riseTime)
 - [x] 일어서기·기울이기 후 머리 위치와 시야 원뿔이 몸 포즈를 따른다 (Core). (M12) — 증거: `BodyAttackTests.Rise_TakesHumanTime_AndHeadAndVisionFollowTheBody`, `Lean_HeadForwardFollowsUpperBody`
 - [x] 레벨의 `human.maxPosture`보다 큰 몸동작은 쓰지 않는다 (Core). (M12) — 증거: `BodyAttackTests.Planner_TooFar_NoPlan_AndMaxPostureLimitsBody`, stage03(누운 인간) `maxPosture: "turn"`
+- [x] 걷는 인간이 경로점을 차례로 돌며 걷는 속도·회전 속도·멈춤을 지킨다 (Core). (M14) — 증거: `WalkTests.Walk_FollowsRouteAtWalkSpeed_PausesAndTurnsAtEachPoint`
+- [x] 의심이면 멈추고, 광분 중 닿지 않으면 마지막으로 본 위치로 쫓아가 닿는 거리에서 멈춘다 (Core). (M14) — 증거: `WalkTests.Walk_Suspicious_StopsAndStays`, `Walk_FrenzyTargetOutOfReach_ChasesUntilReachable`
+- [x] 가구에 막히면 통과하지 않고 멈추며, 경로가 가구를 지나면 레벨 검사가 보고한다 (Core). (M14) — 증거: `WalkTests.Walk_BlockedByFurniture_DoesNotPassThrough`, `LevelDataTests.Validator_WalkRouteThroughFurniture_Reported`
+- [x] 걷는 사람의 몸통에 붙은 모기는 실려 가고, 흔들리는 종아리에 붙은 모기는 튕겨 날 수 있다 (Core). (M14) — 증거: `WalkTests.Walk_RiderOnBody_CarriedUnlessOnSwingingLeg`(팔뚝: 실려 감 150u 이상, 종아리: 튕겨남), 발소리 EditMode `AudioTests.Footstep_OncePerStep`
+- [x] 전기 모기채를 든 팔은 채 길이만큼 더 닿고 판정이 넓다 (Core). (M14) — 증거: `BodyAttackTests.Swatter_ExtendsReachOfTheToolArm`, `Swatter_WiderHit`(손바닥이면 비껴갈 거리에서 채는 맞음)
+- [x] 두 사람이 각자 감지·공격하고, 붙은 부위의 주인에게서 흡혈하며, 한 사람이 광분하면 다른 사람이 경계해 그쪽을 본다 (Core). (M14) — 증거: `CompanionTests.EachHuman_SensesOnItsOwn`, `Sucking_TheFriendsArm_FeedsAndMarksTheFriend`, `Frenzy_SpreadsAlarmToTheOtherHuman`
 
 ## 범위 외
 - 인간의 보행과 자리 이동, 파리채·전기 모기채 등 도구 공격 (향후 확장 후보: 도구는 닿는 거리·판정 면적을 늘려 난이도·레벨링 요소로 쓸 수 있다 — plan/ideas.md) (스프레이 제외), 다수의 인간

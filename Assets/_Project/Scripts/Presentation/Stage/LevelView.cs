@@ -32,6 +32,13 @@ namespace Moqui.Unity.Presentation.Stage
 
                 GameObject visual = WorldView.CreateShapeObject(shape, root);
                 ApplyMaterial(visual.GetComponent<Renderer>(), shape, materials);
+
+                // 모기장 틈은 판정용 볼륨이라 그리지 않는다 (틈은 그물이 없는 자리로 보인다, spec/06 M14).
+                if (shape.Matches(ShapeFlags.NetGap))
+                {
+                    visual.GetComponent<Renderer>().enabled = false;
+                }
+
                 objects.Add(definition.Id, visual);
             }
 
@@ -78,7 +85,8 @@ namespace Moqui.Unity.Presentation.Stage
                 return materials.Steam;
             }
 
-            if (shape.Matches(ShapeFlags.Hazard))
+            // 거미줄과 모기장 그물은 같은 반투명 격자 머티리얼을 쓴다 (M14).
+            if (shape.Matches(ShapeFlags.Hazard | ShapeFlags.Net))
             {
                 return materials.Web;
             }
