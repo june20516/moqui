@@ -45,10 +45,10 @@ namespace Moqui.Unity.Presentation
             return SweepTo(playerPosition, pivotUp.normalized, _settings.HeightOffset);
         }
 
-        /// <summary>피벗 뒤로 막히지 않고 물러날 수 있는 거리 (최대 camera.distance).</summary>
-        public float ThirdPersonReach(Vector3 pivot, Quaternion rotation)
+        /// <summary>피벗 뒤로 막히지 않고 물러날 수 있는 거리 (최대 camera.distance × distanceMul).</summary>
+        public float ThirdPersonReach(Vector3 pivot, Quaternion rotation, float distanceMul = 1f)
         {
-            return SweepDistance(pivot, rotation * Vector3.back, _settings.Distance);
+            return SweepDistance(pivot, rotation * Vector3.back, _settings.Distance * distanceMul);
         }
 
         public CameraPose ThirdPersonAt(Vector3 pivot, Quaternion rotation, float distance)

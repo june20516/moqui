@@ -118,6 +118,9 @@ namespace Moqui.Unity.UI.Hud
         /// <summary>광분 순간 원인 문구 (gulf §10).</summary>
         public Text FrenzyCauseText { get; private set; }
 
+        /// <summary>광분 순간 원인 아이콘 (색 대신 모양으로 읽히게, 플레이 피드백 2026-10-07).</summary>
+        public Image FrenzyCauseIcon { get; private set; }
+
         public GameObject ActiveSkillRoot { get; private set; }
 
         public Image ActiveSkillIcon { get; private set; }
@@ -349,6 +352,9 @@ namespace Moqui.Unity.UI.Hud
             FrenzyCauseText = CreateText("FrenzyCause", Root, 40, TextAnchor.MiddleCenter);
             Place(FrenzyCauseText.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, 180f), new Vector2(1200f, 60f));
             FrenzyCauseText.gameObject.SetActive(false);
+            FrenzyCauseIcon = CreateImage("FrenzyCauseIcon", Root, HudSprites.Eye, Color.white);
+            Place(FrenzyCauseIcon.rectTransform, new Vector2(0.5f, 0.5f), new Vector2(0f, 250f), new Vector2(72f, 72f));
+            FrenzyCauseIcon.gameObject.SetActive(false);
         }
 
         /// <summary>흡혈 중 이벤트 경고 문구 (spec/04 §8). 키 이름 없이 행동만 알려 준다.</summary>

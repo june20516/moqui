@@ -16,28 +16,29 @@
     ],
     "parts": [
       { "id": "head", "kind": "head", "a": [0, 63, 0], "b": [0, 71, 0], "radius": 10, "site": "cheek" },
-      { "id": "neck", "kind": "neck", "a": [0, 50, 0], "b": [0, 56, 0], "radius": 5 },
+      { "id": "neck", "kind": "neck", "a": [0, 50, 0], "b": [0, 56, 0], "radius": 5, "site": "neck" },
       { "id": "torso", "kind": "torso", "a": [0, 4, 0], "b": [0, 44, 0], "radius": 15 },
-      { "id": "upperArmL", "kind": "upperArm", "a": [-20, 48, 0], "b": [-24, 32, 10], "radius": 5 },
-      { "id": "forearmL", "kind": "forearm", "a": [-24, 32, 10], "b": [-9, 50, 26], "radius": 4, "site": "forearm" },
-      { "id": "upperArmR", "kind": "upperArm", "a": [20, 48, 0], "b": [24, 32, 10], "radius": 5 },
-      { "id": "forearmR", "kind": "forearm", "a": [24, 32, 10], "b": [9, 50, 26], "radius": 4, "site": "forearm" },
+      { "id": "upperArmL", "kind": "upperArm", "a": [-20, 48, 0], "b": [-23, 22, 0], "radius": 5 },
+      { "id": "forearmL", "kind": "forearm", "a": [-23, 22, 0], "b": [-24, -2, 4], "radius": 4, "site": "forearm" },
+      { "id": "upperArmR", "kind": "upperArm", "a": [20, 48, 0], "b": [23, 22, 0], "radius": 5 },
+      { "id": "forearmR", "kind": "forearm", "a": [23, 22, 0], "b": [24, -2, 4], "radius": 4, "site": "forearm" },
       { "id": "thighL", "kind": "thigh", "a": [-10, -2, 0], "b": [-10, -42, 0], "radius": 7 },
-      { "id": "calfL", "kind": "calf", "a": [-10, -44, 0], "b": [-10, -82, 0], "radius": 5 },
+      { "id": "calfL", "kind": "calf", "a": [-10, -44, 0], "b": [-10, -82, 0], "radius": 5, "site": "calf" },
       { "id": "footL", "kind": "foot", "a": [-10, -86, 0], "b": [-10, -88, 10], "radius": 4, "site": "footTop" },
       { "id": "thighR", "kind": "thigh", "a": [10, -2, 0], "b": [10, -42, 0], "radius": 7 },
-      { "id": "calfR", "kind": "calf", "a": [10, -44, 0], "b": [10, -82, 0], "radius": 5 },
+      { "id": "calfR", "kind": "calf", "a": [10, -44, 0], "b": [10, -82, 0], "radius": 5, "site": "calf" },
       { "id": "footR", "kind": "foot", "a": [10, -86, 0], "b": [10, -88, 10], "radius": 4, "site": "footTop" }
     ],
     "idle": { "lookYaws": [0] },
     "actions": [
       {
-        "name": "liftPhone",
-        "weight": 3,
-        "duration": 1.4,
+        "name": "shiftWeight",
+        "weight": 1,
+        "duration": 0.8,
         "motions": [
-          { "part": "forearmL", "offsetA": [0, 0, 0], "offsetB": [0, 4, 8] },
-          { "part": "forearmR", "offsetA": [0, 0, 0], "offsetB": [0, 4, 8] }
+          { "part": "torso", "offsetA": [3, 0, 0], "offsetB": [3, 0, 0] },
+          { "part": "thighL", "offsetA": [3, 0, 0], "offsetB": [3, 0, 0] },
+          { "part": "thighR", "offsetA": [3, 0, 0], "offsetB": [3, 0, 0] }
         ]
       }
     ],

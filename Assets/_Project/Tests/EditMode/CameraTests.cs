@@ -269,6 +269,25 @@ namespace Moqui.Unity.Tests
             Assert.That(pitch, Is.EqualTo(5f));
         }
 
+        /// <summary>움직이는 몸에 붙어 있으면 3인칭 거리가 camera.ridingDistanceMul까지 늘고, 멈추면 돌아온다 (플레이 피드백 2026-10-07).</summary>
+        [Test]
+        public void Riding_PullsTheCameraBack_ThenReturns()
+        {
+            var controller = NewController(new CollisionWorld(), new MemoryPreferenceStore());
+            for (int i = 0; i < 120; i++)
+            {
+                controller.Update(FrameTime, Vector3.zero, 0f, 0f, null, riding: true);
+            }
+
+            Assert.That(controller.DistanceMultiplier, Is.EqualTo(_settings.RidingDistanceMul).Within(1e-4f));
+            for (int i = 0; i < 120; i++)
+            {
+                controller.Update(FrameTime, Vector3.zero, 0f, 0f, null, riding: false);
+            }
+
+            Assert.That(controller.DistanceMultiplier, Is.EqualTo(1f).Within(1e-4f));
+        }
+
         private CameraController NewController(CollisionWorld world, IPreferenceStore store)
         {
             return new CameraController(_settings, new CameraPoseSolver(_settings, world), store);

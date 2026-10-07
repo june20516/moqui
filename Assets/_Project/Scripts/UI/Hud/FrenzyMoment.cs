@@ -109,6 +109,10 @@ namespace Moqui.Unity.UI.Hud
         public const float SampleSeconds = 0.5f;
 
         private readonly List<(float Awareness, AwarenessCause Cause)> _samples = new List<(float, AwarenessCause)>();
+        private readonly List<(int Sample, AwarenessCause Cause)> _frenzies = new List<(int, AwarenessCause)>();
+
+        /// <summary>광분한 순간: 그때의 표본 번호와 원인 (결과 화면이 그 막대 위에 원인 아이콘을 놓는다).</summary>
+        public IReadOnlyList<(int Sample, AwarenessCause Cause)> Frenzies => _frenzies;
         private int _nextTick;
 
         public IReadOnlyList<(float Awareness, AwarenessCause Cause)> Samples => _samples;
@@ -143,6 +147,14 @@ namespace Moqui.Unity.UI.Hud
 
         public void Observe(GameSimulation simulation)
         {
+            foreach (var simulationEvent in simulation.Events)
+            {
+                if (simulationEvent is FrenzyTriggered triggered)
+                {
+                    _frenzies.Add((_samples.Count, triggered.Cause));
+                }
+            }
+
             if (simulation.Tick < _nextTick)
             {
                 return;

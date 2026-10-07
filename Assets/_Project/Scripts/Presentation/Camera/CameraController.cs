@@ -18,6 +18,10 @@ namespace Moqui.Unity.Presentation
         private float _transition;
         private Vector3 _pivotUp = Vector3.up;
         private float _thirdPersonDistance = -1f;
+        private float _distanceMul = 1f;
+
+        /// <summary>지금 3인칭 거리 배율 (테스트용).</summary>
+        public float DistanceMultiplier => _distanceMul;
 
         public CameraController(CameraSettings settings, CameraPoseSolver solver, IPreferenceStore preferences)
         {
@@ -72,8 +76,12 @@ namespace Moqui.Unity.Presentation
         /// 3인칭 (M13): 피벗 기준 방향은 붙어 있으면 표면 법선, 아니면 월드 위이며 camera.pivotBlendTime 동안 돌아간다.
         /// 막혀서 당길 때는 즉시, 다시 물러날 때는 camera.returnSpeed로 천천히 (좁은 곳에서 화면이 튀지 않게).
         /// </summary>
-        public CameraPose Update(float deltaTime, Vector3 playerPosition, float yaw, float pitch, Vector3? surfaceNormal = null)
+        public CameraPose Update(float deltaTime, Vector3 playerPosition, float yaw, float pitch, Vector3? surfaceNormal = null, bool riding = false)
         {
+            // 움직이는 몸에 붙어 있으면 조금 물러난다(몸의 흔들림이 화면을 덜 흔든다, 플레이 피드백 2026-10-07).
+            float rate = _settings.RidingBlendTime > 0f ? (_settings.RidingDistanceMul - 1f) * deltaTime / _settings.RidingBlendTime : float.PositiveInfinity;
+            _distanceMul = Mathf.MoveTowards(_distanceMul, riding ? _settings.RidingDistanceMul : 1f, rate);
+
             if (_settings.SwitchTime > 0f)
             {
                 _transition = Mathf.Min(1f, _transition + (deltaTime / _settings.SwitchTime));
@@ -100,7 +108,7 @@ namespace Moqui.Unity.Presentation
 
             Vector3 pivot = _solver.ThirdPersonPivot(playerPosition, _pivotUp);
             Quaternion rotation = CameraPoseSolver.LookRotation(yaw, pitch);
-            float reach = _solver.ThirdPersonReach(pivot, rotation);
+            float reach = _solver.ThirdPersonReach(pivot, rotation, _distanceMul);
             _thirdPersonDistance = _thirdPersonDistance < 0f || reach <= _thirdPersonDistance
                 ? reach
                 : Mathf.MoveTowards(_thirdPersonDistance, reach, _settings.ReturnSpeed * deltaTime);

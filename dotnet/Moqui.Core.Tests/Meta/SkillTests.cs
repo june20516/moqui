@@ -65,8 +65,7 @@ namespace Moqui.Core.Tests.Meta
             AssertEachLevel(SkillCatalog.ResistSatiety, (applied, level) =>
             {
                 double mul = Pow("skill.resistSatiety.penaltyMul", level);
-                AssertKey(applied, "satiety.minSpeedMul", 1 - ((1 - Tuning.GetFloat("satiety.minSpeedMul")) * mul), level);
-                AssertKey(applied, "satiety.minDashMul", 1 - ((1 - Tuning.GetFloat("satiety.minDashMul")) * mul), level);
+                AssertKey(applied, "satiety.dashDelayMax", Tuning.GetFloat("satiety.dashDelayMax") * mul, level);
             });
         }
 

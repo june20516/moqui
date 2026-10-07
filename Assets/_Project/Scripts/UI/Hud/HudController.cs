@@ -60,7 +60,7 @@ namespace Moqui.Unity.UI.Hud
                 return;
             }
 
-            _cues = new MokiCueSystem(_runner.Tuning.GetFloat("hud.satietyHighlightMul"));
+            _cues = new MokiCueSystem(_runner.Tuning.GetFloat("hud.satietyHighlightLevel"));
             _cueDriver = _runner.Driver;
             _cueDriver.TickCompleted += OnTick;
             var driver = _cueDriver;
@@ -121,10 +121,12 @@ namespace Moqui.Unity.UI.Hud
 
             Time.timeScale = Frenzy.Update(Time.unscaledTime, Time.timeScale);
             _view.FrenzyCauseText.gameObject.SetActive(Frenzy.TextVisible);
+            _view.FrenzyCauseIcon.gameObject.SetActive(Frenzy.TextVisible);
             if (Frenzy.TextVisible)
             {
                 _view.FrenzyCauseText.text = Frenzy.Text;
-                _view.FrenzyCauseText.color = FrenzyMoment.ColorOf(Frenzy.Cause);
+                _view.FrenzyCauseText.color = Color.white;
+                _view.FrenzyCauseIcon.sprite = HudSprites.CauseIcon(Frenzy.Cause);
             }
         }
 

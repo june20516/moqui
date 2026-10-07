@@ -309,25 +309,38 @@ namespace Moqui.Core.Tests.Simulation
             Assert.That(decay.HumanSystem.Reactions.Modifier(decay.Human), Is.EqualTo(bite.ReactionMultiplier(n)).Within(1e-5f));
         }
 
-        [TestCase(0f, 1.0f, 1.0f)]
-        [TestCase(50f, 0.8f, 0.875f)]
-        [TestCase(100f, 0.6f, 0.75f)]
-        public void Satiety_SpeedAndDashMultipliers(float gauge, float speedMul, float dashMul)
+        /// <summary>
+        /// 포만은 대시 발동을 늦춘다(배부를수록 숨 고르는 시간), 이동 속도와 대시 거리는 그대로다 (spec/04 §5, D-071).
+        /// </summary>
+        [TestCase(0f)]
+        [TestCase(50f)]
+        [TestCase(99.99f)]
+        public void Satiety_DelaysDashStart_NotSpeedOrDistance(float gauge)
         {
-            // 100%면 즉시 Stage Clear로 세계가 멈추므로, 배율은 함수로 확인하고 통합 이동은 99.99%로 본다.
             var flying = Empty();
-            Assert.That(flying.Suck.SpeedMultiplier(gauge), Is.EqualTo(speedMul).Within(1e-5f));
-            Assert.That(flying.Suck.DashMultiplier(gauge), Is.EqualTo(dashMul).Within(1e-5f));
-            float playable = Math.Min(gauge, SuckSystem.GaugeMax - 0.01f);
-            flying.Player.BloodGauge = playable;
+            flying.Player.BloodGauge = gauge;
             Run(flying, Forward, SecondsToTicks(1f));
-            Assert.That(flying.Player.Velocity.Z / Settings.Flight.Speed, Is.EqualTo(speedMul).Within(1e-3f));
+            Assert.That(flying.Player.Velocity.Z / Settings.Flight.Speed, Is.EqualTo(1f).Within(1e-3f), "full belly does not slow flight");
 
             var dashing = Empty();
-            dashing.Player.BloodGauge = playable;
+            dashing.Player.BloodGauge = gauge;
+            float delay = Settings.Suck.SatietyDashDelayMax * (gauge / SuckSystem.GaugeMax);
+            int delayTicks = SimulationTime.ToTicks(delay);
+            Assert.That(dashing.Suck.DashDelay(gauge), Is.EqualTo(delay).Within(1e-5f));
+
+            Vector3 start = dashing.Player.Position;
             dashing.Step(new PlayerCommand { Move = new Vector2(1f, 0f), DashPressed = true });
-            Run(dashing, PlayerCommand.None, SecondsToTicks(Settings.Dash.Duration) - 1);
-            Assert.That(dashing.Player.Position.X / Settings.Dash.Distance, Is.EqualTo(dashMul).Within(1e-3f));
+            if (delayTicks > 0)
+            {
+                Assert.That(dashing.Player.State, Is.EqualTo(PlayerState.Flying), "catching its breath");
+                Assert.That(dashing.Events.OfType<DashCharging>().Count(), Is.EqualTo(1));
+                Run(dashing, PlayerCommand.None, delayTicks);
+            }
+
+            Assert.That(dashing.Player.State, Is.EqualTo(PlayerState.Dashing));
+            Assert.That(Vector3.Distance(dashing.Player.DashDirection, Vector3.UnitX), Is.LessThan(1e-3f), "the direction chosen when pressed");
+            Run(dashing, PlayerCommand.None, SecondsToTicks(Settings.Dash.Duration));
+            Assert.That(Vector3.Distance(dashing.Player.Position, start), Is.EqualTo(Settings.Dash.Distance).Within(Settings.Dash.Distance * 0.1f), "full distance");
         }
 
         [Test]

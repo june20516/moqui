@@ -35,6 +35,9 @@ namespace Moqui.Unity.Simulation
 
         public Vector3 InterpolatedPlayerPosition => Vector3.Lerp(_previousPlayerPosition, _currentPlayerPosition, _clock.Alpha);
 
+        /// <summary>직전 틱(0)과 현재 틱(1) 사이 렌더링 비율. 움직이는 형상도 이 비율로 보간해야 모키와 어긋나지 않는다.</summary>
+        public float InterpolationAlpha => _clock.Alpha;
+
         /// <summary>한 프레임을 진행하고 실행한 틱 수를 돌려준다.</summary>
         public int Frame(float deltaTime)
         {

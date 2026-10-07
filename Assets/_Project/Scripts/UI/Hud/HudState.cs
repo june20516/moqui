@@ -136,7 +136,7 @@ namespace Moqui.Unity.UI.Hud
             var state = new HudState
             {
                 BloodFraction = player.BloodGauge / SuckSystem.GaugeMax,
-                SatietyHighlighted = simulation.Suck.SpeedMultiplier(player.BloodGauge) < tuning.GetFloat("hud.satietyHighlightMul"),
+                SatietyHighlighted = SuckSystem.SatietyLevel(player.BloodGauge) >= tuning.GetFloat("hud.satietyHighlightLevel"),
                 Hidden = player.IsHidden,
                 StaminaFraction = player.Stamina / settings.Stamina.Max,
                 DashCostFraction = Mathf.Clamp01(simulation.DashCost / settings.Stamina.Max),

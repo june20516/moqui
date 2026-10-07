@@ -56,8 +56,7 @@ namespace Moqui.Core.Meta
             if (resistSatiety > 0)
             {
                 double penaltyMul = Math.Pow(tuning.GetFloat("skill.resistSatiety.penaltyMul"), resistSatiety);
-                values["satiety.minSpeedMul"] = JsonValue.FromNumber(1.0 - ((1.0 - tuning.GetFloat("satiety.minSpeedMul")) * penaltyMul));
-                values["satiety.minDashMul"] = JsonValue.FromNumber(1.0 - ((1.0 - tuning.GetFloat("satiety.minDashMul")) * penaltyMul));
+                values["satiety.dashDelayMax"] = JsonValue.FromNumber(tuning.GetFloat("satiety.dashDelayMax") * penaltyMul);
             }
 
             int silentWings = skills.Level(SkillCatalog.SilentWings);

@@ -7,6 +7,8 @@ namespace Moqui.Unity.Presentation
     /// <summary>시뮬레이션 상태를 읽어 카메라를 놓는다. 규칙은 바꾸지 않는다.</summary>
     public sealed class CameraRig : MonoBehaviour
     {
+        private float _ridingSpeed = float.PositiveInfinity;
+
         [SerializeField]
         private SimulationRunner _runner;
 
@@ -30,6 +32,7 @@ namespace Moqui.Unity.Presentation
             if (_controller == null)
             {
                 var settings = new CameraSettings(_runner.Tuning);
+                _ridingSpeed = settings.RidingSpeed;
                 var solver = new CameraPoseSolver(settings, _runner.Driver.Simulation.World);
                 _controller = new CameraController(settings, solver, new PlayerPrefsStore());
             }
@@ -43,7 +46,8 @@ namespace Moqui.Unity.Presentation
             var player = _runner.Driver.Simulation.Player;
             Vector3? surfaceNormal = player.State == Core.Simulation.PlayerState.Attached ? player.Up.ToUnity() : (Vector3?)null;
             _controller.ConstrainLook(collector.Look, surfaceNormal);
-            CameraPose pose = _controller.Update(Time.deltaTime, _runner.Driver.InterpolatedPlayerPosition, collector.Look.Yaw, collector.Look.Pitch, surfaceNormal);
+            bool riding = player.State == Core.Simulation.PlayerState.Attached && player.AnchorVelocity.Length() > _ridingSpeed;
+            CameraPose pose = _controller.Update(Time.deltaTime, _runner.Driver.InterpolatedPlayerPosition, collector.Look.Yaw, collector.Look.Pitch, surfaceNormal, riding);
             pose.ApplyTo(_camera);
             if (_playerVisibility != null)
             {

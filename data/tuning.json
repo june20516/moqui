@@ -15,6 +15,9 @@
     "camera.switchTime": 0.25,
     "camera.returnSpeed": 12,
     "camera.pivotBlendTime": 0.2,
+    "camera.ridingDistanceMul": 1.6,
+    "camera.ridingSpeed": 8,
+    "camera.ridingBlendTime": 0.4,
     "camera.hidePlayerDistance": 1.5,
     "camera.fp.eyeOffset": [0, 0.15, 0.1],
     "camera.fp.fov": 80,
@@ -185,8 +188,7 @@
     "biteMark.floorMax": 45,
     "biteMark.reactionMulPerBite": 0.15,
 
-    "satiety.minSpeedMul": 0.6,
-    "satiety.minDashMul": 0.75,
+    "satiety.dashDelayMax": 0.25,
 
     "senses.clearRange": 50,
     "senses.fogFullRange": 160,
@@ -206,7 +208,7 @@
     "senses.co2PuffEndRadius": 10,
     "senses.heatGlowScale": 1.04,
     "senses.biteMarkDotRadius": 1.5,
-    "hud.satietyHighlightMul": 0.85,
+    "hud.satietyHighlightLevel": 0.4,
     "hud.resultDelay": 1.5,
     "tutorial.holdSeconds": 1,
     "tutorial.lookDegrees": 90,

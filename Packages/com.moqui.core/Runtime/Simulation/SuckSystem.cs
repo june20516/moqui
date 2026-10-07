@@ -76,14 +76,16 @@ namespace Moqui.Core.Simulation
             return baseRate * _sites.BloodAmount(type) * RateMultiplier;
         }
 
-        public float SpeedMultiplier(float bloodGauge)
-        {
-            return 1f - ((1f - _suck.SatietyMinSpeedMul) * SatietyPenaltyMultiplier * (bloodGauge / GaugeMax));
-        }
+        /// <summary>포만 0~1 (흡혈 게이지 비율).</summary>
+        public static float SatietyLevel(float bloodGauge) => Math.Clamp(bloodGauge / GaugeMax, 0f, 1f);
 
-        public float DashMultiplier(float bloodGauge)
+        /// <summary>
+        /// 포만 디버프 (spec/04 §5, 플레이 피드백 2026-10-07): 배가 부를수록 대시를 누르고 튀어 나가기까지 숨을 고른다.
+        /// 이동 속도는 줄이지 않는다(느려짐은 젖은 날개·탈진의 몫).
+        /// </summary>
+        public float DashDelay(float bloodGauge)
         {
-            return 1f - ((1f - _suck.SatietyMinDashMul) * SatietyPenaltyMultiplier * (bloodGauge / GaugeMax));
+            return _suck.SatietyDashDelayMax * SatietyPenaltyMultiplier * SatietyLevel(bloodGauge);
         }
 
         /// <summary>인간 하나 (기존 호출).</summary>

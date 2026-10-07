@@ -5,6 +5,7 @@ using Moqui.Core.Data.Levels;
 using Moqui.Core.Meta;
 using Moqui.Core.Simulation;
 using Moqui.Unity.Data;
+using Moqui.Unity.Presentation;
 using Moqui.Unity.Presentation.Senses;
 using Moqui.Unity.Presentation.Stage;
 using NUnit.Framework;
@@ -42,6 +43,35 @@ namespace Moqui.Unity.Tests
         public void TearDown()
         {
             Object.DestroyImmediate(_root);
+        }
+
+        /// <summary>은신처 표시는 판정 상자보다 면마다 조금 작다: 바닥·가구 면과 겹쳐 지지직거리지 않는다 (플레이 피드백 2026-10-07).</summary>
+        [Test]
+        public void ShadowCue_IsInsetFromFloorAndFurniture()
+        {
+            _simulation.World.TryGet("shadow_coffee_table", out var zone);
+            var cue = _view.ShadowCue("shadow_coffee_table").transform;
+            float bottom = cue.position.y - (cue.localScale.y * 0.5f);
+
+            Assert.That(bottom, Is.EqualTo(zone.Center.Y - zone.HalfExtents.Y + SensesView.ShadowCueInset).Within(1e-3f));
+            Assert.That(cue.localScale.x, Is.EqualTo((zone.HalfExtents.X * 2f) - (SensesView.ShadowCueInset * 2f)).Within(1e-3f));
+        }
+
+        /// <summary>몸 형상은 직전·현재 틱 사이를 보간해 그린다: 모키·카메라와 같은 비율이라 움직여도 어긋나지 않는다.</summary>
+        [Test]
+        public void PoseInterpolation_BlendsBetweenTicks()
+        {
+            var shape = _simulation.Human.Shapes["forearmR"];
+            var visual = new GameObject("PoseTest").transform;
+            visual.SetParent(_root.transform);
+            PoseInterpolation.Apply(shape, visual, 100, 1f);
+            Vector3 before = visual.position;
+            shape.SetSegment(shape.PointA + new System.Numerics.Vector3(10f, 0f, 0f), shape.PointB + new System.Numerics.Vector3(10f, 0f, 0f));
+
+            PoseInterpolation.Apply(shape, visual, 101, 0.5f);
+            Assert.That(visual.position.x, Is.EqualTo(before.x + 5f).Within(1e-3f), "halfway between the two ticks");
+            PoseInterpolation.Apply(shape, visual, 101, 1f);
+            Assert.That(visual.position.x, Is.EqualTo(before.x + 10f).Within(1e-3f));
         }
 
         private SkinSiteState Site => _simulation.Human.SkinSites.First(site => site.PartId == SiteId);

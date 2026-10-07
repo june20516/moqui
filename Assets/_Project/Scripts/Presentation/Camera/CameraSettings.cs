@@ -17,6 +17,9 @@ namespace Moqui.Unity.Presentation
             SwitchTime = tuning.GetFloat("camera.switchTime");
             ReturnSpeed = tuning.GetFloat("camera.returnSpeed");
             PivotBlendTime = tuning.GetFloat("camera.pivotBlendTime");
+            RidingDistanceMul = tuning.GetFloat("camera.ridingDistanceMul");
+            RidingSpeed = tuning.GetFloat("camera.ridingSpeed");
+            RidingBlendTime = tuning.GetFloat("camera.ridingBlendTime");
             HidePlayerDistance = tuning.GetFloat("camera.hidePlayerDistance");
             FirstPersonEyeOffset = tuning.GetVector3("camera.fp.eyeOffset").ToUnity();
             FirstPersonFov = tuning.GetFloat("camera.fp.fov");
@@ -26,6 +29,14 @@ namespace Moqui.Unity.Presentation
         }
 
         public float Distance { get; }
+
+        /// <summary>붙은 표면(인간 몸)이 ridingSpeed보다 빠르게 움직이는 동안 3인칭 거리 배율. 몸이 흔들려도 화면이 덜 흔들린다.</summary>
+        public float RidingDistanceMul { get; }
+
+        public float RidingSpeed { get; }
+
+        /// <summary>물러나고 돌아오는 데 걸리는 시간 (s).</summary>
+        public float RidingBlendTime { get; }
 
         public float HeightOffset { get; }
 

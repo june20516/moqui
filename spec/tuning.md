@@ -21,6 +21,9 @@
 | camera.switchTime | 0.25s | 시점 전환 보간 |
 | camera.returnSpeed | 12u/s | 벽에 막혀 당겨진 3인칭 카메라가 원래 거리로 돌아가는 속도. 당길 때는 즉시 (M13) |
 | camera.pivotBlendTime | 0.2s | 피벗 기준 방향(월드 위 ↔ 붙은 면 법선)이 바뀔 때 보간 시간 (M13) |
+| camera.ridingDistanceMul | 1.6 | 붙은 표면(인간 몸)이 움직이는 동안 3인칭 거리 배율: 몸이 흔들려도 화면이 덜 흔들린다 (플레이 피드백 M14) |
+| camera.ridingSpeed | 8u/s | 붙은 표면 속도가 이보다 빠르면 물러난다 |
+| camera.ridingBlendTime | 0.4s | 물러나고 돌아오는 시간 |
 | camera.hidePlayerDistance | 1.5u | 3인칭 카메라가 플레이어 중심에서 이보다 가까우면 모키를 숨긴다(그림자만) (M13) |
 | camera.fp.eyeOffset | (0, 0.15, 0.1)u | 캐릭터 머리 기준 로컬 오프셋. 충돌 구 반지름 안 |
 | camera.fp.fov | 80° | 1인칭 수직 FOV |
@@ -235,8 +238,7 @@
 ## satiety (포만)
 | 키 | 값 | 설명 |
 |---|---|---|
-| satiety.minSpeedMul | 0.6 | 흡혈 100%일 때 이동 속도 배율 |
-| satiety.minDashMul | 0.75 | 흡혈 100%일 때 대시 거리 배율 |
+| satiety.dashDelayMax | 0.25s | 흡혈 100%일 때 대시를 누르고 실제로 튀어 나가기까지 숨 고르는 시간. 포만에 비례 (디버프 특성화, M14 플레이 피드백) |
 
 ## senses (모기 감각, 표현 전용)
 | 키 | 값 | 설명 |
@@ -399,7 +401,7 @@
 | skill.resistSpray.toxinMul | 0.8 | 곱. 중독 증가와 모기향 하한 모두 |
 | skill.resistWet.durationMul | 0.75 | 곱. 3레벨에서 탈출 입력 −1 |
 | skill.resistWet.humidMul | 0.8 | 습기 증가에 곱 |
-| skill.resistSatiety.penaltyMul | 0.75 | 감속 폭(1 − 배율)에 곱 |
+| skill.resistSatiety.penaltyMul | 0.75 | 포만 대시 지연(`satiety.dashDelayMax`)에 레벨마다 곱 |
 | skill.silentWings.noiseMul | 0.88 | 곱 |
 | skill.swiftWings.speedMul | 1.08 | 곱 |
 | skill.vortexControl.accelTimeMul | 0.8 | 곱, 가속·감속 시간 모두 |
@@ -423,7 +425,7 @@
 ## hud (표현 전용, spec/08)
 | 키 | 값 | 설명 |
 |---|---|---|
-| hud.satietyHighlightMul | 0.85 | 포만 감속 배율이 이 값 아래면 포만 아이콘 강조 |
+| hud.satietyHighlightLevel | 0.4 | 포만(흡혈 게이지 비율)이 이 값 이상이면 포만 아이콘 강조·모키 큐 `full` |
 | hud.resultDelay | 1.5s | 클리어·사망 후 Result 화면까지 (사망 연출 시간) |
 
 ## tutorial (spec/08 §튜토리얼)

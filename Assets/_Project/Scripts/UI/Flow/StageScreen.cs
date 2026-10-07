@@ -148,20 +148,21 @@ namespace Moqui.Unity.UI.Flow
             PauseSettingsButton = UiFactory.CreateButton("Settings", pauseColumn, "설정", () => Settings.Open(PauseSettingsButton));
             PausePanel.SetActive(false);
 
-            var result = UiFactory.CreatePanel("ResultPanel", canvas, new Vector2(900f, 760f));
+            var result = UiFactory.CreatePanel("ResultPanel", canvas, new Vector2(900f, 840f));
             ResultPanel = result.gameObject;
             ResultTitle = UiFactory.CreateText("Title", result, string.Empty, 56, TextAnchor.MiddleCenter, 800f, 80f);
-            ResultTitle.rectTransform.anchoredPosition = new Vector2(0f, 300f);
+            ResultTitle.rectTransform.anchoredPosition = new Vector2(0f, 370f);
             ResultBody = UiFactory.CreateText("Body", result, string.Empty, 28, TextAnchor.UpperCenter, 800f, 300f);
-            ResultBody.rectTransform.anchoredPosition = new Vector2(0f, 90f);
-            var timelineLabel = UiFactory.CreateText("TimelineLabel", result, "경계 타임라인 (색 = 원인: 노랑 눈 · 하늘 귀 · 분홍 가려움 · 주황 시선 · 보라 동행자)", 16, TextAnchor.MiddleCenter, 800f, 22f);
-            timelineLabel.rectTransform.anchoredPosition = new Vector2(0f, -2f);
+            ResultBody.rectTransform.anchoredPosition = new Vector2(0f, 160f);
+            var timelineLabel = UiFactory.CreateText("TimelineLabel", result, "경계 타임라인 — 아이콘 = 들킨 원인", 16, TextAnchor.MiddleCenter, 800f, 22f);
+            timelineLabel.rectTransform.anchoredPosition = new Vector2(0f, 64f);
+            BuildTimelineLegend(result);
             ResultTimeline = new GameObject("Timeline", typeof(RectTransform)).GetComponent<RectTransform>();
             ResultTimeline.SetParent(result, false);
             ResultTimeline.sizeDelta = new Vector2(800f, 40f);
-            ResultTimeline.anchoredPosition = new Vector2(0f, -38f);
+            ResultTimeline.anchoredPosition = new Vector2(0f, 0f);
             var resultColumn = UiFactory.CreateColumn("Menu", result, 10f);
-            resultColumn.anchoredPosition = new Vector2(0f, -100f);
+            resultColumn.anchoredPosition = new Vector2(0f, -110f);
             EndingButton = UiFactory.CreateButton("Ending", resultColumn, "엔딩 보기", () => Leave(Flow.OpenEnding));
             RetryButton = UiFactory.CreateButton("Retry", resultColumn, "다시 하기", Retry);
             SkillsButton = UiFactory.CreateButton("Skills", resultColumn, "스킬", () => Leave(true));
@@ -275,7 +276,37 @@ namespace Moqui.Unity.UI.Flow
             }
         }
 
-        /// <summary>타임라인 막대: 표본마다 경계값 높이, 원인 색 (광분 진입값이 꽉 찬 높이).</summary>
+        private static readonly (Moqui.Core.Simulation.AwarenessCause Cause, string Label)[] LegendEntries =
+        {
+            (Moqui.Core.Simulation.AwarenessCause.Sight, "눈"),
+            (Moqui.Core.Simulation.AwarenessCause.Hearing, "소리"),
+            (Moqui.Core.Simulation.AwarenessCause.Itch, "가려움"),
+            (Moqui.Core.Simulation.AwarenessCause.Glance, "시선"),
+            (Moqui.Core.Simulation.AwarenessCause.Alarm, "동행자"),
+        };
+
+        private static readonly Color TimelineBarColor = new Color(0.85f, 0.85f, 0.95f, 0.8f);
+        private static readonly Color TimelineFrenzyBarColor = new Color(1f, 0.45f, 0.45f, 0.95f);
+
+        /// <summary>범례: 아이콘 + 낱말 (색으로 원인을 구분하지 않는다).</summary>
+        private static void BuildTimelineLegend(RectTransform result)
+        {
+            float x = -((LegendEntries.Length - 1) * 120f) / 2f;
+            foreach (var entry in LegendEntries)
+            {
+                var icon = new GameObject($"Legend_{entry.Cause}", typeof(RectTransform), typeof(Image));
+                var rect = (RectTransform)icon.transform;
+                rect.SetParent(result, false);
+                rect.sizeDelta = new Vector2(24f, 24f);
+                rect.anchoredPosition = new Vector2(x - 30f, -40f);
+                icon.GetComponent<Image>().sprite = Moqui.Unity.UI.Hud.HudSprites.CauseIcon(entry.Cause);
+                var label = UiFactory.CreateText($"LegendLabel_{entry.Cause}", result, entry.Label, 16, TextAnchor.MiddleLeft, 80f, 24f);
+                label.rectTransform.anchoredPosition = new Vector2(x + 25f, -40f);
+                x += 120f;
+            }
+        }
+
+        /// <summary>타임라인 막대: 표본마다 경계값 높이(광분 진입값이 꽉 찬 높이), 광분한 지점 위에 원인 아이콘.</summary>
         private void DrawTimeline()
         {
             foreach (Transform child in ResultTimeline)
@@ -300,7 +331,21 @@ namespace Moqui.Unity.UI.Flow
                 rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0f, 0f);
                 rect.anchoredPosition = new Vector2(i * width, 0f);
                 rect.sizeDelta = new Vector2(Mathf.Max(1f, width - 1f), Mathf.Max(2f, height * Mathf.Clamp01(samples[i].Awareness / full)));
-                bar.GetComponent<Image>().color = Moqui.Unity.UI.Hud.FrenzyMoment.ColorOf(samples[i].Cause);
+                bar.GetComponent<Image>().color = samples[i].Awareness >= full ? TimelineFrenzyBarColor : TimelineBarColor;
+            }
+
+            int total = Timeline.Samples.Count;
+            foreach (var frenzy in Timeline.Frenzies)
+            {
+                float position = total > 0 ? (float)frenzy.Sample / total : 0f;
+                var icon = new GameObject("FrenzyCause", typeof(RectTransform), typeof(Image));
+                var rect = (RectTransform)icon.transform;
+                rect.SetParent(ResultTimeline, false);
+                rect.anchorMin = rect.anchorMax = new Vector2(0f, 0f);
+                rect.pivot = new Vector2(0.5f, 0f);
+                rect.sizeDelta = new Vector2(26f, 26f);
+                rect.anchoredPosition = new Vector2(position * ResultTimeline.sizeDelta.x, height + 2f);
+                icon.GetComponent<Image>().sprite = Moqui.Unity.UI.Hud.HudSprites.CauseIcon(frenzy.Cause);
             }
         }
 

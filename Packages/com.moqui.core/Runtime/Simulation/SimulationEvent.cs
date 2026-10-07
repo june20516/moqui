@@ -111,6 +111,18 @@ namespace Moqui.Core.Simulation
         public string ShapeId { get; }
     }
 
+    /// <summary>포만으로 대시 전에 숨을 고르기 시작함 (spec/04 §5). Seconds 뒤 튀어 나간다.</summary>
+    public sealed class DashCharging : SimulationEvent
+    {
+        public DashCharging(int tick, float seconds)
+            : base(tick)
+        {
+            Seconds = seconds;
+        }
+
+        public float Seconds { get; }
+    }
+
     /// <summary>인간이 광분에 들어감과 그 원인 (gulf §10 "왜 들켰나", D-067).</summary>
     public sealed class FrenzyTriggered : SimulationEvent
     {

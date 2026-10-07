@@ -64,6 +64,17 @@ namespace Moqui.Unity.Tests
             Assert.That(bars.Count(bar => bar.Cause == AwarenessCause.Hearing), Is.EqualTo(1));
         }
 
+        /// <summary>원인마다 다른 아이콘 (색이 아니라 모양으로 읽힌다, 플레이 피드백 2026-10-07).</summary>
+        [Test]
+        public void EveryCause_HasItsOwnIcon()
+        {
+            var causes = new[] { AwarenessCause.Sight, AwarenessCause.Hearing, AwarenessCause.Itch, AwarenessCause.Glance, AwarenessCause.Alarm };
+            var icons = causes.Select(HudSprites.CauseIcon).ToList();
+
+            Assert.That(icons, Is.Unique);
+            Assert.That(icons.All(icon => icon != null), Is.True);
+        }
+
         [Test]
         public void EveryCause_HasTextAndColor()
         {

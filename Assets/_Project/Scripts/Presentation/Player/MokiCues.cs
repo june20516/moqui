@@ -18,6 +18,7 @@ namespace Moqui.Unity.Presentation
         public const string WandYank = "wand.yank";
         public const string WandCloth = "wand.cloth";
         public const string WandAim = "wand.aim";
+        public const string DashCharge = "dash.charge";
         public const string Freeze = "freeze";
         public const string Dislodged = "dislodged";
         public const string Heard = "heard";
@@ -63,6 +64,7 @@ namespace Moqui.Unity.Presentation
             new MokiCueDefinition(MokiCueIds.WandYank, false, 0.3f, "확!"),
             new MokiCueDefinition(MokiCueIds.WandCloth, false, 1f, "천…"),
             new MokiCueDefinition(MokiCueIds.WandAim, true, 0f, "콕?"),
+            new MokiCueDefinition(MokiCueIds.DashCharge, false, 0.2f, "흐읍"),
             new MokiCueDefinition(MokiCueIds.Freeze, true, 0f, "쉿…"),
             new MokiCueDefinition(MokiCueIds.Dislodged, false, 0.3f, "앗!"),
             new MokiCueDefinition(MokiCueIds.Heard, false, 2f, "윙…?"),
@@ -100,17 +102,17 @@ namespace Moqui.Unity.Presentation
     /// </summary>
     public sealed class MokiCueSystem
     {
-        private readonly float _satietyHighlightMul;
+        private readonly float _satietyHighlightLevel;
         private readonly Dictionary<string, int> _lastPlayedTick = new Dictionary<string, int>();
         private readonly HashSet<string> _activeLoops = new HashSet<string>();
         private readonly Dictionary<Human, bool> _wasInEarZone = new Dictionary<Human, bool>();
         private bool _wasDrinking;
         private bool _hadSession;
 
-        /// <param name="satietyHighlightMul">포만 강조 기준 (tuning hud.satietyHighlightMul): 속도 배율이 이보다 낮으면 묵직.</param>
-        public MokiCueSystem(float satietyHighlightMul)
+        /// <param name="satietyHighlightLevel">포만 강조 기준 (tuning hud.satietyHighlightLevel): 포만이 이 값 이상이면 묵직.</param>
+        public MokiCueSystem(float satietyHighlightLevel)
         {
-            _satietyHighlightMul = satietyHighlightMul;
+            _satietyHighlightLevel = satietyHighlightLevel;
         }
 
         /// <summary>지금 켜져 있는 지속 큐.</summary>
@@ -143,6 +145,9 @@ namespace Moqui.Unity.Presentation
                         break;
                     case PlayerDislodged _:
                         Emit(MokiCueIds.Dislodged, tick, oneShots);
+                        break;
+                    case DashCharging _:
+                        Emit(MokiCueIds.DashCharge, tick, oneShots);
                         break;
                 }
             }
@@ -202,7 +207,7 @@ namespace Moqui.Unity.Presentation
             SetLoop(MokiCueIds.WandGrip, drinking && shifting, presenter);
             SetLoop(MokiCueIds.Freeze, session && !command.SuckHeld && glance, presenter);
             SetLoop(MokiCueIds.Precise, player.State == PlayerState.Flying && player.PrecisionHeld, presenter);
-            SetLoop(MokiCueIds.Full, simulation.Suck.SpeedMultiplier(player.BloodGauge) < _satietyHighlightMul, presenter);
+            SetLoop(MokiCueIds.Full, SuckSystem.SatietyLevel(player.BloodGauge) >= _satietyHighlightLevel, presenter);
             SetLoop(MokiCueIds.Trapped, player.State == PlayerState.Trapped, presenter);
 
             _wasDrinking = drinking;

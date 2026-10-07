@@ -47,6 +47,12 @@ namespace Moqui.Unity.Presentation.Senses
 
         public bool IsBound => _simulation != null;
 
+        /// <summary>틱 사이 렌더링 비율 (인간 몸과 같은 비율로 체온 윤곽을 그린다). 기본값 1 = 현재 틱.</summary>
+        public float InterpolationAlpha { get; set; } = 1f;
+
+        /// <summary>은신처 표시 상자를 판정 상자보다 면마다 이만큼 안쪽으로 줄인다 (u): 바닥·가구 면과 겹쳐 지지직거리지 않게(z-파이팅).</summary>
+        public const float ShadowCueInset = 0.3f;
+
         public Co2Plume Plume => _plume;
 
         /// <summary>보이는 CO₂ 덩이 수 (테스트·캡처 로그용).</summary>
@@ -64,6 +70,9 @@ namespace Moqui.Unity.Presentation.Senses
                 if (zone.Matches(ShapeFlags.ShadowZone) && levelVisuals.TryGetValue(zone.Id, out var visual))
                 {
                     _shadowCues.Add(zone.Id, visual.GetComponent<Renderer>());
+                    Vector3 size = visual.transform.localScale;
+                    float inset = ShadowCueInset * 2f;
+                    visual.transform.localScale = new Vector3(Mathf.Max(size.x * 0.5f, size.x - inset), Mathf.Max(size.y * 0.5f, size.y - inset), Mathf.Max(size.z * 0.5f, size.z - inset));
                 }
             }
 
@@ -150,10 +159,18 @@ namespace Moqui.Unity.Presentation.Senses
             RenderCo2(viewer);
         }
 
+        /// <summary>틱 사이 렌더링 비율 공급자 (Stage에서는 구동기). 없으면 InterpolationAlpha 그대로.</summary>
+        public System.Func<float> AlphaSource { get; set; }
+
         private void LateUpdate()
         {
             if (IsBound)
             {
+                if (AlphaSource != null)
+                {
+                    InterpolationAlpha = AlphaSource();
+                }
+
                 Render(Time.deltaTime);
             }
         }
@@ -230,7 +247,7 @@ namespace Moqui.Unity.Presentation.Senses
                 // 체온은 피부를 거의 덮지 않는 얇은 윤곽(림·아지랑이 셰이더)이다 (M12).
                 // 맨살은 숨 쉬듯 일렁인다: 숨 주기에 맞춰 윤곽이 조금 부풀고 밝아진다 (gulf §3).
                 float breath = BreathPulse(human.BreathPhase);
-                WorldView.ApplyPose(site.Shape, glow.transform);
+                PoseInterpolation.Apply(site.Shape, glow.transform, _simulation.Tick, InterpolationAlpha);
                 Vector3 scale = glow.transform.localScale;
                 float grow = _settings.HeatGlowScale + (HeatBreathGrow * breath);
                 glow.transform.localScale = new Vector3(scale.x * grow, scale.y, scale.z * grow);

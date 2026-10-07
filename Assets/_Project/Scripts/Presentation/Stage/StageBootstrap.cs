@@ -58,6 +58,7 @@ namespace Moqui.Unity.Presentation.Stage
             _gimmicks.Bind(simulation, senses, _materials);
             _gimmicks.BindNets(visuals);
             _runner.Begin(tuning, simulation);
+            _senses.AlphaSource = () => _runner.Driver.InterpolationAlpha;
             RequestedDriverSetup?.Invoke(_runner.Driver);
             if (Level.Tutorial.Count > 0)
             {

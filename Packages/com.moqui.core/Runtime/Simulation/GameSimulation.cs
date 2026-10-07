@@ -263,8 +263,13 @@ namespace Moqui.Core.Simulation
             Player.Yaw = command.LookYaw;
             Player.PrecisionHeld = command.PrecisionHeld;
             Player.SuckHeld = command.SuckHeld;
-            Player.SpeedMultiplier = _stamina.SpeedMultiplier(Player) * Suck.SpeedMultiplier(Player.BloodGauge);
-            Player.DashDistanceMultiplier = Suck.DashMultiplier(Player.BloodGauge);
+            Player.SpeedMultiplier = _stamina.SpeedMultiplier(Player);
+            Player.DashDelay = Suck.DashDelay(Player.BloodGauge);
+            if (Player.State != PlayerState.Flying)
+            {
+                // 숨 고르던 대시는 비행 중에만 이어진다(붙거나 갇히면 취소).
+                Player.PendingDashTick = Player.NeverTick;
+            }
             Player.StaminaRegenMultiplier = 1f;
             Player.DashCostAdd = 0f;
             Player.NoiseRadiusMultiplier = Fans.NoiseMultiplier(Player.Position, Tick);

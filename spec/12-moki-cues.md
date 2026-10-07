@@ -37,10 +37,11 @@
 | `dislodged` | 한 번 | 튕겨남 | 떨어져 나갔다 | 앗! | 공중제비, 모자·리본이 뒤늦게 따라옴 |
 | `heard` | 한 번 | 비행 소리가 귀 근접 구역에 들어감 | 지금 들린다 | 윙…? | 모키가 놀라 날갯짓을 줄임, 인간 귀가 움찔 |
 | `precise` | 지속 | 정밀 비행 | 조용히 나는 중 | 살금 | 날개를 반쯤 접고 발끝으로 걷듯 떠감 |
-| `full` | 지속 | 포만이 높음 | 몸이 무겁다 | 묵직 | 하트 브로치가 가득 차 빛남, 날갯짓이 느려짐 |
+| `dash.charge` | 한 번 | 포만으로 대시 전에 숨 고르기 시작 | 배불러서 대시가 늦게 나간다 | 흐읍 | 하트 브로치를 움켜쥐고 한 박자 웅크렸다가 튀어 나감 |
+| `full` | 지속 | 포만이 높음 | 몸이 무겁다(대시가 늦다) | 묵직 | 하트 브로치가 가득 차 빛남, 날갯짓이 느려짐 |
 | `trapped` | 지속 | 물방울에 갇힘 | 갇혔다, 몸부림쳐야 한다 | 꿀렁 | 물방울 안에서 허우적, 머리카락이 물에 뜸 |
 
 ## 수용 기준
 - [x] 각 큐가 정해진 조건에서 나오고, 지속 큐는 조건이 끝나면 사라진다 (Unity). (M14) — 증거: EditMode `MokiCueTests.LandingAndWand_CuesFollowTheAction`, `ClothAndMiss_CuesExplainWhyNothingHappened`
 - [x] 표시기를 바꿔 끼워도 큐를 내는 코드는 그대로다(표시기 인터페이스, 글자 표시기가 기본) (Unity). (M14) — 증거: `IMokiCuePresenter`(테스트는 기록용 표시기로 같은 큐를 받음), EditMode `MokiCueTests.TextPresenter_OneShotFades_LoopStaysUntilOff`, `EveryCue_HasTextForTheTextPresenter`
-- [x] 모든 큐가 `spec/assets/vfx/moki-cues.md`에 모델·VFX 요구로 정리되어 있다 (문서 검사). (M14) — 증거: `spec/assets/vfx/moki-cues.md`(18종 전부: 길이·애니메이션·VFX·소리), EditMode `MokiCueTests.EveryCue_IsSpecifiedInVfxDoc`
+- [x] 모든 큐가 `spec/assets/vfx/moki-cues.md`에 모델·VFX 요구로 정리되어 있다 (문서 검사). (M14) — 증거: `spec/assets/vfx/moki-cues.md`(19종 전부: 길이·애니메이션·VFX·소리), EditMode `MokiCueTests.EveryCue_IsSpecifiedInVfxDoc`

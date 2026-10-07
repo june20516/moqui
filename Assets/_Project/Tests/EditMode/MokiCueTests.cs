@@ -48,7 +48,7 @@ namespace Moqui.Unity.Tests
             _simulation.HumanSystem.Reactions.ExtraMultiplier = 0f;
             _simulation.HumanSystem.Reactions.LandingSkillMultiplier = 0f;
             _simulation.HumanSystem.SuckEvents.Enabled = false;
-            _cues = new MokiCueSystem(tuning.GetFloat("hud.satietyHighlightMul"));
+            _cues = new MokiCueSystem(tuning.GetFloat("hud.satietyHighlightLevel"));
             _presenter = new RecordingPresenter();
         }
 

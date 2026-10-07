@@ -123,8 +123,7 @@ namespace Moqui.Core.Simulation
             ItchDecay = tuning.GetFloat("suck.itchDecay");
             ItchThreshold = tuning.GetFloat("suck.itchThreshold");
             YankItch = tuning.GetFloat("suck.yankItch");
-            SatietyMinSpeedMul = tuning.GetFloat("satiety.minSpeedMul");
-            SatietyMinDashMul = tuning.GetFloat("satiety.minDashMul");
+            SatietyDashDelayMax = tuning.GetFloat("satiety.dashDelayMax");
         }
 
         /// <summary>세션 시작 흡혈 속도 (%/s).</summary>
@@ -144,9 +143,8 @@ namespace Moqui.Core.Simulation
         /// <summary>흡혈 중 대시로 지팡이를 억지로 뽑을 때 그 부위 가려움에 더하는 양 (gulf §1, D-066).</summary>
         public float YankItch { get; }
 
-        public float SatietyMinSpeedMul { get; }
-
-        public float SatietyMinDashMul { get; }
+        /// <summary>흡혈 100%일 때 대시 발동 지연 (s). 포만에 비례 (spec/04 §5).</summary>
+        public float SatietyDashDelayMax { get; }
     }
 
     public sealed class BiteMarkSettings

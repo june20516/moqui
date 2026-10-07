@@ -58,15 +58,44 @@ namespace Moqui.Core.Simulation
         public bool CanDash(Player player, int tick) => CanStart(player, tick) || CanChain(player, tick);
 
         /// <summary>Dash 입력이면 진행 방향(입력 없으면 보는 방향)으로 대시를 시작한다 (spec/01, D-051, D-066).</summary>
+        /// 포만이면 누른 뒤 player.DashDelay만큼 숨을 고른 다음 누른 순간의 방향으로 튀어 나간다(그사이 다시 눌러도 무시).
         public bool TryStart(Player player, in PlayerCommand command, int tick, List<SimulationEvent> events)
         {
+            if (player.IsChargingDash)
+            {
+                if (tick < player.PendingDashTick)
+                {
+                    return false;
+                }
+
+                Vector3 pending = player.PendingDashDirection;
+                player.PendingDashTick = Player.NeverTick;
+                if (!CanDash(player, tick))
+                {
+                    return false;
+                }
+
+                Start(player, pending, tick, events);
+                return true;
+            }
+
             if (!command.DashPressed || !CanDash(player, tick))
             {
                 return false;
             }
 
-            Start(player, DashDirectionResolver.Resolve(command), tick, events);
-            return true;
+            Vector3 direction = DashDirectionResolver.Resolve(command);
+            int delayTicks = SimulationTime.ToTicks(player.DashDelay);
+            if (delayTicks <= 0)
+            {
+                Start(player, direction, tick, events);
+                return true;
+            }
+
+            player.PendingDashTick = tick + delayTicks;
+            player.PendingDashDirection = direction;
+            events.Add(new DashCharging(tick, player.DashDelay));
+            return false;
         }
 
         /// <summary>정해진 방향으로 대시를 시작한다 (부착 중 대시 = 표면 법선 방향). 시작 가능 여부는 호출자가 CanDash로 확인한다.</summary>
@@ -99,7 +128,7 @@ namespace Moqui.Core.Simulation
         private void Begin(Player player, Vector3 direction)
         {
             int ticks = Math.Max(1, SimulationTime.ToTicks(_settings.Duration));
-            float distance = _settings.Distance * player.DashDistanceMultiplier;
+            float distance = _settings.Distance;
             player.State = PlayerState.Dashing;
             player.DashDirection = direction;
             player.DashTicksRemaining = ticks;

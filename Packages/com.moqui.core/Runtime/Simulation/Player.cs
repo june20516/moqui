@@ -50,7 +50,16 @@ namespace Moqui.Core.Simulation
         public float AccelTimeMultiplier { get; set; } = 1f;
 
         /// <summary>대시 거리 배율 (포만, spec/04 §5).</summary>
-        public float DashDistanceMultiplier { get; set; } = 1f;
+        /// <summary>대시 발동 지연 (s, 포만 디버프). 0이면 바로 튀어 나간다.</summary>
+        public float DashDelay { get; set; }
+
+        /// <summary>숨 고르는 중인 대시가 튀어 나갈 틱. 없으면 NeverTick.</summary>
+        public int PendingDashTick { get; set; } = NeverTick;
+
+        /// <summary>숨 고르는 중인 대시의 방향 (누른 순간의 입력·시점으로 정한다).</summary>
+        public System.Numerics.Vector3 PendingDashDirection { get; set; }
+
+        public bool IsChargingDash => PendingDashTick != NeverTick;
 
         /// <summary>숨은 상태 = Shadow Zone 안 (spec/03). 시각 배율이 0이 되고 디버프 회복이 빨라진다.</summary>
         public bool IsHidden { get; set; }

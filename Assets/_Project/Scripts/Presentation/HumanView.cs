@@ -53,6 +53,9 @@ namespace Moqui.Unity.Presentation
         private readonly List<Transform> _eyes = new List<Transform>();
         private readonly List<Transform> _ears = new List<Transform>();
         private readonly List<Vector3> _eyeRest = new List<Vector3>();
+        private int _faceTick = int.MinValue;
+        private Pose _previousFace;
+        private Pose _currentFace;
         private float _headRadius;
         private Transform _alertMarker;
 
@@ -141,16 +144,29 @@ namespace Moqui.Unity.Presentation
             Refresh(0);
         }
 
+        /// <summary>틱 사이 렌더링 비율 (0 = 직전 틱, 1 = 현재 틱). 구동기가 매 프레임 넣고, 테스트는 기본값 1(현재 틱).</summary>
+        public float InterpolationAlpha { get; set; } = 1f;
+
         public void Refresh(int tick)
         {
             foreach (var part in _parts)
             {
-                WorldView.ApplyPose(part.Key, part.Value);
+                PoseInterpolation.Apply(part.Key, part.Value, tick, InterpolationAlpha);
             }
 
             Vector3 forward = _human.HeadForward.ToUnity();
             Vector3 faceUp = Mathf.Abs(Vector3.Dot(forward, Vector3.up)) > 0.99f ? Vector3.forward : Vector3.up;
-            _face.SetPositionAndRotation(_human.HeadCenter.ToUnity(), Quaternion.LookRotation(forward, faceUp));
+            var facePose = new Pose(_human.HeadCenter.ToUnity(), Quaternion.LookRotation(forward, faceUp));
+            if (tick != _faceTick)
+            {
+                _previousFace = tick > _faceTick && _faceTick != int.MinValue ? _currentFace : facePose;
+                _currentFace = facePose;
+                _faceTick = tick;
+            }
+
+            _face.SetPositionAndRotation(
+                Vector3.Lerp(_previousFace.position, _currentFace.position, InterpolationAlpha),
+                Quaternion.Slerp(_previousFace.rotation, _currentFace.rotation, InterpolationAlpha));
             WorldView.Tint(_headRenderer, HeadColor(_human.State));
             RefreshBreathAndBlink(tick * Moqui.Core.Simulation.GameSimulation.DeltaTime);
             RefreshEars(tick * Moqui.Core.Simulation.GameSimulation.DeltaTime);
@@ -161,6 +177,7 @@ namespace Moqui.Unity.Presentation
             RefreshSwatter();
             foreach (var companion in _companions)
             {
+                companion.InterpolationAlpha = InterpolationAlpha;
                 companion.Refresh(tick);
             }
         }
@@ -407,6 +424,7 @@ namespace Moqui.Unity.Presentation
 
             if (_human != null)
             {
+                InterpolationAlpha = _runner != null && _runner.IsRunning ? _runner.Driver.InterpolationAlpha : 1f;
                 Refresh(_runner != null && _runner.IsRunning ? _runner.Driver.Simulation.Tick : 0);
             }
         }
